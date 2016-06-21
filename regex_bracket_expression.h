@@ -1,23 +1,18 @@
 #ifndef _regex_bracket_expression_h_
 #define _regex_bracket_expression_h_
 
-#include "regex_atomic.h"
+#include "regex_expression_types.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cctype>
-#include <functional>
-#include <iterator>
-#include <type_traits>
+#include <string>
 #include <vector>
+#include <utility>
 
 #include <iostream>
 namespace token_iterator {
-
-template <typename Iterator>
-using char_type_t = typename std::iterator_traits<Iterator>::value_type;
-template <typename Char>
-using predicate_type_t = std::function<bool(const Char&)>;
+namespace detail {
 
 // This combines the element predicates of a matching list.
 template <typename Char>
@@ -42,7 +37,6 @@ predicate_type_t<Char> non_matching_predicates(
 template <typename Char>
 predicate_type_t<Char> singleton_predicate(const Char& ch) {
   return [ch] (const Char& c) {
-    std::cout << ch << ' ' << c << '\n';
     return ch == c;
   };
 }
@@ -201,6 +195,7 @@ bracket_expression(Iterator& begin, Iterator& end) {
   return result;
 }
 
+}//namespace detail
 }//namespace token_iterator
 
 #endif// _regex_bracket_expression_h_

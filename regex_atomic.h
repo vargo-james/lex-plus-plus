@@ -1,9 +1,7 @@
 #ifndef _regex_atomic_h_
 #define _regex_atomic_h_
 
-// Need to change predicate regexes to store the predicate as a variable
-// rather than as a template parameter.
-#include "regex_definition.h"
+#include "simple_regex.h"
 
 #include <functional>
 #include <iterator>

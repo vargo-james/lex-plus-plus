@@ -6,7 +6,7 @@
 #include <vector>
 #include <utility>
 
-#include "regex_definition.h"
+#include "simple_regex.h"
 
 #include <iostream>
 namespace token_iterator {

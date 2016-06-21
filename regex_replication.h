@@ -1,7 +1,8 @@
 #ifndef _regex_replication_h_
 #define _regex_replication_h_
 
-#include "regex_definition.h"
+#include "simple_regex.h"
+#include "regex_expression_types.h"
 
 #include <cstddef>
 #include <list>
@@ -9,14 +10,7 @@
 
 #include <iostream>
 namespace token_iterator {
-struct replicator {
-  replicator(size_t l, size_t u): lower {l}, upper {u} {
-    std::cout << lower << ' ' << upper << '\n';
-  }
-  size_t lower;
-  size_t upper;
-};
-
+namespace detail {
 
 template <typename Regex>
 class regex_replicator_transition
@@ -30,11 +24,11 @@ class regex_replicator_transition
   using index_type = size_t;
   using current_progress = std::pair<regex_type, index_type>;
 
-  regex_replicator_transition(regex_type&& reg, replicator replicate)
+  regex_replicator_transition(regex_type&& reg, replication replicate)
     : lower {replicate.lower},
       upper {replicate.upper},
       regex {std::move(reg)} {}
-  regex_replicator_transition(const regex_type& reg, replicator replicate)
+  regex_replicator_transition(const regex_type& reg, replication replicate)
     : lower {replicate.lower},
       upper {replicate.upper},
       regex {reg} {}
@@ -104,7 +98,7 @@ regex_replicator_transition<Regex>::update(const char_type& ch) {
 
 template <typename Char>
 simple_regex<Char> 
-replicate(simple_regex<Char>&& regex, replicator rep) {
+replicate(simple_regex<Char>&& regex, replication rep) {
   using regex_type = simple_regex<Char>;
   using std::make_unique;
 
@@ -113,6 +107,6 @@ replicate(simple_regex<Char>&& regex, replicator rep) {
         std::move(regex), rep)
       );
 }
-
+}//namespace detail
 }//namespace token_iterator
 #endif// _regex_replication_h_

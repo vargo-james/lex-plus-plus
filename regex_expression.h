@@ -3,6 +3,7 @@
 
 #include "regex_atomic.h"
 #include "regex_bracket_expression.h"
+#include "regex_expression_types.h"
 #include "regex_reader_utilities.h"
 
 #include <iterator>
@@ -18,7 +19,7 @@ namespace token_iterator {
 // a simple_regex<Char> object.
 namespace detail {
 template <typename Iterator>
-simple_regex<typename std::iterator_traits<Iterator>::value_type>
+simple_regex<char_type_t<Iterator>>
 extended_reg_exp(Iterator& begin, Iterator& end);
 }//namespace detail
 
@@ -35,9 +36,9 @@ simple_regex<Char> create_regex(const std::basic_string<Char>& regex_str) {
 
 namespace detail {
 template <typename Iterator>
-simple_regex<typename std::iterator_traits<Iterator>::value_type>
+simple_regex<char_type_t<Iterator>>
 read_parenthetical(Iterator& begin, Iterator& end) {
-  using char_type = typename std::iterator_traits<Iterator>::value_type;
+  using char_type = char_type_t<Iterator>;
   ++begin;
   auto result = extended_reg_exp(begin, end);
   std::cout << "CHAR: " << *begin << '\n';
@@ -46,17 +47,15 @@ read_parenthetical(Iterator& begin, Iterator& end) {
 }
 
 template <typename Iterator>
-simple_regex<typename std::iterator_traits<Iterator>::value_type>
+simple_regex<char_type_t<Iterator>>
 one_char_or_coll_element_ERE(Iterator& begin, Iterator& end) {
-  using char_type = typename std::iterator_traits<Iterator>::value_type;
+  using char_type = char_type_t<Iterator>;
   if (begin == end) return {};
 
   auto ch = *begin;
   switch (ch) {
   case char_type('['): {
-    //auto predicate = bracket_expression(begin, end);
     return predicate_regex(bracket_expression(begin, end));
-    break;
   }
   case char_type('.'):
     ++begin;
@@ -70,9 +69,9 @@ one_char_or_coll_element_ERE(Iterator& begin, Iterator& end) {
 }
 
 template <typename Iterator>
-simple_regex<typename std::iterator_traits<Iterator>::value_type>
+simple_regex<char_type_t<Iterator>>
 ERE_expression(Iterator& begin, Iterator& end) {
-  using char_type = typename std::iterator_traits<Iterator>::value_type;
+  using char_type = char_type_t<Iterator>;
   if (begin == end) return {};
 
   // We use a marker to check whether reads were successful.
@@ -95,9 +94,9 @@ ERE_expression(Iterator& begin, Iterator& end) {
 }
 
 template <typename Iterator>
-simple_regex<typename std::iterator_traits<Iterator>::value_type>
+simple_regex<char_type_t<Iterator>>
 ERE_branch(Iterator& begin, Iterator& end) {
-  using char_type = typename std::iterator_traits<Iterator>::value_type;
+  using char_type = char_type_t<Iterator>;
   using std::move;
 
   if (begin == end) return {};
@@ -115,9 +114,9 @@ ERE_branch(Iterator& begin, Iterator& end) {
 }
 
 template <typename Iterator>
-simple_regex<typename std::iterator_traits<Iterator>::value_type>
+simple_regex<char_type_t<Iterator>>
 extended_reg_exp(Iterator& begin, Iterator& end) {
-  using char_type = typename std::iterator_traits<Iterator>::value_type;
+  using char_type = char_type_t<Iterator>;
   using std::move;
 
   if (begin == end) return {};

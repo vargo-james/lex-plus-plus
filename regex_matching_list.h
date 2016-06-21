@@ -1,7 +1,7 @@
 #ifndef _regex_matching_list_h_
 #define _regex_matching_list_h_
 
-#include "regex_definition.h"
+#include "simple_regex.h"
 
 #include <algorithm>
 #include <list>
@@ -11,17 +11,17 @@
 
 #include <iostream>
 namespace token_iterator {
+namespace detail {
 
 template <typename RegexIterator>
-regex_state matching_list_state_impl(RegexIterator begin, 
-    RegexIterator end, bool matching) {
+regex_state matching_list_state(RegexIterator begin, 
+    RegexIterator end) {
   std::cout << "AnyOf\n";
-  auto initial_state = matching? regex_state::MISMATCH : regex_state::MATCH;
-  auto state = initial_state;
+  auto state = regex_state::MISMATCH;
 
   for (auto it = begin; it != end; ++it) {
     if (it->state() == regex_state::MATCH) {
-      return flip_state(initial_state);
+      return regex_state::MATCH;
     }
     if (it->state() == regex_state::UNDECIDED) {
       state = regex_state::UNDECIDED;
@@ -31,10 +31,10 @@ regex_state matching_list_state_impl(RegexIterator begin,
 }
 
 // This defines the transition function for the bracket combination.
-template <typename Regex, bool Matching>
+template <typename Regex>
 class matching_list_transition 
   : public regex_state_transition_CRTP<
-             matching_list_transition<Regex,Matching>,
+             matching_list_transition<Regex>,
              typename Regex::char_type
            > {
  public:
@@ -57,16 +57,13 @@ class matching_list_transition
   std::list<regex_type> regexes;
 };
 
-template <typename Regex, bool Matching>
+template <typename Regex>
 regex_state 
-matching_list_transition<Regex, Matching>::update(
+matching_list_transition<Regex>::update(
     const char_type& ch) {
   std::cout << "AnyOfTransition\n";
   auto current_state = regex_state::UNDECIDED;
-  // matching_state is the state that results when at least one member
-  // of the list matches.
-  auto matching_state = Matching? regex_state::MATCH : 
-    regex_state::MISMATCH;
+
   for (auto it = regexes.begin(); it != regexes.end();) {
     std::cout << "LIST UPDATE: ";
     it->update(ch);
@@ -75,7 +72,7 @@ matching_list_transition<Regex, Matching>::update(
     // If one match is found, the regex is a match. But we still need
     // to update the rest of the regexes.
     case regex_state::MATCH:
-      current_state = matching_state;
+      current_state = regex_state::MATCH;
       ++it;
       break;
     // If a mismatch is found, that regex will not need to be 
@@ -90,12 +87,12 @@ matching_list_transition<Regex, Matching>::update(
   }
   // We only have a mismatch when every regex in the list was a mismatch.
   // Thus they would have all been detached from the list leaving it empty.
-  return regexes.empty()? flip_state(matching_state) : current_state;
+  return regexes.empty()? regex_state::MISMATCH : current_state;
 }
 
-template <typename Regex, bool Matching>
+template <typename Regex>
 regex_state
-matching_list_transition<Regex,Matching>::initialize() {
+matching_list_transition<Regex>::initialize() {
   using std::for_each;
 
   regexes.clear();
@@ -107,39 +104,24 @@ matching_list_transition<Regex,Matching>::initialize() {
         }
       });
 
-  return matching_list_state_impl(initial_state.begin(), 
-      initial_state.end(), Matching);
-}
-
-template <typename Regex, bool Matching>
-Regex matching_list_impl(const std::vector<Regex>& container) {
-  return Regex(
-      std::make_unique<matching_list_transition<Regex,Matching>>(
-        container));
-}
-
-template <typename Regex, bool Matching>
-Regex matching_list_impl(std::vector<Regex>&& container) {
-  return Regex(
-      std::make_unique<matching_list_transition<Regex,Matching>>(
-        std::move(container)));
+  return matching_list_state(initial_state.begin(), 
+      initial_state.end());
 }
 
 template <typename Regex>
 Regex matching_list(const std::vector<Regex>& container) {
-  return matching_list_impl<Regex,true>(container);
+  return Regex(
+      std::make_unique<matching_list_transition<Regex>>(
+        container));
 }
+
 template <typename Regex>
 Regex matching_list(std::vector<Regex>&& container) {
-  return matching_list_impl<Regex,true>(container);
+  return Regex(
+      std::make_unique<matching_list_transition<Regex>>(
+        std::move(container)));
 }
-template <typename Regex>
-Regex non_matching_list(const std::vector<Regex>& container) {
-  return matching_list_impl<Regex,false>(container);
-}
-template <typename Regex>
-Regex non_matching_list(std::vector<Regex>&& container) {
-  return matching_list_impl<Regex,false>(container);
-}
-}//token_iterator
+
+}//namespace detail
+}//namespace token_iterator
 #endif// _regex_operations_h_
