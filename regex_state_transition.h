@@ -25,9 +25,10 @@ class regex_state_transition {
 };
 
 template <typename Derived, typename Char>
-class regex_state_transition_CRTP : public regex_state_transition<Char> {
+class regex_transition_cloner : public regex_state_transition<Char> {
  public:
   using typename regex_state_transition<Char>::pointer;
+
   pointer clone() const override {
     return std::make_unique<Derived>(static_cast<Derived const&>(*this));
   }

@@ -18,7 +18,7 @@ namespace token_iterator {
 // the concatenation.
 template <typename Regex>
 class concatenate_transition 
-  : public regex_state_transition_CRTP<
+  : public regex_transition_cloner<
              concatenate_transition<Regex>, typename Regex::char_type
            > {
  public:
@@ -27,9 +27,6 @@ class concatenate_transition
   using index_type = size_t;
   using current_progress = std::pair<regex_type, index_type>;
 
-  template <typename Iterator>
-  concatenate_transition(Iterator begin, Iterator end)
-    : initial_state(begin, end) {}
   concatenate_transition(const std::vector<regex_type>& container)
     : initial_state(container) {}
   concatenate_transition(std::vector<regex_type>&& container)
@@ -121,18 +118,16 @@ regex_state concatenate_transition<Regex>::initialize() {
 }
 
 // This function creates the concatenation object.
-template <typename Regex>
-Regex concatenate(std::vector<Regex>&& container) {
-  using regex_type = Regex;
-  using std::make_unique;
-  using std::move;
+template <typename RegexContainer>
+typename RegexContainer::value_type
+concatenate(RegexContainer&& container) {
+  using regex_type = typename RegexContainer::value_type;
+  using std::forward;
 
-  std::cout << "Concatenating : ";
-  std::cout << container.size() << " elements\n";
-  if (container.empty()) return {};
-  if (container.size() == 1) return move(container[0]);
-  return regex_type(
-      make_unique<concatenate_transition<regex_type>>(move(container)));
+  regex_factory<concatenate_transition<regex_type>> fac;
+  return fac.create(forward<RegexContainer>(container));
 }
+
+
 }//namespace token_iterator
 #endif// _regex_concatenation_h_

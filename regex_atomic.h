@@ -3,18 +3,16 @@
 
 #include "simple_regex.h"
 
-#include <functional>
-#include <iterator>
 #include <memory>
 #include <vector>
 
 #include <iostream>
 namespace token_iterator {
 
-// The Regex object corresponding to a single char.
+// The Regex transition object corresponding to a single char.
 template <typename Char>
 struct singleton_regex_transition 
-  : public regex_state_transition_CRTP<
+  : public regex_transition_cloner<
            singleton_regex_transition<Char>, Char
          > {
  public:
@@ -48,14 +46,12 @@ regex_state singleton_regex_transition<Char>::initialize() {
   return regex_state::UNDECIDED;
 }
 
-// This implements the creation of a SimpleRegex object.
 template <typename Char>
-simple_regex<Char> singleton_regex(const Char& t) {
-  using std::make_unique;
-
-  return simple_regex<Char>(
-        make_unique<singleton_regex_transition<Char>>(t));
+simple_regex<Char> singleton_regex(const Char& ch) {
+  regex_factory<singleton_regex_transition<Char>> fac;
+  return fac.create(ch);
 }
+
 
 // The regex object corresponding to a predicate on a single char. 
 // E.g. [:alpha:]
@@ -63,12 +59,12 @@ simple_regex<Char> singleton_regex(const Char& t) {
 // the predicate Pred must be stateless.
 template <typename Char>
 class predicate_regex_transition 
-  : public regex_state_transition_CRTP<
+  : public regex_transition_cloner<
              predicate_regex_transition<Char>, Char
            > {
  public:
   using typename regex_state_transition<Char>::char_type;
-  using predicate_type = std::function<bool(Char)>;
+  using predicate_type = predicate_type_t<Char>;
 
   predicate_regex_transition(const predicate_type& p) 
     : pred {p},
@@ -98,15 +94,12 @@ regex_state predicate_regex_transition<Char>::initialize() {
   return regex_state::UNDECIDED;
 }
 
-// This implements the creation of a PredicateRegex object.
 template <typename Char>
-simple_regex<Char> predicate_regex(
-    const std::function<bool(const Char&)>&  p) {
-  using std::make_unique;
-
-  return simple_regex<Char>(
-      make_unique<predicate_regex_transition<Char>>(p));
+simple_regex<Char> predicate_regex(const predicate_type_t<Char>& p) {
+  regex_factory<predicate_regex_transition<Char>> fac;
+  return fac.create(p);
 }
+
 
 template <typename Char>
 struct always_true {
@@ -122,10 +115,10 @@ simple_regex<Char> universal_singleton_regex() {
 
 template <typename Iterator>
 class string_regex_transition 
-  : public regex_state_transition_CRTP<string_regex_transition<Iterator>, 
-      typename std::iterator_traits<Iterator>::value_type> {
+  : public regex_transition_cloner<string_regex_transition<Iterator>, 
+      char_type_t<Iterator>> {
  public:
-  using char_type = typename std::iterator_traits<Iterator>::value_type;
+  using char_type = char_type_t<Iterator>;
   using string_type = std::vector<char_type>;
   using size_type = typename string_type::size_type;
 
@@ -157,16 +150,13 @@ regex_state string_regex_transition<Iterator>::initialize() {
   return string.empty()? regex_state::MATCH : regex_state::UNDECIDED;
 }
 
-// This creates the Regex object that matches a string.
 template <typename Iterator>
-simple_regex<typename std::iterator_traits<Iterator>::value_type> 
+simple_regex<char_type_t<Iterator>>
 string_regex(Iterator begin, Iterator end) {
-  using char_type = typename std::iterator_traits<Iterator>::value_type;
-  using std::make_unique;
-
-  return simple_regex<char_type>(
-      make_unique<string_regex_transition<Iterator>>(begin, end));
+  regex_factory<string_regex_transition<Iterator>> fac;
+  return fac.create(begin, end);
 }
+
 
 template <typename String>
 simple_regex<typename String::value_type>

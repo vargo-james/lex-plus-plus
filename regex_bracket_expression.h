@@ -1,7 +1,7 @@
 #ifndef _regex_bracket_expression_h_
 #define _regex_bracket_expression_h_
 
-#include "regex_expression_types.h"
+#include "regex_types.h"
 
 #include <algorithm>
 #include <cassert>

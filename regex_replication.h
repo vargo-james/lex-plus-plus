@@ -2,7 +2,6 @@
 #define _regex_replication_h_
 
 #include "simple_regex.h"
-#include "regex_expression_types.h"
 
 #include <cstddef>
 #include <list>
@@ -14,7 +13,7 @@ namespace detail {
 
 template <typename Regex>
 class regex_replicator_transition
-  : public regex_state_transition_CRTP<
+  : public regex_transition_cloner<
       regex_replicator_transition<Regex>,
       typename Regex::char_type
     > {
@@ -24,13 +23,13 @@ class regex_replicator_transition
   using index_type = size_t;
   using current_progress = std::pair<regex_type, index_type>;
 
-  regex_replicator_transition(regex_type&& reg, replication replicate)
-    : lower {replicate.lower},
-      upper {replicate.upper},
+  regex_replicator_transition(regex_type&& reg, replication rep)
+    : lower {rep.lower},
+      upper {rep.upper},
       regex {std::move(reg)} {}
-  regex_replicator_transition(const regex_type& reg, replication replicate)
-    : lower {replicate.lower},
-      upper {replicate.upper},
+  regex_replicator_transition(const regex_type& reg, replication rep)
+    : lower {rep.lower},
+      upper {rep.upper},
       regex {reg} {}
     
   regex_state update(const char_type& ch) override;
@@ -96,16 +95,10 @@ regex_replicator_transition<Regex>::update(const char_type& ch) {
   return current.empty()? regex_state::MISMATCH : return_state;
 }
 
-template <typename Char>
-simple_regex<Char> 
-replicate(simple_regex<Char>&& regex, replication rep) {
-  using regex_type = simple_regex<Char>;
-  using std::make_unique;
-
-  return regex_type(
-      make_unique<regex_replicator_transition<regex_type>>(
-        std::move(regex), rep)
-      );
+template <typename Regex>
+Regex replicate(Regex&& regex, replication rep) {
+  regex_factory<regex_replicator_transition<Regex>> fac;
+  return fac.create(std::forward<Regex>(regex), rep);
 }
 }//namespace detail
 }//namespace token_iterator

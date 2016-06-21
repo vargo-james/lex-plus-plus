@@ -33,22 +33,18 @@ regex_state matching_list_state(RegexIterator begin,
 // This defines the transition function for the bracket combination.
 template <typename Regex>
 class matching_list_transition 
-  : public regex_state_transition_CRTP<
+  : public regex_transition_cloner<
              matching_list_transition<Regex>,
              typename Regex::char_type
            > {
  public:
   using regex_type = Regex;
   using char_type = typename Regex::char_type;
-  //using typename regex_state_transition<char_type>::pointer;
 
-  template <typename Iterator>
-  matching_list_transition(Iterator begin, Iterator end)
-    : initial_state(begin, end) {}
-  matching_list_transition(const std::vector<regex_type>& container)
-    : initial_state {container} {}
-  matching_list_transition(std::vector<regex_type>&& container)
-    : initial_state {std::move(container)} {}
+  matching_list_transition(const std::vector<regex_type>& c)
+    : initial_state {c} {}
+  matching_list_transition(std::vector<regex_type>&& c)
+    : initial_state {std::move(c)} {}
 
   regex_state update(const char_type&) override;
   regex_state initialize() override;
@@ -108,18 +104,13 @@ matching_list_transition<Regex>::initialize() {
       initial_state.end());
 }
 
-template <typename Regex>
-Regex matching_list(const std::vector<Regex>& container) {
-  return Regex(
-      std::make_unique<matching_list_transition<Regex>>(
-        container));
-}
+template <typename RegexContainer>
+typename RegexContainer::value_type
+matching_list(RegexContainer&& container) {
+  using regex_type = typename RegexContainer::value_type;
 
-template <typename Regex>
-Regex matching_list(std::vector<Regex>&& container) {
-  return Regex(
-      std::make_unique<matching_list_transition<Regex>>(
-        std::move(container)));
+  regex_factory<matching_list_transition<regex_type>> fac;
+  return fac.create(std::forward<RegexContainer>(container));
 }
 
 }//namespace detail

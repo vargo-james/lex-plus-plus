@@ -4,6 +4,7 @@
 #include "regex_state_transition.h"
 #include "regex_types.h"
 
+#include <memory>
 #include <utility>
 
 #include <iostream>
@@ -84,6 +85,22 @@ void simple_regex<Char>::update(const char_type& ch) {
 }
 
 using regex = simple_regex<char>;
+
+template <typename Transition>
+struct regex_factory {
+  using char_type = typename Transition::char_type;
+  using regex_type = simple_regex<char_type>;
+
+  template <typename ...Args>
+  regex_type create(Args&& ...args) const {
+    using std::make_unique;
+    using std::forward;
+
+    return 
+      regex_type(make_unique<Transition>(forward<Args>(args)...));
+  }
+};
+
 
 }//namespace token_iterator
 #endif// _simple_regex_h_
