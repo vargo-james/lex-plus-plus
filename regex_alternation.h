@@ -1,20 +1,19 @@
-#ifndef _regex_matching_list_h_
-#define _regex_matching_list_h_
+#ifndef _regex_alternation_h_
+#define _regex_alternation_h_
 
 #include "simple_regex.h"
 
 #include <algorithm>
 #include <list>
-#include <iterator>
-#include <memory>
 #include <vector>
+#include <utility>
 
 #include <iostream>
 namespace token_iterator {
 namespace detail {
 
 template <typename RegexIterator>
-regex_state matching_list_state(RegexIterator begin, 
+regex_state alternation_state(RegexIterator begin, 
     RegexIterator end) {
   std::cout << "AnyOf\n";
   auto state = regex_state::MISMATCH;
@@ -32,18 +31,18 @@ regex_state matching_list_state(RegexIterator begin,
 
 // This defines the transition function for the bracket combination.
 template <typename Regex>
-class matching_list_transition 
+class alternation_transition 
   : public regex_transition_cloner<
-             matching_list_transition<Regex>,
+             alternation_transition<Regex>,
              typename Regex::char_type
            > {
  public:
   using regex_type = Regex;
   using char_type = typename Regex::char_type;
 
-  matching_list_transition(const std::vector<regex_type>& c)
+  alternation_transition(const std::vector<regex_type>& c)
     : initial_state {c} {}
-  matching_list_transition(std::vector<regex_type>&& c)
+  alternation_transition(std::vector<regex_type>&& c)
     : initial_state {std::move(c)} {}
 
   regex_state update(const char_type&) override;
@@ -55,7 +54,7 @@ class matching_list_transition
 
 template <typename Regex>
 regex_state 
-matching_list_transition<Regex>::update(
+alternation_transition<Regex>::update(
     const char_type& ch) {
   std::cout << "AnyOfTransition\n";
   auto current_state = regex_state::UNDECIDED;
@@ -88,31 +87,31 @@ matching_list_transition<Regex>::update(
 
 template <typename Regex>
 regex_state
-matching_list_transition<Regex>::initialize() {
+alternation_transition<Regex>::initialize() {
   using std::for_each;
 
   regexes.clear();
 
-  std::for_each(initial_state.begin(), initial_state.end(),
+  for_each(initial_state.begin(), initial_state.end(),
       [this] (regex_type& r) {
         if (r.state() != regex_state::MISMATCH) {
           this->regexes.push_back(r);
         }
       });
 
-  return matching_list_state(initial_state.begin(), 
+  return alternation_state(initial_state.begin(), 
       initial_state.end());
 }
 
 template <typename RegexContainer>
 typename RegexContainer::value_type
-matching_list(RegexContainer&& container) {
+alternation(RegexContainer&& container) {
   using regex_type = typename RegexContainer::value_type;
 
-  regex_factory<matching_list_transition<regex_type>> fac;
+  regex_factory<alternation_transition<regex_type>> fac;
   return fac.create(std::forward<RegexContainer>(container));
 }
 
 }//namespace detail
 }//namespace token_iterator
-#endif// _regex_operations_h_
+#endif// _regex_alternation_h_

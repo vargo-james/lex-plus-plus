@@ -3,8 +3,8 @@
 
 #include "regex_atomic.h"
 #include "regex_bracket_expression.h"
-#include "regex_expression_types.h"
 #include "regex_reader_utilities.h"
+#include "regex_types.h"
 
 #include <iterator>
 #include <stdexcept>
@@ -139,7 +139,7 @@ extended_reg_exp(Iterator& begin, Iterator& end) {
   if (branches.size() == 1) {
     return move(branches.front());
   }
-  return matching_list(move(branches));
+  return alternation(move(branches));
 }
 }//namespace detail
 }//namespace token_iterator
