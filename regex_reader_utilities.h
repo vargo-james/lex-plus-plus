@@ -9,7 +9,6 @@
 #include <cctype>
 #include <cstddef>
 #include <limits>
-#include <stdexcept>
 #include <string>
 
 namespace token_iterator {
@@ -26,15 +25,19 @@ bool is_special(Char ch) {
   return std::find(specials.begin(), specials.end(), ch) != specials.end();
 }
 
+template <typename Char>
+regex_error invalid_close(const Char& close) {
+  std::basic_string<Char> message {"Invalid regex: '"};
+  message.push_back(close);
+  message.append("' not found");
+  return regex_error(message);
+}
+
 template <typename Iterator>
 void verify_closing(Iterator& begin, Iterator& end,
     char_type_t<Iterator> close) {
-  using char_type = char_type_t<Iterator>;
   if (begin == end || *begin != close) {
-    std::basic_string<char_type> message {"Invalid regex: '"};
-    message.push_back(close);
-    message.append("' not found");
-    throw std::runtime_error(message);
+    throw invalid_close(close); // throws an exception.
   }
   ++begin;
 }
@@ -44,7 +47,7 @@ size_t read_number(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
   std::basic_string<char_type> number;
   if (begin == end) {
-    throw std::runtime_error("Invalid regex: unable to read number");
+    throw regex_error("Invalid regex: unable to read number");
   }
   while (begin != end && std::isdigit(*begin)) {
     number.push_back(*begin++);
@@ -59,7 +62,7 @@ replication read_dupl_range(Iterator& begin, Iterator& end) {
 
   auto lower = read_number(begin, end);
   if (begin == end) {
-    throw std::runtime_error("Invalid regex: unable to read range");
+    throw regex_error("Invalid regex: unable to read range");
   }
 
   if (*begin == char_type('}')) {
@@ -109,11 +112,11 @@ quoted_char(Iterator& begin, Iterator& end) {
 
   assert(*begin++ == char_type('\\'));
   if (begin == end) {
-    throw std::runtime_error("Invalid regex: unable to read quoted char");
+    throw regex_error("Invalid regex: unable to read quoted char");
   }
   auto ch = *begin++;
   if (!is_special(ch)) {
-    throw std::runtime_error("Invalid regex: invalid special char");
+    throw regex_error("Invalid regex: invalid special char");
   }
   return ch;
 }
@@ -121,10 +124,9 @@ quoted_char(Iterator& begin, Iterator& end) {
 template <typename Iterator>
 char_type_t<Iterator>
 ordinary_char(Iterator& begin, Iterator& end) {
-  using char_type = char_type_t<Iterator>;
   auto ch = *begin;
   if (is_special(ch)) {
-    return char_type('\0');
+    return ch;
   }
   ++begin;
   return ch;

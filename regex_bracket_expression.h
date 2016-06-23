@@ -10,9 +10,15 @@
 #include <vector>
 #include <utility>
 
-#include <iostream>
 namespace token_iterator {
 namespace detail {
+
+// This is like assert, but it throws an exception.
+inline void throw_if_not(bool p) {
+  if (!p) {
+    throw regex_error("Invalid regex: bad bracket");
+  }
+}
 
 // This combines the element predicates of a matching list.
 template <typename Char>
@@ -96,19 +102,19 @@ predicate_type_t<char_type_t<Iterator>>
 bracket_class(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
 
-  assert(*begin == char_type('['));
+  throw_if_not(*begin == char_type('['));
   ++begin;
-  assert(begin != end && *begin == char_type(':'));
+  throw_if_not(begin != end && *begin == char_type(':'));
   ++begin;
   std::basic_string<char_type> class_name;
   while (*begin != char_type(':')) {
-    assert(begin != end);
+    throw_if_not(begin != end);
     class_name.push_back(*begin);
     ++begin;
   }
-  assert(begin != end && *begin == char_type(':'));
+  throw_if_not(begin != end && *begin == char_type(':'));
   ++begin;
-  assert(begin != end && *begin == char_type(']'));
+  throw_if_not(begin != end && *begin == char_type(']'));
   ++begin;
   return built_in_predicate(class_name);
 }
@@ -125,10 +131,10 @@ add_predicate(Iterator& begin, Iterator& end,
   }
   auto start = *begin++;
 
-  assert(begin != end);
+  throw_if_not(begin != end);
   if (*begin == char_type('-')) {
     ++begin;
-    assert(begin != end);
+    throw_if_not(begin != end);
     if (*begin == char_type(']')) {
       preds.push_back(singleton_predicate(start));
       preds.push_back(singleton_predicate(char_type('-')));
@@ -150,23 +156,22 @@ element_predicates(Iterator& begin, Iterator end) {
   using predicate_type = predicate_type_t<char_type>;
   using std::move;
 
-  std::vector<predicate_type> elements;
-  //predicate_type pred;
-  assert(begin != end);
+  throw_if_not(begin != end);
 
+  std::vector<predicate_type> elements;
   auto ch = *begin;
   if (ch == char_type(']') || ch == char_type('-')) {
     auto pred = singleton_predicate(ch);
     elements.emplace_back(move(pred));
     ++begin;
-    assert(begin != end);
+    throw_if_not(begin != end);
   }
 
   while (*begin != char_type(']')) {
-    assert(begin != end);
+    throw_if_not(begin != end);
     add_predicate(begin, end, elements);
   }
-  assert(*begin == char_type(']'));
+  throw_if_not(*begin == char_type(']'));
   ++begin;
   return elements;
 }
@@ -179,7 +184,7 @@ bracket_expression(Iterator& begin, Iterator& end) {
 
   assert(*begin == char_type('['));
   ++begin;
-  assert(begin != end);
+  throw_if_not(begin != end);
 
   bool matching {true};
   if (*begin == char_type('^')) {

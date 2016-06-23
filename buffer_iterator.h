@@ -6,39 +6,46 @@
 
 #include <iterator>
 #include <limits>
-
 namespace token_iterator {
 template <typename InputBuffer>
-class BufferIterator {
+class buffer_iterator {
  public:
-  using size_type = typename InputBuffer::size_type;
-  using difference_type = typename InputBuffer::difference_type;
-  using value_type = typename InputBuffer::value_type;
+  using buffer_type = InputBuffer;
+  using size_type = typename buffer_type::size_type;
+  using difference_type = typename buffer_type::difference_type;
+  using value_type = typename buffer_type::value_type;
   using pointer = value_type*;
   using reference = value_type&;
   using iterator_category = std::forward_iterator_tag;
 
-  BufferIterator(InputBuffer* buffer, size_type i);
-  BufferIterator(InputBuffer* buffer);
-  BufferIterator(const BufferIterator&) = default;
-  BufferIterator& operator= (const BufferIterator&) = default;
-  BufferIterator(BufferIterator&&) = default;
-  BufferIterator& operator=(BufferIterator&&) = default;
+  buffer_iterator(buffer_type* buffer, size_type i);
+  buffer_iterator(buffer_type* buffer);
+
+  buffer_iterator(const buffer_iterator&) = default;
+  buffer_iterator& operator= (const buffer_iterator&) = default;
+  buffer_iterator(buffer_iterator&&) = default;
+  buffer_iterator& operator=(buffer_iterator&&) = default;
 
   size_type index() const {return index_;}
 
   reference operator*();
   pointer operator->();
 
-  bool operator==(BufferIterator other);
-  bool operator!=(BufferIterator other) {return !(*this == other);}
+  bool operator==(buffer_iterator other);
+  bool operator!=(buffer_iterator other) {return !(*this == other);}
 
-  BufferIterator& operator++();
-  BufferIterator operator++(int);
+  buffer_iterator& operator++();
+  buffer_iterator operator++(int);
 
   void update_buffer();
+
+  bool is_updated() const {
+    return index_ < buffer_ptr->size() ||
+           index_ == npos(); 
+  }
+
  private:
-  InputBuffer* input_buffer;
+  buffer_type* buffer_ptr;
   size_type index_;
 
   static size_type npos() {
@@ -47,60 +54,67 @@ class BufferIterator {
 };
 
 template <typename InputBuffer>
-BufferIterator<InputBuffer>::BufferIterator(InputBuffer* buffer, 
+buffer_iterator<InputBuffer>::buffer_iterator(buffer_type* buffer, 
     size_type i)
-  : input_buffer {buffer},
+  : buffer_ptr {buffer},
     index_ {i} {}
 
 template <typename InputBuffer>
-BufferIterator<InputBuffer>::BufferIterator(InputBuffer* buffer)
-  : BufferIterator(buffer, npos()) {}
+buffer_iterator<InputBuffer>::buffer_iterator(buffer_type* buffer)
+  : buffer_iterator(buffer, npos()) {}
 
 template <typename InputBuffer>
-typename BufferIterator<InputBuffer>::reference 
-BufferIterator<InputBuffer>::operator*() {
+typename buffer_iterator<InputBuffer>::reference 
+buffer_iterator<InputBuffer>::operator*() {
   update_buffer();
-  return input_buffer->operator[](index_);
+  return buffer_ptr->operator[](index_);
 }
 
 template <typename InputBuffer>
-typename BufferIterator<InputBuffer>::pointer
-BufferIterator<InputBuffer>::operator->() {
+typename buffer_iterator<InputBuffer>::pointer
+buffer_iterator<InputBuffer>::operator->() {
   update_buffer();
-  return &(input_buffer->operator[](index_));
+  return &(buffer_ptr->operator[](index_));
 }
 
 template <typename InputBuffer>
-bool BufferIterator<InputBuffer>::operator==(BufferIterator other) {
-  update_buffer();
-  other.update_buffer();
-  if (input_buffer == other.input_buffer && index_ == other.index_) {
-    return true;
+bool buffer_iterator<InputBuffer>::operator==(buffer_iterator other) {
+  if (buffer_ptr != other.buffer_ptr) return false;
+
+  if (index_ == other.index_) return true;
+
+  if (index_ > other.index_) {
+    return other == *this;
   }
-  return false;
+
+  if (is_updated()) return false;
+  update_buffer();
+  return *this == other;
 }
 
 template <typename InputBuffer>
-BufferIterator<InputBuffer>& BufferIterator<InputBuffer>::operator++() {
+buffer_iterator<InputBuffer>& 
+buffer_iterator<InputBuffer>::operator++() {
   if (index_ == npos()) return *this;
   ++index_;
-  update_buffer();
   return *this;
 }
 
 template <typename InputBuffer>
-BufferIterator<InputBuffer> BufferIterator<InputBuffer>::operator++(int) {
+buffer_iterator<InputBuffer> 
+buffer_iterator<InputBuffer>::operator++(int) {
   auto ind = index_;
   this->operator++();
-  return BufferIterator(input_buffer, ind);
+  return buffer_iterator(buffer_ptr, ind);
 }
 
 
 template <typename InputBuffer>
-void  BufferIterator<InputBuffer>::update_buffer() {
+void  buffer_iterator<InputBuffer>::update_buffer() {
+  
   if (index_ == npos()) return;
-  while (index_ >= input_buffer->size()) {
-    if (!input_buffer->get()) {
+  while (index_ >= buffer_ptr->size()) {
+    if (!buffer_ptr->get()) {
       index_ = npos();
       return;
     }

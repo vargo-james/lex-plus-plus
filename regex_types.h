@@ -4,10 +4,11 @@
 #include <cstddef>
 #include <functional>
 #include <iterator>
+#include <stdexcept>
 
 namespace token_iterator {
 
-enum class regex_state {MATCH, MISMATCH, UNDECIDED};
+enum class regex_state {MATCH, FINAL_MATCH, MISMATCH, UNDECIDED};
 
 struct replication {
   replication(size_t l, size_t u): lower {l}, upper {u} {}
@@ -21,6 +22,10 @@ using char_type_t =
 
 template <typename Char>
 using predicate_type_t = std::function<bool(const Char&)>;
+
+struct regex_error : public std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
 
 }//namespace token_iterator
 #endif// _regex_types_h_

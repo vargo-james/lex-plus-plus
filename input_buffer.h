@@ -9,17 +9,18 @@
 namespace token_iterator {
 template <typename InputIter, typename Storage = std::deque<
     typename std::iterator_traits<InputIter>::value_type>>
-class InputBuffer {
+class input_buffer {
  public:
   using value_type = typename std::iterator_traits<InputIter>::value_type;
   using reference = value_type&;
   using buffer_type = Storage;
   using size_type = typename buffer_type::size_type;
   using difference_type = typename buffer_type::difference_type;
-  using iterator = BufferIterator<InputBuffer>;
+  using iterator = buffer_iterator<input_buffer>;
  
-  InputBuffer(InputIter b, InputIter e) 
-    : current {b}, 
+  input_buffer(InputIter b, InputIter e) 
+    : lag {false},
+      current {b}, 
       end_ {e} {}
 
   size_type size() const {return buffer.size();}
@@ -28,6 +29,7 @@ class InputBuffer {
   iterator begin();
   iterator end();
 
+  void set_lag(size_type i) {lag = i;}
   bool get();
 
   value_type operator[](size_type i) const {return buffer[i];}
@@ -35,33 +37,36 @@ class InputBuffer {
 
   iterator flush(iterator it);
  private:
+  bool lag;
   InputIter current;
   InputIter end_;
   buffer_type buffer;
 };
 
 template <typename InputIter, typename Storage>
-typename InputBuffer<InputIter, Storage>::iterator
-InputBuffer<InputIter, Storage>::begin() {
+typename input_buffer<InputIter, Storage>::iterator
+input_buffer<InputIter, Storage>::begin() {
   return iterator(this, 0);
 }
 
 template <typename InputIter, typename Storage>
-typename InputBuffer<InputIter, Storage>::iterator
-InputBuffer<InputIter, Storage>::end() {
+typename input_buffer<InputIter, Storage>::iterator
+input_buffer<InputIter, Storage>::end() {
   return iterator(this);
 }
 
 template <typename InputIter, typename Storage>
-bool InputBuffer<InputIter, Storage>::get() {
+bool input_buffer<InputIter, Storage>::get() {
+  if (lag) ++current;
   if (current == end_) return false;
-  buffer.push_back(*current++);
+  buffer.push_back(*current);
+  lag = true;
   return true;
 }
 
 template <typename InputIter, typename Storage>
-typename InputBuffer<InputIter, Storage>::iterator
-InputBuffer<InputIter, Storage>::flush(iterator it) {
+typename input_buffer<InputIter, Storage>::iterator
+input_buffer<InputIter, Storage>::flush(iterator it) {
   auto index = it.index();
   it.update_buffer();
   if (it == end()) {

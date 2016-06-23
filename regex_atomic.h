@@ -3,10 +3,8 @@
 
 #include "simple_regex.h"
 
-#include <memory>
 #include <vector>
 
-#include <iostream>
 namespace token_iterator {
 
 // The Regex transition object corresponding to a single char.
@@ -19,8 +17,7 @@ struct singleton_regex_transition
   using typename regex_state_transition<Char>::char_type;
 
   singleton_regex_transition(const char_type& t)
-    : match {t},
-      done {false} {}
+    : match {t} {}
 
   // This only matches when it was previously UNDECIDED and the 
   // character it receives (t), is a match.
@@ -28,21 +25,18 @@ struct singleton_regex_transition
   regex_state initialize() override;
  private:
   char_type match;
-  bool done;
 };
 
 template <typename Char>
 regex_state singleton_regex_transition<Char>::update(const char_type& t) {
-  if (!done && t == match) {
-    done = true;
-    return regex_state::MATCH;
+  if (t == match) {
+    return regex_state::FINAL_MATCH;
   }
   return regex_state::MISMATCH;
 }
 
 template <typename Char>
 regex_state singleton_regex_transition<Char>::initialize() {
-  done = false;
   return regex_state::UNDECIDED;
 }
 
@@ -67,30 +61,25 @@ class predicate_regex_transition
   using predicate_type = predicate_type_t<Char>;
 
   predicate_regex_transition(const predicate_type& p) 
-    : pred {p},
-      done {false} {}
+    : pred {p} {}
 
   regex_state update(const Char& t) override;
   regex_state initialize() override;
  private:
   predicate_type pred;
-  bool done;
 };
 
 template <typename Char>
 regex_state 
 predicate_regex_transition<Char>::update(const Char& t) {
-  std::cout << "Computing update\n";
-  if (!done && pred(t)) {
-    done = true;
-    return regex_state::MATCH;
+  if (pred(t)) {
+    return regex_state::FINAL_MATCH;
   }
   return regex_state::MISMATCH;
 }
 
 template <typename Char>
 regex_state predicate_regex_transition<Char>::initialize() {
-  done = false;
   return regex_state::UNDECIDED;
 }
 
@@ -136,9 +125,9 @@ class string_regex_transition
 template <typename Iterator> 
 regex_state 
 string_regex_transition<Iterator>::update(const char_type& t) {
-  if (current != string.size() && 
-      t == string[current]) {
-    if (++current == string.size()) return regex_state::MATCH;
+  if (t == string[current]) {
+    ++current;
+    if (current == string.size()) return regex_state::FINAL_MATCH;
     return regex_state::UNDECIDED;
   }
   return regex_state::MISMATCH;
@@ -147,7 +136,7 @@ string_regex_transition<Iterator>::update(const char_type& t) {
 template <typename Iterator>
 regex_state string_regex_transition<Iterator>::initialize() {
   current = 0;
-  return string.empty()? regex_state::MATCH : regex_state::UNDECIDED;
+  return string.empty()? regex_state::FINAL_MATCH : regex_state::UNDECIDED;
 }
 
 template <typename Iterator>

@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include <iostream>
 namespace token_iterator {
 
 //DEBUG
@@ -15,6 +14,8 @@ char rep(regex_state s) {
   switch (s) {
   case regex_state::MATCH:
     return 'M';
+  case regex_state::FINAL_MATCH:
+    return 'F';
   case regex_state::MISMATCH:
     return 'X';
   case regex_state::UNDECIDED:
@@ -77,10 +78,14 @@ simple_regex<Char>& simple_regex<Char>::operator=(simple_regex&& r) {
 template <typename Char>
 void simple_regex<Char>::update(const char_type& ch) {
   if (state_ == regex_state::MISMATCH) {
+    return; 
+  }
+  if (state_ == regex_state::FINAL_MATCH) {
+    state_ = regex_state::MISMATCH;
     return;
   }
+
   state_ = transition_->update(ch);
-  std::cout << rep(state_) << '\n';
   return;
 }
 

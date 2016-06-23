@@ -1,14 +1,13 @@
 #ifndef _regex_concatenation_h_
 #define _regex_concatenation_h_
 
+#include "simple_regex.h"
+
 #include <cstddef>
 #include <list>
 #include <vector>
 #include <utility>
 
-#include "simple_regex.h"
-
-#include <iostream>
 namespace token_iterator {
 // We need to handle concatenation of a list of regexes.
 // We need to keep a list of all the individual regexes in their
@@ -37,6 +36,8 @@ class concatenate_transition
  private:
   std::vector<regex_type> initial_state;
   std::list<current_progress> current;
+
+  void insert_next(typename std::list<current_progress>::const_iterator it);
 };
 
 // To understand this implementation consider the concatenation of
@@ -62,7 +63,9 @@ class concatenate_transition
 template <typename Regex>
 regex_state 
 concatenate_transition<Regex>::update(const char_type& ch) {
-  auto return_state = regex_state::UNDECIDED;
+  bool undecided {false};
+  bool final_match {false};
+  bool match {false};
 
   for (auto it = current.begin(); it != current.end();) {
     it->first.update(ch);
@@ -74,25 +77,48 @@ concatenate_transition<Regex>::update(const char_type& ch) {
     // If not, we have matched the whole concatenation.
     case regex_state::MATCH:
       if (regex_index == initial_state.size()) {
-        std::cout << "END\n";
-        return_state = regex_state::MATCH;
+        match = true;
       } else {
-        std::cout << "PUSHING BACK " << regex_index << "\n";
-        current.insert(it, std::make_pair(initial_state[regex_index], 
-              regex_index + 1));
+        undecided = true;
+        insert_next(it);
       }
+      ++it;
+      break;
+    case regex_state::FINAL_MATCH:
+      if (regex_index == initial_state.size()) {
+        final_match = true;
+      } else {
+        undecided = true;
+        insert_next(it);
+      }
+      it = current.erase(it);
+      break;
+    case regex_state::UNDECIDED:
+      undecided = true;
       ++it;
       break;
     // A MISMATCH state is detached.
     case regex_state::MISMATCH:
       it = current.erase(it);
       break;
-    default:
-      ++it;
-      break;
     }
   }
-  return current.empty()? regex_state::MISMATCH : return_state;
+  if (match) return regex_state::MATCH;
+  if (final_match && undecided) return regex_state::MATCH;
+  if (final_match) {
+    return regex_state::FINAL_MATCH;
+  }
+  if (undecided) return regex_state::UNDECIDED;
+  return regex_state::MISMATCH;
+}
+
+template <typename Regex>
+void concatenate_transition<Regex>::insert_next(
+    typename std::list<current_progress>::const_iterator it) {
+  using std::make_pair;
+  auto regex_index = it->second;
+  current.insert(it, 
+      make_pair(initial_state[regex_index], regex_index + 1));
 }
 
 // Consider the concatenation of "A?" with "B?".
@@ -107,14 +133,24 @@ regex_state concatenate_transition<Regex>::initialize() {
     return regex_state::MATCH;
   }
 
-  regex_state state {regex_state::UNDECIDED};
+  auto r_state = regex_state::UNDECIDED;
+
   for (index_type index = 0; index < initial_state.size(); ++index) {
-    current.push_back(std::make_pair(initial_state[index], index + 1));
-    state = initial_state[index].state();
-    if (state != regex_state::MATCH) break;
+    r_state = initial_state[index].state();
+
+    if (r_state == regex_state::MISMATCH) {
+      current.clear();
+      return regex_state::MISMATCH;
+    } else if (r_state != regex_state::FINAL_MATCH) {
+      current.push_back(std::make_pair(initial_state[index], index + 1));
+    }
+    if (r_state == regex_state::UNDECIDED) break;
   }
-  if (state == regex_state::MISMATCH) current.clear();
-  return state;
+
+  if (r_state == regex_state::FINAL_MATCH) {
+    current.clear();
+  }
+  return r_state;
 }
 
 // This function creates the concatenation object.

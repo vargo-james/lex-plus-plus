@@ -7,7 +7,6 @@
 #include <list>
 #include <utility>
 
-#include <iostream>
 namespace token_iterator {
 namespace detail {
 
@@ -48,6 +47,8 @@ regex_state regex_replicator_transition<Regex>::initialize() {
   auto r_state = regex.state();
 
   switch (r_state) {
+  case regex_state::FINAL_MATCH:
+    return regex_state::FINAL_MATCH;
   case regex_state::UNDECIDED:
     current.push_back(std::make_pair(regex, 1));
     break;
@@ -56,7 +57,7 @@ regex_state regex_replicator_transition<Regex>::initialize() {
     lower = 0;
     break;
   case regex_state::MISMATCH:
-    break;
+    return regex_state::MISMATCH;
   }
   return lower? r_state : regex_state::MATCH;
 }
@@ -64,7 +65,9 @@ regex_state regex_replicator_transition<Regex>::initialize() {
 template <typename Regex>
 regex_state 
 regex_replicator_transition<Regex>::update(const char_type& ch) {
-  auto return_state = regex_state::UNDECIDED;
+  bool match {false};
+  bool final_match {false};
+  bool undecided {false};
 
   for (auto it = current.begin(); it != current.end();) {
     it->first.update(ch);
@@ -76,10 +79,26 @@ regex_replicator_transition<Regex>::update(const char_type& ch) {
     // If not, we have matched the whole concatenation.
     case regex_state::MATCH:
       if (lower <= count && count <= upper) {
-        return_state = regex_state::MATCH;
-      } 
+        match = true;
+      } else {
+        undecided = true;
+      }
       if (count != upper) {
         current.insert(it, std::make_pair(regex, count + 1));
+      }
+      ++it;
+      break;
+    case regex_state::FINAL_MATCH:
+      if (lower <= count && count < upper) {
+        match = true;
+      } else if (lower <= count && count == upper) {
+        final_match = true;
+      } else if (count < lower) {
+        undecided = true;
+      }
+      if (count != upper) {
+        (it->first).initialize();
+        ++(it->second);
       }
       ++it;
       break;
@@ -88,11 +107,16 @@ regex_replicator_transition<Regex>::update(const char_type& ch) {
       it = current.erase(it);
       break;
     default:
+      undecided = true;
       ++it;
       break;
     }
   }
-  return current.empty()? regex_state::MISMATCH : return_state;
+  if (match) return regex_state::MATCH;
+  if (final_match && undecided) return regex_state::MATCH;
+  if (final_match) return regex_state::FINAL_MATCH;
+  if (undecided) return regex_state::UNDECIDED;
+  return regex_state::MISMATCH;
 }
 
 template <typename Regex>

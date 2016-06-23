@@ -8,33 +8,38 @@
 #include <vector>
 #include <utility>
 
-#include <iostream>
 namespace token_iterator {
 namespace detail {
 
 template <typename RegexIterator>
 regex_state alternation_state(RegexIterator begin, 
     RegexIterator end) {
-  std::cout << "AnyOf\n";
   auto state = regex_state::MISMATCH;
 
+  bool undecided;
   for (auto it = begin; it != end; ++it) {
     if (it->state() == regex_state::MATCH) {
       return regex_state::MATCH;
     }
+    if (it->state() == regex_state::FINAL_MATCH) {
+      state = regex_state::FINAL_MATCH;
+    }
     if (it->state() == regex_state::UNDECIDED) {
-      state = regex_state::UNDECIDED;
+      undecided = true;
     }
   }
-  return state;
+  
+  if (undecided && state == regex_state::FINAL_MATCH) {
+    return regex_state::MATCH;
+  }
+  return undecided? regex_state::UNDECIDED : state;
 }
 
 // This defines the transition function for the bracket combination.
 template <typename Regex>
 class alternation_transition 
   : public regex_transition_cloner<
-             alternation_transition<Regex>,
-             typename Regex::char_type
+             alternation_transition<Regex>, typename Regex::char_type
            > {
  public:
   using regex_type = Regex;
@@ -53,21 +58,30 @@ class alternation_transition
 };
 
 template <typename Regex>
-regex_state 
-alternation_transition<Regex>::update(
-    const char_type& ch) {
-  std::cout << "AnyOfTransition\n";
-  auto current_state = regex_state::UNDECIDED;
+regex_state alternation_transition<Regex>::update(const char_type& ch) {
+  // These flags track what we have seen after traversing the list.
+  bool undecided {false};
+  bool final_match {false};
+  bool match {false};
 
   for (auto it = regexes.begin(); it != regexes.end();) {
-    std::cout << "LIST UPDATE: ";
     it->update(ch);
     auto state = it->state();
     switch (state) {
     // If one match is found, the regex is a match. But we still need
     // to update the rest of the regexes.
     case regex_state::MATCH:
-      current_state = regex_state::MATCH;
+      match = true;
+      ++it;
+      break;
+    // If a FINAL_MATCH is found this regex will not need to be looked
+    // at again.
+    case regex_state::FINAL_MATCH:
+      final_match = true;
+      it = regexes.erase(it);
+      break;
+    case regex_state::UNDECIDED:
+      undecided = true;
       ++it;
       break;
     // If a mismatch is found, that regex will not need to be 
@@ -80,14 +94,19 @@ alternation_transition<Regex>::update(
       break;
     }
   }
-  // We only have a mismatch when every regex in the list was a mismatch.
-  // Thus they would have all been detached from the list leaving it empty.
-  return regexes.empty()? regex_state::MISMATCH : current_state;
+  if (match) {
+    return regex_state::MATCH;
+  } else if (final_match && undecided) {
+    return regex_state::MATCH;
+  } else if (final_match) {
+    return regex_state::FINAL_MATCH;
+  } else {
+    return undecided? regex_state::UNDECIDED : regex_state::MISMATCH;
+  }
 }
 
 template <typename Regex>
-regex_state
-alternation_transition<Regex>::initialize() {
+regex_state alternation_transition<Regex>::initialize() {
   using std::for_each;
 
   regexes.clear();
@@ -99,8 +118,7 @@ alternation_transition<Regex>::initialize() {
         }
       });
 
-  return alternation_state(initial_state.begin(), 
-      initial_state.end());
+  return alternation_state(initial_state.begin(), initial_state.end());
 }
 
 template <typename RegexContainer>
