@@ -7,7 +7,7 @@
 
 #include <cstddef>
 #include <iterator>
-#include <memory>
+#include <string>
 
 namespace token_iterator {
 
@@ -19,13 +19,14 @@ class iterator_adapter {
   using difference_type = std::ptrdiff_t;
   using pointer = value_type*;
   using reference = value_type&;
+
   using char_type = std::iterator_traits<InputIter>::value_type;
-  using input_buffer_ptr = std::shared_ptr<input_buffer>;
-  using translator_ptr = translator<char_type, value_type>*;
+  using string_type = std::basic_string<char_type>;
+  using constructor = std::function<void(const string_type&)>;
+  using lexer_type = lexer<InputIter,constructor>;
 
   iterator_adapter(InputIter begin, InputIter end, 
       const translator& tab); 
-
 
   iterator_adapter(const iterator_adapter&) = default;
   iterator_adapter& operator=(const iterator_adapter&) = default;
@@ -42,8 +43,7 @@ class iterator_adapter {
   iterator_adapter operator++(int);
 
  private:
-  input_buffer_ptr buffer;
-  translator_ptr patterns;
+  lexer_type lex;
   value_type current;
 
   void get();
