@@ -57,7 +57,9 @@ input_buffer<InputIter, Storage>::end() {
 
 template <typename InputIter, typename Storage>
 bool input_buffer<InputIter, Storage>::get() {
-  if (lag) ++current;
+  if (lag) {
+    ++current;
+  }
   if (current == end_) return false;
   buffer.push_back(*current);
   lag = true;
@@ -68,10 +70,8 @@ template <typename InputIter, typename Storage>
 typename input_buffer<InputIter, Storage>::iterator
 input_buffer<InputIter, Storage>::flush(iterator it) {
   auto index = it.index();
-  it.update_buffer();
-  if (it == end()) {
-    buffer.clear();
-    return begin();
+  if (index > size()) {
+    it.update_buffer();
   }
   buffer.erase(buffer.begin(), buffer.begin() + index);
   return begin();

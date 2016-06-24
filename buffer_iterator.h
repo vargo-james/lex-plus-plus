@@ -111,7 +111,6 @@ buffer_iterator<InputBuffer>::operator++(int) {
 
 template <typename InputBuffer>
 void  buffer_iterator<InputBuffer>::update_buffer() {
-  
   if (index_ == npos()) return;
   while (index_ >= buffer_ptr->size()) {
     if (!buffer_ptr->get()) {
