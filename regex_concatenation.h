@@ -8,7 +8,7 @@
 #include <vector>
 #include <utility>
 
-namespace token_iterator {
+namespace lex {
 // We need to handle concatenation of a list of regexes.
 // We need to keep a list of all the individual regexes in their
 // initial states.
@@ -165,5 +165,5 @@ concatenate(RegexContainer&& container) {
 }
 
 
-}//namespace token_iterator
+}//namespace lex
 #endif// _regex_concatenation_h_

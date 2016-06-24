@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-namespace token_iterator {
+namespace lex {
 // We need a function that takes a pair of CharIterators and returns
 // a simple_regex<Char> object.
 namespace detail {
@@ -150,5 +150,5 @@ extended_reg_exp(Iterator& begin, Iterator& end) {
   return alternation(move(branches));
 }
 }//namespace detail
-}//namespace token_iterator
+}//namespace lex
 #endif// _string_regex_atomic_h_

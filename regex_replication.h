@@ -7,7 +7,7 @@
 #include <list>
 #include <utility>
 
-namespace token_iterator {
+namespace lex {
 namespace detail {
 
 template <typename Regex>
@@ -125,5 +125,5 @@ Regex replicate(Regex&& regex, replication rep) {
   return fac.create(std::forward<Regex>(regex), rep);
 }
 }//namespace detail
-}//namespace token_iterator
+}//namespace lex
 #endif// _regex_replication_h_

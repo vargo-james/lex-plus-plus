@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace token_iterator {
+namespace lex {
 
 // The Regex transition object corresponding to a single char.
 template <typename Char>
@@ -153,5 +153,5 @@ string_regex(const String& str) {
   return string_regex(str.begin(), str.end());
 }
 
-}//namespace token_iterator
+}//namespace lex
 #endif// _regex_atomic_h_

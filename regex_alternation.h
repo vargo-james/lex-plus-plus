@@ -8,7 +8,7 @@
 #include <vector>
 #include <utility>
 
-namespace token_iterator {
+namespace lex {
 namespace detail {
 
 template <typename RegexIterator>
@@ -131,5 +131,5 @@ alternation(RegexContainer&& container) {
 }
 
 }//namespace detail
-}//namespace token_iterator
+}//namespace lex
 #endif// _regex_alternation_h_

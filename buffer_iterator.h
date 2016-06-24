@@ -6,7 +6,7 @@
 
 #include <iterator>
 #include <limits>
-namespace token_iterator {
+namespace lex {
 template <typename InputBuffer>
 class buffer_iterator {
  public:
@@ -120,5 +120,5 @@ void  buffer_iterator<InputBuffer>::update_buffer() {
     }
   }
 }
-}//namespace token_iterator
+}//namespace lex
 #endif// _buffer_iterator_h_

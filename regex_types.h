@@ -6,7 +6,7 @@
 #include <iterator>
 #include <stdexcept>
 
-namespace token_iterator {
+namespace lex {
 
 enum class regex_state {MATCH, FINAL_MATCH, MISMATCH, UNDECIDED};
 
@@ -27,5 +27,5 @@ struct regex_error : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };
 
-}//namespace token_iterator
+}//namespace lex
 #endif// _regex_types_h_

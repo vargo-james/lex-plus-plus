@@ -9,7 +9,7 @@
 #include <iterator>
 #include <string>
 
-namespace token_iterator {
+namespace lex {
 
 template <typename InputIter, typename T>
 class iterator_adapter {
@@ -43,8 +43,15 @@ class iterator_adapter {
   iterator_adapter operator++(int);
 
  private:
+  bool lag;
   lexer_type lex;
   value_type current;
+
+  /* For the constructor, we need
+  void adapt_lexer_functions(LIST_OF_Regex_Constructor_PAIRS);
+  THESE SHOULD MAKE A translator object and store it in this class.
+  Then the lexer can use that to do its getting.
+  */
 
   void get();
 };
@@ -52,7 +59,8 @@ class iterator_adapter {
 template <typename InputIter, typename T>
 iterator_adapter<InputIter,T>::iterator_adapter(
     InputIter begin, InputIter end, const translator& tab) 
-  : buffer {std::make_shared<input_buffer>(begin, end)},
+  : lag {false},
+    buffer {std::make_shared<input_buffer>(begin, end)},
     patterns {&tab} {
   get();
 }
@@ -113,5 +121,5 @@ void iterator_adapter<InputIter,T>::get() {
 
 
 
-}//namespace token_iterator
+}//namespace lex
 #endif// _iterator_adapter_h_

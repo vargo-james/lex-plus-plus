@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace token_iterator {
+namespace lex {
 
 template <typename Char>
 class regex_state_transition {
@@ -38,5 +38,5 @@ template <typename Char>
 using state_transition_ptr = 
   std::unique_ptr<regex_state_transition<Char>>;
 
-}//namespace token_iterator
+}//namespace lex
 #endif// _regex_state_transition_h_

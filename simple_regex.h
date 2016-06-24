@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-namespace token_iterator {
+namespace lex {
 
 //DEBUG
 char rep(regex_state s) {
@@ -107,5 +107,5 @@ struct regex_factory {
 };
 
 
-}//namespace token_iterator
+}//namespace lex
 #endif// _simple_regex_h_

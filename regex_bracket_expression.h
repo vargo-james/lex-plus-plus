@@ -10,7 +10,7 @@
 #include <vector>
 #include <utility>
 
-namespace token_iterator {
+namespace lex {
 namespace detail {
 
 // This is like assert, but it throws an exception.
@@ -201,6 +201,6 @@ bracket_expression(Iterator& begin, Iterator& end) {
 }
 
 }//namespace detail
-}//namespace token_iterator
+}//namespace lex
 
 #endif// _regex_bracket_expression_h_

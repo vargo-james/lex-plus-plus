@@ -11,7 +11,7 @@
 #include <limits>
 #include <string>
 
-namespace token_iterator {
+namespace lex {
 namespace detail {
 // Anchors are not supported and so are not considered special.
 template <typename Char>
@@ -133,5 +133,5 @@ ordinary_char(Iterator& begin, Iterator& end) {
 }
 
 }//namespace detail
-}//namespace token_iterator
+}//namespace lex
 #endif// _regex_reader_utilities_h_

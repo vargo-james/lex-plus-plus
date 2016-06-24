@@ -6,7 +6,7 @@
 #include <iterator>
 #include <deque>
 
-namespace token_iterator {
+namespace lex {
 template <typename InputIter, typename Storage = std::deque<
     typename std::iterator_traits<InputIter>::value_type>>
 class input_buffer {
@@ -77,5 +77,5 @@ input_buffer<InputIter, Storage>::flush(iterator it) {
   return begin();
 }
 
-}//namespace token_iterator
+}//namespace lex
 #endif// _input_buffer_h_ 
