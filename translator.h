@@ -1,7 +1,7 @@
 #ifndef _translator_h_
 #define _translator_h_
 
-#include "regex_expression.h"
+#include "regex_factory.h"
 #include "simple_regex.h"
 
 #include <functional>
@@ -51,7 +51,6 @@ template <typename L>
 template <typename Iterator>
 translator<L>::translator(Iterator begin, Iterator end) {
   using std::make_pair;
-
   for (auto it = begin; it != end; ++it) {
     table.push_back(make_pair(create_regex(it->first), it->second));
   }

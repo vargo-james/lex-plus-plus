@@ -1,4 +1,4 @@
-#ifndef _regex_reader_utilities_h_
+/*#ifndef _regex_reader_utilities_h_
 #define _regex_reader_utilities_h_
 
 #include "regex_types.h"
@@ -135,3 +135,4 @@ ordinary_char(Iterator& begin, Iterator& end) {
 }//namespace detail
 }//namespace lex
 #endif// _regex_reader_utilities_h_
+*/

@@ -20,8 +20,7 @@ class lexer {
   using string_type = std::basic_string<char_type>;
   using function_type = std::function<void(const string_type&)>;
 
-  lexer(InputIter begin, InputIter end, 
-      translator<lexer>* translator_ptr) 
+  lexer(InputIter begin, InputIter end, translator<lexer>* translator_ptr) 
     : buffer_p {std::make_unique<buffer_type>(begin, end)},
       trans_p {translator_ptr},
       lex_impl(buffer_p.get(), trans_p) {}
