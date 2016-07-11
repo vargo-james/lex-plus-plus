@@ -16,9 +16,9 @@ struct replication {
   size_t upper;
 };
 
-template <typename StringIterator>
+template <typename CharIterator>
 using char_type_t = 
-  typename std::iterator_traits<StringIterator>::value_type;
+  typename std::iterator_traits<CharIterator>::value_type;
 
 template <typename Char>
 using predicate_type_t = std::function<bool(const Char&)>;

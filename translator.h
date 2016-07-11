@@ -12,6 +12,7 @@
 
 namespace lex {
 
+// The type L must provide a function_type and a char_type.
 template <typename L>
 class translator {
  public:
