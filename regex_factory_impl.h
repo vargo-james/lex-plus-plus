@@ -1,10 +1,10 @@
 #ifndef _regex_factory_impl_h_
 #define _regex_factory_impl_h_
 
-#include "regex_alternation.h"
-#include "regex_atomic.h"
-#include "regex_concatenation.h"
-#include "regex_replication.h"
+#include "matcher_alternation.h"
+#include "atomic_matcher.h"
+#include "matcher_concatenation.h"
+#include "matcher_replication.h"
 
 #include "regex_bracket.h"
 
@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <iterator>
 #include <limits>
+#include <regex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -139,14 +140,15 @@ ordinary_char(Iterator& begin, Iterator& end) {
   return ch;
 }
 // We need a function that takes a pair of CharIterators and returns
-// a simple_regex<Char> object.
+// a matcher<Char> object.
 namespace detail {
-template <typename Iterator>
-simple_regex<char_type_t<Iterator>>
+template <typename Iterator, typename Traits = 
+  std::regex_traits<char_type_t<Iterator>>>
+matcher<char_type_t<Iterator>>
 extended_reg_exp(Iterator& begin, Iterator& end);
 
 template <typename Iterator>
-simple_regex<char_type_t<Iterator>>
+matcher<char_type_t<Iterator>>
 read_parenthetical(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
   ++begin;
@@ -156,7 +158,7 @@ read_parenthetical(Iterator& begin, Iterator& end) {
 }
 
 template <typename Iterator>
-simple_regex<char_type_t<Iterator>>
+matcher<char_type_t<Iterator>>
 one_char_or_coll_element_ERE(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
   if (begin == end) return {};
@@ -164,21 +166,21 @@ one_char_or_coll_element_ERE(Iterator& begin, Iterator& end) {
   auto ch = *begin;
   switch (ch) {
   case char_type('['): {
-    return predicate_regex(bracket_expression(begin, end));
+    return predicate_matcher(bracket_expression(begin, end));
   }
   case char_type('.'):
     ++begin;
-    return universal_singleton_regex<char_type>();
+    return universal_singleton_matcher<char_type>();
   case char_type('\\'):
-    return singleton_regex(quoted_char(begin, end));
+    return singleton_matcher(quoted_char(begin, end));
   default:
     break;
   }
-  return singleton_regex(ordinary_char(begin, end));
+  return singleton_matcher(ordinary_char(begin, end));
 }
 
 template <typename Iterator>
-simple_regex<char_type_t<Iterator>>
+matcher<char_type_t<Iterator>>
 single_element(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
 
@@ -191,7 +193,7 @@ single_element(Iterator& begin, Iterator& end) {
 
 // This reads something like .{3}? or (abc){2}*{5,9}
 template <typename Iterator>
-simple_regex<char_type_t<Iterator>>
+matcher<char_type_t<Iterator>>
 ERE_expression(Iterator& begin, Iterator& end) {
   if (begin == end) return {};
 
@@ -211,10 +213,10 @@ ERE_expression(Iterator& begin, Iterator& end) {
 }
 
 template <typename Iterator>
-simple_regex<char_type_t<Iterator>>
+matcher<char_type_t<Iterator>>
 ERE_branch(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
-  using regex_type = simple_regex<char_type>;
+  using regex_type = matcher<char_type>;
   using std::move;
 
   if (begin == end) return {};
@@ -231,11 +233,12 @@ ERE_branch(Iterator& begin, Iterator& end) {
   return concatenate(move(expressions));
 }
 
-template <typename Iterator>
-simple_regex<char_type_t<Iterator>>
+template <typename Iterator, typename Traits = 
+  std::regex_traits<char_type_t<Iterator>>>
+matcher<char_type_t<Iterator>>
 extended_reg_exp(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
-  using regex_type = simple_regex<char_type>;
+  using regex_type = matcher<char_type>;
   using std::move;
 
   if (begin == end) return {};

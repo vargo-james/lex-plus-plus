@@ -2,7 +2,7 @@
 #define _lexer_impl_h_
 
 #include "buffer_iterator.h"
-#include "simple_regex.h"
+#include "matcher.h"
 #include "translator.h"
 
 #include <cassert>
@@ -17,7 +17,7 @@ class lexer_impl {
   using buffer_type = typename L::buffer_type;
   using function_type = typename L::function_type;
   using char_type = typename L::char_type;
-  using regex_type = simple_regex<char_type>;
+  using regex_type = matcher<char_type>;
   using translator_type = translator<L>;
 
   lexer_impl(buffer_type* buff_ptr, 
@@ -42,7 +42,7 @@ class lexer_impl {
 template <typename L>
 buffer_iterator<typename L::buffer_type> 
 lexer_impl<L>::regex_match(regex_type& regex) {
-  assert(regex.state() != regex_state::MISMATCH);
+  assert(regex.state() != match_state::MISMATCH);
 
   auto accepted = buffer->begin();
   bool loop_done {false};
@@ -50,17 +50,17 @@ lexer_impl<L>::regex_match(regex_type& regex) {
     regex.update(*seek);
     ++seek;
     switch (regex.state()) {
-    case regex_state::MATCH:
+    case match_state::MATCH:
       accepted = seek;
       break;
-    case regex_state::FINAL_MATCH:
+    case match_state::FINAL_MATCH:
       accepted = seek;
       loop_done = true;
       break;
-    case regex_state::MISMATCH:
+    case match_state::MISMATCH:
       loop_done = true;
       break;
-    case regex_state::UNDECIDED:
+    case match_state::UNDECIDED:
       break;
     }
   }

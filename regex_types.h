@@ -8,7 +8,7 @@
 
 namespace lex {
 
-enum class regex_state {MATCH, FINAL_MATCH, MISMATCH, UNDECIDED};
+enum class match_state {MATCH, FINAL_MATCH, MISMATCH, UNDECIDED};
 
 struct replication {
   replication(size_t l, size_t u): lower {l}, upper {u} {}

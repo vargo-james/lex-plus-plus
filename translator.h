@@ -2,7 +2,7 @@
 #define _translator_h_
 
 #include "regex_factory.h"
-#include "simple_regex.h"
+#include "matcher.h"
 
 #include <functional>
 #include <initializer_list>
@@ -16,7 +16,7 @@ template <typename L>
 class translator {
  public:
   using char_type        = typename L::char_type;
-  using regex_type       = simple_regex<char_type>;
+  using regex_type       = matcher<char_type>;
   using string_type      = std::basic_string<char_type>;
   using function_type    = typename L::function_type;
   using proto_value_type = std::pair<string_type, function_type>;
@@ -35,7 +35,7 @@ class translator {
   translator(const std::vector<proto_value_type>& v)
     : translator(v.begin(), v.end()) {}
   // The following constructors make a translator object from lists
-  // using pre-constructed simple_regex<char_type> objects.
+  // using pre-constructed matcher<char_type> objects.
   translator(const std::initializer_list<value_type>& l)
     : table(l) {}
   translator(const std::vector<value_type>& v)
