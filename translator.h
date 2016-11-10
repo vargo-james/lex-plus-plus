@@ -13,13 +13,13 @@
 namespace lex {
 
 // The type L must provide a function_type and a char_type.
-template <typename L>
+template <typename Regex, typename F>
 class translator {
  public:
-  using char_type        = typename L::char_type;
+  using char_type        = typename Regex::char_type;
   using regex_type       = matcher<char_type>;
   using string_type      = std::basic_string<char_type>;
-  using function_type    = typename L::function_type;
+  using function_type    = F;
   using proto_value_type = std::pair<string_type, function_type>;
   using value_type       = std::pair<regex_type, function_type>;
   using table_type       = std::vector<value_type>; 
@@ -28,7 +28,8 @@ class translator {
   // Iterator::value_type must be proto_value_type.
   // The following constructors make a translator object from lists
   // using regex strings (e.g. "[ab]{2,4}").
-  template <typename Iterator>
+  template <typename Iterator, 
+            typename = enable_iterator_t<Iterator,proto_value_type>>
   translator(Iterator begin, Iterator end);
   translator(
       const std::initializer_list<proto_value_type>& l)
@@ -48,9 +49,9 @@ class translator {
   table_type table;
 };
 
-template <typename L>
-template <typename Iterator>
-translator<L>::translator(Iterator begin, Iterator end) {
+template <typename Regex, typename F>
+template <typename Iterator, typename>
+translator<Regex,F>::translator(Iterator begin, Iterator end) {
   using std::make_pair;
   for (auto it = begin; it != end; ++it) {
     table.push_back(make_pair(create_regex(it->first), it->second));

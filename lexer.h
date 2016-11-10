@@ -12,18 +12,23 @@
 
 namespace lex {
 
-template <typename InputIter>
+template <typename InputIter, 
+          typename Traits = std::regex_traits<char_type_t<InputIter>>
+         >
 class lexer {
  public:
   using buffer_type = input_buffer<InputIter>;
-  using char_type = typename std::iterator_traits<InputIter>::value_type;
-  using string_type = std::basic_string<char_type>;
+  using char_type = char_type_t<InputIter>;
+  using string_type = typename Traits::string_type;
   using function_type = std::function<void(const string_type&)>;
+  using translator_type = translator<lexer>;
+  using translator_item = std::pair<string_type, function_type>;
 
-  lexer(InputIter begin, InputIter end, translator<lexer>* translator_ptr) 
+  lexer(InputIter begin, InputIter end, 
+        const translator_type& translator) 
     : buffer_p {std::make_unique<buffer_type>(begin, end)},
-      trans_p {translator_ptr},
-      lex_impl(buffer_p.get(), trans_p) {}
+      trans {translator},
+      lex_impl(buffer_p.get(), trans) {}
 
   lexer(const lexer&) = delete;
   lexer& operator=(const lexer&) = delete;
@@ -32,18 +37,25 @@ class lexer {
   ~lexer() = default;
 
   bool lex();
+
+  template <typename Container, 
+            typename = enable_container_t<Container, translator_item>>
+  void set_translator(Container&& c) {
+    trans = translator_type(c.begin(), c.end());
+  }
+
  private:
   std::unique_ptr<buffer_type> buffer_p;
-  translator<lexer>* trans_p;
+  translator_type trans;
   lexer_impl<lexer> lex_impl;
 };
 
-template <typename InputIter>
-bool lexer<InputIter>::lex() {
+template <typename InputIter, typename Traits>
+bool lexer<InputIter,Traits>::lex() {
   auto result = lex_impl.do_lex();
   auto trans_it = result.second;
   // We check for a failed read.
-  if (trans_it == trans_p->end()) return false;
+  if (trans_it == trans.end()) return false;
   // We form a string from the matching input.
   auto buff_it = result.first;
   auto string_result = string_type(buffer_p->begin(), buff_it);

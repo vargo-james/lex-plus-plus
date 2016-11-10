@@ -16,7 +16,7 @@ class lexer_impl {
  public:
   using buffer_type = typename L::buffer_type;
   using function_type = typename L::function_type;
-  using char_type = typename L::char_type;
+  using char_type = typename buffer_type::value_type;
   using regex_type = matcher<char_type>;
   using translator_type = translator<L>;
 

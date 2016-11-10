@@ -6,7 +6,6 @@
 
 #include <regex>
 #include <string>
-#include <type_traits>
 
 namespace lex {
 
@@ -18,17 +17,8 @@ class regex {
   using string_type = typename Traits::string_type;
   using locale_type = typename Traits::locale_type;
 
-  template <typename Iterator>
-  struct enable_iterator {
-    using type = 
-      std::enable_if_t<
-        std::is_constructible<char_type, char_type_t<Iterator>>::value
-      >;
-  };
-  template <typename Iterator>
-  using enable_iterator_t = typename enable_iterator<Iterator>::type;
-     
-  template <typename Iterator, typename = enable_iterator_t<Iterator>>
+  template <typename Iterator, 
+            typename = enable_iterator_t<Iterator, char_type>>
   explicit regex(Iterator begin, Iterator end)
     : matcher_ {detail::extended_reg_exp<decltype(begin),Traits>(
         begin, end)} {
@@ -41,21 +31,12 @@ class regex {
   explicit regex(const std::basic_string<Char,ST,SA>& str)
     : regex(str.begin(), str.end()) {}
 
-  template <typename Iterator, typename = enable_iterator_t<Iterator>>
+  template <typename Iterator, 
+            typename = enable_iterator_t<Iterator, char_type>>
   Iterator max_match(Iterator begin, Iterator end);
  private:
   matcher<Char> matcher_;
 };
-
-/*
-template <typename Char, typename Traits>
-template <typename Iterator>
-regex<Char,Traits>::regex(Iterator begin, Iterator end)
-  : matcher_ {detail::extended_reg_exp<decltype(begin),Traits>(begin, end)} {
-  if (begin != end) {
-    throw regex_error("Invalid regex: could not read");
-  }
-}*/
 
 template <typename Char, typename Traits>
 template <typename Iterator, typename>
