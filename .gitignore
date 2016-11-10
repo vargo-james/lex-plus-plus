@@ -1,5 +1,7 @@
 legacy_test*
 test
+*.o
 log
 testfile
 *.swp
+.d*
