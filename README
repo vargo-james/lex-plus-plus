@@ -1,0 +1,12 @@
+This library consists of four main subsections, divided into namespaces.
+
+First, we have the matcher namespace, which consists of the following
+classes:
+  matcher,
+  matcher_impl,
+  atomic_matcher,
+  matcher_concatenation,
+  matcher_replication,
+  matcher_alternation.
+
+
