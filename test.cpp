@@ -1,7 +1,7 @@
 /*
  * In this file, we run all the tests.
  */
-#include "match_state_transition_test.h"
+#include "matcher_test/match_state_transition_test.h"
 
 #include <iostream>
 
@@ -21,6 +21,9 @@ int main() {
   report_error(code);
   if (error_count > 0) {
     std::cout << error_count << " errors occurred.\n";
+  }
+  else {
+    std::cout << "No errors occurred\n";
   }
 
   return 0;
