@@ -1,6 +1,7 @@
 /* This file tests the match_state_transition class.*/
 
-#include "../matcher_state_transition.h"
+#include "matcher_state_transition.h"
+
 
 int test_update() {
   using namespace lex;

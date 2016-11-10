@@ -3,7 +3,7 @@
 program_NAME := test
 program_SOURCES := test.cpp
 program_OBJECTS := ${program_SOURCES:.cpp=.o}
-program_INCLUDES :=
+program_INCLUDES := .
 program_LIBRARY_DIRS := 
 program_LIBRARIES := 
 
