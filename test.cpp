@@ -1,7 +1,7 @@
 /*
  * In this file, we run all the tests.
  */
-#include "matcher_test/match_state_transition_test.h"
+#include "matcher_test/match_transition_test.h"
 
 #include <iostream>
 

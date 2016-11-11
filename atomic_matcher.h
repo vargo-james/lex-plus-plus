@@ -14,7 +14,7 @@ struct singleton_matcher_transition
            singleton_matcher_transition<Char>, Char
          > {
  public:
-  using typename match_state_transition<Char>::char_type;
+  using typename matcher_transition<Char>::char_type;
 
   singleton_matcher_transition(const char_type& t)
     : match {t} {}
@@ -57,7 +57,7 @@ class predicate_matcher_transition
              predicate_matcher_transition<Char>, Char
            > {
  public:
-  using typename match_state_transition<Char>::char_type;
+  using typename matcher_transition<Char>::char_type;
   using predicate_type = predicate_type_t<Char>;
 
   predicate_matcher_transition(const predicate_type& p) 

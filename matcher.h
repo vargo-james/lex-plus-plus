@@ -1,7 +1,7 @@
 #ifndef _matcher_h_
 #define _matcher_h_
 
-#include "matcher_state_transition.h"
+#include "matcher_transition.h"
 #include "regex_types.h"
 
 #include <memory>
@@ -34,7 +34,7 @@ class matcher {
 
   // The default matcher matches an empty string.
   matcher() 
-    : transition_ {match_state_transition<char_type>{}.clone()},
+    : transition_ {matcher_transition<char_type>{}.clone()},
       state_ {transition_->initialize()} {}
 
   explicit matcher(state_transition&& f) 
