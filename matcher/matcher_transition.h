@@ -19,7 +19,7 @@ class matcher_transition {
   virtual match_state 
   update(const char_type& ch) {return match_state::MISMATCH;}
   virtual match_state 
-  initialize() {return match_state::MATCH;}
+  initialize() {return match_state::FINAL_MATCH;}
   virtual pointer
   clone() const {return std::make_unique<matcher_transition>();}
 };

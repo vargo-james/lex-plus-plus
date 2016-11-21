@@ -1,7 +1,7 @@
 #ifndef _matcher_concatenation_h_
 #define _matcher_concatenation_h_
 
-#include "matcher.h"
+#include "matcher/matcher.h"
 
 #include <cstddef>
 #include <list>

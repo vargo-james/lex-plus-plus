@@ -1,7 +1,7 @@
 #ifndef _atomic_matcher_h_
 #define _atomic_matcher_h_
 
-#include "matcher.h"
+#include "matcher/matcher.h"
 
 #include <vector>
 

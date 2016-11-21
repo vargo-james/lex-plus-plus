@@ -1,7 +1,7 @@
 #ifndef _matcher_h_
 #define _matcher_h_
 
-#include "matcher_transition.h"
+#include "matcher/matcher_transition.h"
 #include "regex_types.h"
 
 #include <memory>

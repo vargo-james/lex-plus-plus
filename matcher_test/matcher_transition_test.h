@@ -1,9 +1,9 @@
 /* This file tests the matcher_transition class.*/
 
-#include "matcher_transition.h"
+#include "matcher/matcher_transition.h"
 
 
-int test_update() {
+int matcher_transition_test() {
   using namespace lex;
 
   matcher_transition<char> trans;

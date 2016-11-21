@@ -2,7 +2,7 @@
 #define _translator_h_
 
 #include "regex_factory.h"
-#include "matcher.h"
+#include "matcher/matcher.h"
 
 #include <functional>
 #include <initializer_list>

@@ -1,7 +1,7 @@
 #ifndef _matcher_alternation_h_
 #define _matcher_alternation_h_
 
-#include "matcher.h"
+#include "matcher/matcher.h"
 
 #include <algorithm>
 #include <list>

@@ -2,7 +2,7 @@
 #define _lexer_impl_h_
 
 #include "buffer_iterator.h"
-#include "matcher.h"
+#include "matcher/matcher.h"
 #include "translator.h"
 
 #include <cassert>
