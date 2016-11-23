@@ -1,19 +1,12 @@
 /* This file tests the matcher_transition class.*/
 
+#ifndef _matcher_transition_test_h_
+#define _matcher_transition_test_h_
+
 #include "matcher/matcher_transition.h"
 
+#include <ostream>
 
-int matcher_transition_test() {
-  using namespace lex;
+int matcher_transition_test(std::ostream& os);
 
-  matcher_transition<char> trans;
-
-  for (auto ch = 'a'; ch != 'z'; ++ch) {
-    if (trans.update(ch) != match_state::MISMATCH) {
-      return 1;
-    }
-  }
-  return 0;
-}
-
-
+#endif// _matcher_transition_test_h_

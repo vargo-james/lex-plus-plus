@@ -3,14 +3,14 @@
 
 #include "matcher_transition_test.h"
 #include "matcher_test.h"
+#include "test_machinery.h"
 
-int matcher_module_test() {
-  int error_count {0};
-
-  error_count += matcher_transition_test();
-  error_count += matcher_test();
-
-  return error_count;
+inline int matcher_module_test(std::ostream& os) {
+  test_suite module_test {
+    matcher_test, 
+    matcher_transition_test
+  };
+  return module_test(os);
 }
 
 #endif// _matcher_module_test_h_

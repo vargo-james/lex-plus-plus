@@ -10,7 +10,7 @@
 # With the exception of the program_OBJECTS variable. These must all be
 # set separately for a given project. 
 program_NAME := test
-program_SOURCES := test.cpp
+program_SOURCES := $(wildcard *.cpp) $(wildcard matcher_test/*.cpp) 
 program_OBJECTS := ${program_SOURCES:.cpp=.o}
 program_INCLUDES := .
 program_LIBRARY_DIRS := 
@@ -50,6 +50,10 @@ $(program_NAME): $(program_OBJECTS)
 # step in order to avoid leaving corrupted dependency files in case of a
 # failed compilation.
 %.o : %.cpp $(DEPDIR)/%.d
+	$(COMPILE.cc) $(OUTPUT_OPTION) $<
+	$(POSTCOMPILE)
+
+matcher_test/%.o : matcher_test/%.cpp $(DEPDIR)/%.d
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
 	$(POSTCOMPILE)
 

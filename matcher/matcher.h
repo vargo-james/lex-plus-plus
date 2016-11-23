@@ -36,61 +36,72 @@ class matcher {
   matcher() 
     : transition_ {matcher_transition<char_type>{}.clone()},
       state_ {transition_->initialize()} {}
-
+  // Most matcher objects are constructed from a state_transition object.
   explicit matcher(state_transition&& f) 
     : transition_ {std::move(f)},
       state_ {transition_->initialize()} {}
-
+  // Copy and Move constructors
   matcher(const matcher& r);
   matcher& operator=(const matcher& r);
   matcher(matcher&& r);
   matcher& operator=(matcher&& r);
-
+  // This method reports the current state.
   match_state state() const {return state_;}
+  // This method takes a character and uses it to update the matcher's state.
   void update(const char_type& ch);
+  // This method returns the matcher to its original state.
+  // If the matcher was copy or move constructed from another matcher, then 
+  // the state is converted to the original state of the original matcher 
+  // which was constructed from a state_transition object.
   void initialize() {state_ = transition_->initialize();}
  private:
   state_transition transition_;
   match_state state_;
 };
 
+// Copy constructor.
 template <typename Char>
 matcher<Char>::matcher(const matcher& r)
   : transition_ {r.transition_->clone()},
     state_ {r.state_} {}
-
+// Copy assignment.
 template <typename Char>
 matcher<Char>& matcher<Char>::operator=(const matcher& r) {
   transition_ = r.transition.clone();
   state_ = r.state_;
 }
-
+// Move constructor.
 template <typename Char>
 matcher<Char>::matcher(matcher&& r)
   : transition_ {std::move(r.transition_)},
     state_ {r.state_} {}
-
+// Move assignment.
 template <typename Char>
 matcher<Char>& matcher<Char>::operator=(matcher&& r) {
   transition_ = std::move(r.transition_);
   state_ = r.state_;
   return *this;
 }
-
+// The update method checks the state and defers to the state_transition
+// object if any work is necessary.
 template <typename Char>
 void matcher<Char>::update(const char_type& ch) {
   if (state_ == match_state::MISMATCH) {
     return; 
   }
-  if (state_ == match_state::FINAL_MATCH) {
+  else if (state_ == match_state::FINAL_MATCH) {
     state_ = match_state::MISMATCH;
     return;
   }
-
-  state_ = transition_->update(ch);
-  return;
+  else {
+    state_ = transition_->update(ch);
+    return;
+  }
 }
 
+// All nontrivial  matcher objects are created from a state_transition object.
+// So we use this factory class to facilitate the creation of a matcher object
+// directly from the constructor arguments of the state_transition object.
 template <typename Transition>
 struct matcher_factory {
   using char_type = typename Transition::char_type;

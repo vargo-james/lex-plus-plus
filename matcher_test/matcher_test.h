@@ -1,47 +1,24 @@
 /* This file tests the matcher class.
  */
 
+#ifndef _matcher_test_h_
+#define _matcher_test_h_
+
 #include "matcher/matcher.h"
 
-#include <utility>
+#include <ostream>
 
-int matcher_constructor_test() {
-  using namespace lex;
+// This function is the composition of all the individual tests listed
+// below it.
+int matcher_test(std::ostream& os);
 
-  // default construction
-  matcher<char> mat;
-  // copy construction
-  auto mat2 = mat;
+// This tests whether a default constructed matcher will correctly 
+// reinitialize itself when its initialize method is called.
+int matcher_initialize_test(std::ostream& os);
 
-  int error_count {0};
+// This tests whether the default constructed matcher has the correct
+// state upon construction, after being updated once. And it does the same
+// test for a constructor copy constructed from a default constructed object.
+int matcher_constructor_test(std::ostream& os);
 
-  if (mat.state() != match_state::FINAL_MATCH) {
-    ++error_count;
-  }
-
-  mat.update('a');
-  if (mat.state() == mat2.state()) {
-    ++error_count;
-  }
-
-  matcher<char> mat3;
-  mat3 = std::move(mat2);
-  if (mat.state() == mat3.state()) {
-    ++error_count;
-  }
-
-  return error_count;
-}
-
-int matcher_initialize_test() {
-  return 0;
-}
-
-int matcher_test() {
-  int error_count {0};
-
-  error_count += matcher_constructor_test();
-  error_count += matcher_initialize_test();
-
-  return error_count;
-}
+#endif// _matcher_test_h_
