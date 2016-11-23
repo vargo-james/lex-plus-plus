@@ -2,9 +2,9 @@
 #define _regex_factory_impl_h_
 
 #include "matcher_alternation.h"
-#include "atomic_matcher.h"
-#include "matcher_concatenation.h"
-#include "matcher_replication.h"
+#include "matcher/atomic_matcher.h"
+#include "matcher/matcher_concatenation.h"
+#include "matcher/matcher_replication.h"
 
 #include "regex_bracket.h"
 
