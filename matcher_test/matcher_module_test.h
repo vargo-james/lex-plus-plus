@@ -6,13 +6,10 @@
 #include "atomic_matcher_test.h"
 #include "test_machinery.h"
 
-inline int matcher_module_test(std::ostream& os) {
-  test_suite module_test {
+const test_suite matcher_module_test(std::string("matcher module"), {
     matcher_test, 
     matcher_transition_test,
-    atomic_matcher_test
-  };
-  return module_test(os);
-}
+    atomic_matcher_test,
+  });
 
 #endif// _matcher_module_test_h_

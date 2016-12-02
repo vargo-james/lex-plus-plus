@@ -1,5 +1,6 @@
 /*
- * In this file, the test functions for the atomic_matcher header are defined.
+ * In this file, the test functions for the atomic_matcher 
+ * header are defined.
  */
 
 #include "atomic_matcher_test.h"
@@ -91,10 +92,80 @@ int singleton_matcher_test(std::ostream& os) {
   return error_count;
 }
 
-int atomic_matcher_test(std::ostream& os) {
-  test_suite composition {
-    singleton_matcher_transition_test,
-    singleton_matcher_test
-  };
-  return composition(os);
+int predicate_matcher_test(std::ostream& os) {
+  int error_count {0};
+  const std::string usmt {"predicate_matcher_test: "};
+
+  auto matcher = 
+    predicate_matcher<char>([](const char& ch){return islower(ch);});
+  if (matcher.state() != match_state::UNDECIDED) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+  matcher.update('r');
+  if (matcher.state() != match_state::FINAL_MATCH) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+  matcher.update('b');
+  if (matcher.state() != match_state::MISMATCH) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+  matcher.initialize();
+  if (matcher.state() != match_state::UNDECIDED) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+  matcher.update(';');
+  if (matcher.state() != match_state::MISMATCH) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+
+  return error_count;
 }
+
+int universal_singleton_matcher_test(std::ostream& os) {
+  int error_count {0};
+  const std::string usmt {"universal_singleton_matcher_test: "};
+
+  auto matcher = universal_singleton_matcher<char>();
+  if (matcher.state() != match_state::UNDECIDED) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+  matcher.update('r');
+  if (matcher.state() != match_state::FINAL_MATCH) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+  matcher.update('b');
+  if (matcher.state() != match_state::MISMATCH) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+  matcher.initialize();
+  if (matcher.state() != match_state::UNDECIDED) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+  matcher.update(';');
+  if (matcher.state() != match_state::FINAL_MATCH) {
+    test_log(os, usmt);
+    ++error_count;
+  }
+
+  return error_count;
+}
+
+/*
+int atomic_matcher_test(std::ostream& os) {
+  test_suite composition("atomic matcher test", {
+    singleton_matcher_transition_test,
+    singleton_matcher_test,
+    predicate_matcher_test,
+    universal_singleton_matcher_test
+  });
+  return composition(os);
+}*/

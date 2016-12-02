@@ -5,54 +5,50 @@
 #include "matcher_test/matcher_test.h"
 #include "test_machinery.h"
 
+#include <cassert>
+
 using namespace lex;
+
+int matcher_compare(matcher<char>& matcher, const std::string& updates, 
+    const std::vector<match_state>& states, match_state initial) {
+  // First we check that our test is well formed.
+  assert(updates.size() == states.size());
+  // Any inconsistency will return 1.
+  if (matcher.state() != initial) {
+    return 1;
+  }
+  for (auto i = 0u; i != updates.size(); ++i) {
+    matcher.update(updates[i]);
+    if (matcher.state() != states[i]) {
+      return 1;
+    }
+  }
+  // Return 0 if the updates were consistent with the predictions.
+  return 0;
+}
 
 const std::string match_test {"matcher_test: "};
 
-int default_matcher_test(std::ostream& os, matcher<char>& mat) {
-  int error_count {0}; 
-
-  if (mat.state() != match_state::FINAL_MATCH) {
-    test_log(os, match_test + "incorrect original state in default"
-        " matcher.");
-    ++error_count;
-  }
-
-  mat.update('a');
-  if (mat.state() != match_state::MISMATCH) {
-    test_log(os, match_test + "incorrect state in default"
-        " matcher after update.");
-    ++error_count;
-  }
-  return error_count;
+int default_matcher_test(matcher<char>& mat) {
+  return matcher_compare(mat, "a", {match_state::MISMATCH}, 
+      match_state::FINAL_MATCH);
 }
 
 int matcher_constructor_test(std::ostream& os) {
-  int error {0};
   int error_count {0};
 
   // Default construction is tested here.
   matcher<char> mat;
-  error = default_matcher_test(os, mat);
-  if (error) {
-    test_log(os, "default constructor error");
-    error_count += error;
-  }
-
+  error_count += default_matcher_test(mat);
   // Copy construction is tested here.
   matcher<char> mat1;
   auto mat2 = mat1;
-  error = default_matcher_test(os, mat2);
-  if (error) {
-    test_log(os, "copy constructor error");
-    error_count += error;
-  }
 
   return error_count;
 }
 
+// In this test, we do a basic test of the initialize method.
 int matcher_initialize_test(std::ostream& os) {
-  int error {0};
   int error_count {0};
 
   matcher<char> mat;
@@ -60,33 +56,16 @@ int matcher_initialize_test(std::ostream& os) {
   auto mat2 = mat;
 
   mat.initialize();
-  error = default_matcher_test(os, mat);
-  if (error) {
-    test_log(os, "initialization error");
-    error_count += error;
-  }
+  error_count += default_matcher_test(mat);
 
   if (mat2.state() != match_state::MISMATCH) {
-    test_log(os, "copy error on updated matcher");
     ++error_count;
   }
   else {
     mat2.initialize();
-    error = default_matcher_test(os, mat2);
-    if (error) {
-      test_log(os, "initialization error on copied object");
-      error_count += error;
-    }
+    error_count += default_matcher_test(mat2);
   }
 
   return error_count;
-}
-
-int matcher_test(std::ostream& os) {
-  test_suite composition {
-    matcher_constructor_test, 
-    matcher_initialize_test
-  };
-  return composition(os);
 }
 

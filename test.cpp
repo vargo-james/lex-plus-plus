@@ -10,12 +10,12 @@
 int main() {
   using std::cerr;
 
-  test_suite lib_test {matcher_module_test};
+  test_suite lib_test("library test", {matcher_module_test}, "\n");
 
   auto error_count = lib_test(std::cerr);
 
   if (error_count > 0) {
-    std::cerr << error_count << " errors detected.\n";
+    std::cerr << '\n' << error_count << " errors detected.\n";
   }
   else {
     std::cerr << "No errors detected.\n";

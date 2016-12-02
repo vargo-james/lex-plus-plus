@@ -28,25 +28,28 @@ class test_suite {
  public:
   using test_type = std::function<int(std::ostream&)>;
 
-  test_suite() {}
+//  test_suite() {}
   test_suite(const std::initializer_list<test_type>& list) 
     : tests_{list} {}
+  test_suite(const std::string& name,
+      const std::initializer_list<test_type>& list,
+      const std::string& sep = ": ") 
+    : unit_name_ {name},
+      tests_{list},
+      separator {sep} {}
 
   void add_test(const test_type& test) {tests_.push_back(test);}
 
-  int operator()(std::ostream& os) {
-    using std::accumulate;
-    using std::begin;
-    using std::end;
-
-    return accumulate(begin(tests_), end(tests_), 0, 
-        [&os](int partial_sum, const auto& test) {
-          return partial_sum + test(os);
-        });
-  }
+  int operator()(std::ostream& os) const;
 
  private:
+  std::string unit_name_;
   std::vector<test_type> tests_;
+  std::string separator;
+
+  void report_error(std::ostream& os) const {
+    os << unit_name_ << separator;
+  }
 };
 
 inline void test_log(std::ostream& os, const std::string& msg) {
