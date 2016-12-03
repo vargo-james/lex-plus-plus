@@ -16,11 +16,13 @@ int predicate_matcher_test(std::ostream& os);
 int universal_singleton_matcher_test(std::ostream& os);
 
 const test_suite atomic_matcher_test("atomic matcher", {
-    singleton_matcher_transition_test,
-    singleton_matcher_test,
-    predicate_matcher_test,
-    universal_singleton_matcher_test
-    });
+    test_suite("singleton matcher transition",
+        {singleton_matcher_transition_test}),
+    test_suite("singleton matcher", {singleton_matcher_test}),
+    test_suite("predicate matcher", {predicate_matcher_test}),
+    test_suite("universal singleton matcher", {
+        universal_singleton_matcher_test})
+});
 
 // This tests the singleton_matcher_transition class.
 int singleton_matcher_transition_test(std::ostream& os);

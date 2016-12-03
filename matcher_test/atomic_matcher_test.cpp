@@ -4,6 +4,7 @@
  */
 
 #include "atomic_matcher_test.h"
+#include "matcher_test.h"
 #include "test_machinery.h"
 
 #include <string>
@@ -61,100 +62,45 @@ int singleton_matcher_transition_test(std::ostream& os) {
 
 int singleton_matcher_test(std::ostream& os) {
   int error_count {0};
-  const std::string smt {"single_matcher_test: "};
 
   auto matcher = singleton_matcher('b');
-  if (matcher.state() != match_state::UNDECIDED) {
-    test_log(os, smt);
-    ++error_count;
-  }
-  matcher.update('b');
-  if (matcher.state() != match_state::FINAL_MATCH) {
-    test_log(os, smt);
-    ++error_count;
-  }
-  matcher.update('b');
-  if (matcher.state() != match_state::MISMATCH) {
-    test_log(os, smt);
-    ++error_count;
-  }
+
+  error_count += matcher_compare(matcher, "bb", 
+      {match_state::FINAL_MATCH, match_state::MISMATCH});
+
   matcher.initialize();
-  if (matcher.state() != match_state::UNDECIDED) {
-    test_log(os, smt);
-    ++error_count;
-  }
-  matcher.update(';');
-  if (matcher.state() != match_state::MISMATCH) {
-    test_log(os, smt);
-    ++error_count;
-  }
+
+  error_count += matcher_compare(matcher, ";", {match_state::MISMATCH});
 
   return error_count;
 }
 
 int predicate_matcher_test(std::ostream& os) {
   int error_count {0};
-  const std::string usmt {"predicate_matcher_test: "};
 
   auto matcher = 
     predicate_matcher<char>([](const char& ch){return islower(ch);});
-  if (matcher.state() != match_state::UNDECIDED) {
-    test_log(os, usmt);
-    ++error_count;
-  }
-  matcher.update('r');
-  if (matcher.state() != match_state::FINAL_MATCH) {
-    test_log(os, usmt);
-    ++error_count;
-  }
-  matcher.update('b');
-  if (matcher.state() != match_state::MISMATCH) {
-    test_log(os, usmt);
-    ++error_count;
-  }
+
+  error_count += matcher_compare(matcher, "rb", 
+      {match_state::FINAL_MATCH, match_state::MISMATCH});
+
   matcher.initialize();
-  if (matcher.state() != match_state::UNDECIDED) {
-    test_log(os, usmt);
-    ++error_count;
-  }
-  matcher.update(';');
-  if (matcher.state() != match_state::MISMATCH) {
-    test_log(os, usmt);
-    ++error_count;
-  }
+  error_count += matcher_compare(matcher, ";", {match_state::MISMATCH});
 
   return error_count;
 }
 
 int universal_singleton_matcher_test(std::ostream& os) {
   int error_count {0};
-  const std::string usmt {"universal_singleton_matcher_test: "};
 
   auto matcher = universal_singleton_matcher<char>();
-  if (matcher.state() != match_state::UNDECIDED) {
-    test_log(os, usmt);
-    ++error_count;
-  }
-  matcher.update('r');
-  if (matcher.state() != match_state::FINAL_MATCH) {
-    test_log(os, usmt);
-    ++error_count;
-  }
-  matcher.update('b');
-  if (matcher.state() != match_state::MISMATCH) {
-    test_log(os, usmt);
-    ++error_count;
-  }
+
+  error_count += matcher_compare(matcher, "rb", 
+      {match_state::FINAL_MATCH, match_state::MISMATCH});
+
   matcher.initialize();
-  if (matcher.state() != match_state::UNDECIDED) {
-    test_log(os, usmt);
-    ++error_count;
-  }
-  matcher.update(';');
-  if (matcher.state() != match_state::FINAL_MATCH) {
-    test_log(os, usmt);
-    ++error_count;
-  }
+
+  error_count += matcher_compare(matcher, ";", {match_state::FINAL_MATCH});
 
   return error_count;
 }
