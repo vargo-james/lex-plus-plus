@@ -6,11 +6,9 @@
 #include "matcher/matcher_transition.h"
 #include "test_machinery.h"
 
-#include <ostream>
-
 using namespace lex;
 
-int matcher_trans_test(std::ostream& os) {
+int matcher_trans_test() {
   matcher_transition<char> trans;
 
   for (auto ch = 'a'; ch != 'z'; ++ch) {

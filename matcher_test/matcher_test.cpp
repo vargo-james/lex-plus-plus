@@ -34,7 +34,7 @@ int default_matcher_test(matcher<char>& mat) {
       match_state::FINAL_MATCH);
 }
 
-int matcher_constructor_test(std::ostream& os) {
+int matcher_constructor_test() {
   int error_count {0};
 
   // Default construction is tested here.
@@ -48,7 +48,7 @@ int matcher_constructor_test(std::ostream& os) {
 }
 
 // In this test, we do a basic test of the initialize method.
-int matcher_initialize_test(std::ostream& os) {
+int matcher_initialize_test() {
   int error_count {0};
 
   matcher<char> mat;

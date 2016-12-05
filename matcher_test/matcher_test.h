@@ -7,19 +7,18 @@
 #include "matcher/matcher.h"
 #include "test_machinery.h"
 
-#include <ostream>
 #include <string>
 #include <vector>
 
 
 // This tests whether a default constructed matcher will correctly 
 // reinitialize itself when its initialize method is called.
-int matcher_initialize_test(std::ostream& os);
+int matcher_initialize_test();
 
 // This tests whether the default constructed matcher has the correct
 // state upon construction, after being updated once. And it does the same
 // test for a constructor copy constructed from a default constructed object.
-int matcher_constructor_test(std::ostream& os);
+int matcher_constructor_test();
 
 inline test_suite::pointer create_matcher_test() {
   return create_test("matcher test", {

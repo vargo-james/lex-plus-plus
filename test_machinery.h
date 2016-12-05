@@ -25,32 +25,23 @@
 
 class test_suite {
  public:
+  using error_log = std::vector<std::string>;
   using pointer = std::shared_ptr<test_suite>;
-  using test_type = std::function<int(std::ostream&)>;
 
   test_suite(const std::string& name)
     : unit_name_ {name} {}
-  test_suite(const std::string& name,
-      const std::initializer_list<test_type>& list)
-    : unit_name_ {name},
-      tests_{list} {}
 
-  void add_test(const test_type& test) {tests_.push_back(test);}
-
-  int operator()(std::ostream& os) const;
-
-  virtual void run_test(std::ostream& os) {}
+  virtual void run_test() = 0; 
   void report_errors(std::ostream& os) const;
   size_t error_count() const {return errors_.size();}
 
-  std::vector<std::string>& error_list() {return errors_;}
+  error_log& error_list() {return errors_;}
  protected:
   std::string name() const {return unit_name_;}
 
  private:
   std::string unit_name_;
-  std::vector<test_type> tests_;
-  std::vector<std::string> errors_;
+  error_log errors_;
 
   void report_error(std::ostream& os) const {
     os << name() << ": ";
@@ -59,13 +50,13 @@ class test_suite {
 
 class simple_test : public test_suite {
  public:
-  using test_suite::test_type;
+  using test_type = std::function<int()>;
 
   simple_test(const std::string& name, const test_type& test) 
     : test_suite(name), 
       test_ {test} {}
 
-  void run_test(std::ostream& os) override;
+  void run_test() override;
 
  private:
   test_type test_;
@@ -78,14 +69,14 @@ class compound_test : public test_suite {
   compound_test(const std::string& name, 
       std::initializer_list<pointer> component_tests);
 
-  void run_test(std::ostream& os) override;
+  void run_test() override;
 
  private:
   std::vector<pointer> components;
 };
 
 test_suite::pointer create_test(const std::string& name, 
-    const test_suite::test_type& test);
+    const simple_test::test_type& test);
 
 test_suite::pointer create_test(const std::string& name, 
     const std::initializer_list<test_suite::pointer>& test_list);

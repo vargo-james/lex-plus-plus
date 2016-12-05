@@ -13,7 +13,7 @@ int main() {
   auto lib_test_ptr = create_test("library test", {
       create_matcher_module_test()
     });
-  lib_test_ptr->run_test(std::cerr);
+  lib_test_ptr->run_test();
   lib_test_ptr->report_errors(std::cerr);
 
   auto error_count = lib_test_ptr->error_count();

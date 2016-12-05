@@ -6,9 +6,7 @@
 #include "matcher/matcher_transition.h"
 #include "test_machinery.h"
 
-#include <ostream>
-
-int matcher_trans_test(std::ostream& os);
+int matcher_trans_test();
 
 inline test_suite::pointer create_matcher_transition_test() {
   return create_test("matcher transition", matcher_trans_test);

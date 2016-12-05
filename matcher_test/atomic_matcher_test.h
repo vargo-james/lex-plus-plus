@@ -4,16 +4,14 @@
 #include "matcher/atomic_matcher.h"
 #include "test_machinery.h"
 
-#include <ostream>
-
 // This combines all the tests of the function and classes in the 
 // atomic_matcher.h header.
 //int atomic_matcher_test(std::ostream& os);
 
-int singleton_matcher_transition_test(std::ostream& os);
-int singleton_matcher_test(std::ostream& os);
-int predicate_matcher_test(std::ostream& os);
-int universal_singleton_matcher_test(std::ostream& os);
+int singleton_matcher_transition_test();
+int singleton_matcher_test();
+int predicate_matcher_test();
+int universal_singleton_matcher_test();
 
 inline test_suite::pointer create_atomic_matcher_test() {
   return create_test("atomic matcher", {

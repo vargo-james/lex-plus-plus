@@ -4,7 +4,6 @@
 
 #include "test_machinery.h"
 
-#include <ostream>
 #include <utility>
 
 void test_suite::report_errors(std::ostream& os) const {
@@ -13,21 +12,8 @@ void test_suite::report_errors(std::ostream& os) const {
   }
 }
 
-int test_suite::operator()(std::ostream& os) const {
-  int error_count {0};
-
-  for (const auto& test: tests_) {
-    auto error = test(os);
-    if (error) {
-      error_count += error;
-      report_error(os);
-    }
-  }
-  return error_count;
-}
-
-void simple_test::run_test(std::ostream& os) {
-  if (test_(os)) {
+void simple_test::run_test() {
+  if (test_()) {
     error_list().push_back(name());
   }
 }
@@ -40,9 +26,9 @@ compound_test::compound_test(const std::string& name,
   }
 }
 
-void compound_test::run_test(std::ostream& os) {
+void compound_test::run_test() {
   for (auto& test: components) {
-    test->run_test(os);
+    test->run_test();
     auto messages = test->error_list();
     for (auto& msg: messages) {
       error_list().push_back(name() + "::" + msg);
@@ -51,7 +37,7 @@ void compound_test::run_test(std::ostream& os) {
 }
 
 test_suite::pointer create_test(const std::string& name, 
-    const test_suite::test_type& test) {
+    const simple_test::test_type& test) {
   return std::make_shared<simple_test>(name, test);
 }
 
