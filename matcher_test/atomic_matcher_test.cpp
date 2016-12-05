@@ -17,6 +17,10 @@ using namespace lex;
 // initialized. 
 //
 // This also tests a copy.
+void test_log(std::ostream& os, const std::string& message) {
+  os << message << '\n';
+}
+
 int singleton_matcher_transition_test(std::ostream& os) {
   int error_count {0};
   const std::string smtt {"single_matcher_transition_test: "};

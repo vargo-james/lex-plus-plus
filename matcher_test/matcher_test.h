@@ -21,10 +21,13 @@ int matcher_initialize_test(std::ostream& os);
 // test for a constructor copy constructed from a default constructed object.
 int matcher_constructor_test(std::ostream& os);
 
-const test_suite matcher_test("matcher test", {
-    test_suite("matcher initialize", {matcher_initialize_test}),
-    test_suite("matcher constructor", {matcher_constructor_test})
-    });
+inline test_suite::pointer create_matcher_test() {
+  return create_test("matcher test", {
+    create_test("matcher initialize", matcher_initialize_test),
+    create_test("matcher constructor", matcher_constructor_test)
+  });
+}
+
 
 // This test successively updates a matcher using a string of chars.
 // After each update it checks the state against a provided list of states.

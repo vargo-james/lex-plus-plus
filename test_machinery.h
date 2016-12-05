@@ -18,42 +18,76 @@
 
 #include <functional>
 #include <initializer_list>
-#include <iterator>
-#include <numeric>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
 
 class test_suite {
  public:
+  using pointer = std::shared_ptr<test_suite>;
   using test_type = std::function<int(std::ostream&)>;
 
-//  test_suite() {}
-  test_suite(const std::initializer_list<test_type>& list) 
-    : tests_{list} {}
+  test_suite(const std::string& name)
+    : unit_name_ {name} {}
   test_suite(const std::string& name,
-      const std::initializer_list<test_type>& list,
-      const std::string& sep = ": ") 
+      const std::initializer_list<test_type>& list)
     : unit_name_ {name},
-      tests_{list},
-      separator {sep} {}
+      tests_{list} {}
 
   void add_test(const test_type& test) {tests_.push_back(test);}
 
   int operator()(std::ostream& os) const;
 
+  virtual void run_test(std::ostream& os) {}
+  void report_errors(std::ostream& os) const;
+  size_t error_count() const {return errors_.size();}
+
+  std::vector<std::string>& error_list() {return errors_;}
+ protected:
+  std::string name() const {return unit_name_;}
+
  private:
   std::string unit_name_;
   std::vector<test_type> tests_;
-  std::string separator;
+  std::vector<std::string> errors_;
 
   void report_error(std::ostream& os) const {
-    os << unit_name_ << separator;
+    os << name() << ": ";
   }
 };
 
-inline void test_log(std::ostream& os, const std::string& msg) {
-  os << msg << '\n';
-}
+class simple_test : public test_suite {
+ public:
+  using test_suite::test_type;
+
+  simple_test(const std::string& name, const test_type& test) 
+    : test_suite(name), 
+      test_ {test} {}
+
+  void run_test(std::ostream& os) override;
+
+ private:
+  test_type test_;
+};
+
+class compound_test : public test_suite {
+ public:
+  using test_suite::pointer;
+
+  compound_test(const std::string& name, 
+      std::initializer_list<pointer> component_tests);
+
+  void run_test(std::ostream& os) override;
+
+ private:
+  std::vector<pointer> components;
+};
+
+test_suite::pointer create_test(const std::string& name, 
+    const test_suite::test_type& test);
+
+test_suite::pointer create_test(const std::string& name, 
+    const std::initializer_list<test_suite::pointer>& test_list);
 
 #endif// _test_machinery_h_

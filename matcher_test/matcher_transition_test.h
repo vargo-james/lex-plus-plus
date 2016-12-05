@@ -10,7 +10,8 @@
 
 int matcher_trans_test(std::ostream& os);
 
-const test_suite matcher_transition_test("matcher transition", 
-    {matcher_trans_test});
+inline test_suite::pointer create_matcher_transition_test() {
+  return create_test("matcher transition", matcher_trans_test);
+}
 
 #endif// _matcher_transition_test_h_
