@@ -37,18 +37,20 @@ class test_suite {
   void report_errors(std::ostream& os) const;
   size_t error_count() const {return errors_.size();}
 
-  error_log& error_list() {return errors_;}
  protected:
   void append_error(const std::string& msg);
   void append_error() {append_error({});}
+  void collect_errors(const std::vector<pointer>& subtests);
 
  private:
   virtual void do_test() = 0; 
+  void qualify_errors(const error_log& log);
+  std::string name() const {return unit_name_;}
+  error_log& error_list() {return errors_;}
 
   std::string unit_name_;
   error_log errors_;
 
-  std::string name() const {return unit_name_;}
 };
 
 class simple_test : public test_suite {
@@ -77,7 +79,6 @@ class compound_test : public test_suite {
   std::vector<pointer> components;
 
   void do_test() override;
-  void qualify_errors(const error_log& log);
 };
 
 test_suite::pointer create_test(const std::string& name, 

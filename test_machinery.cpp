@@ -20,6 +20,14 @@ void test_suite::append_error(const std::string& msg) {
   errors_.push_back(message);
 }
 
+void test_suite::collect_errors(const std::vector<pointer>& subtests) {
+  for (auto& test: subtests) {
+    test->run_test();
+    auto messages = test->error_list();
+    qualify_errors(messages);
+  }
+}
+
 void simple_test::do_test() {
   if (test_()) {
     append_error();
@@ -35,14 +43,10 @@ compound_test::compound_test(const std::string& name,
 }
 
 void compound_test::do_test() {
-  for (auto& test: components) {
-    test->run_test();
-    auto messages = test->error_list();
-    qualify_errors(messages);
-  }
+  collect_errors(components);
 }
 
-void compound_test::qualify_errors(const error_log& log) {
+void test_suite::qualify_errors(const error_log& log) {
   for (const auto& msg: log) {
     append_error(msg);
   }
