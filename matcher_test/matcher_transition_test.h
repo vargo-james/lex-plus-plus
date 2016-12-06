@@ -11,7 +11,7 @@ int matcher_trans_test();
 inline ttest::test_suite::pointer create_matcher_transition_test() {
   using namespace ttest;
 
-  return create_test("matcher_transition", matcher_trans_test);
+  return create_test("transition", matcher_trans_test);
 }
 
 #endif// _matcher_transition_test_h_

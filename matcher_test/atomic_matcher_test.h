@@ -17,7 +17,7 @@ void string_matcher_test(ttest::error_log& log);
 inline ttest::test_suite::pointer create_atomic_matcher_test() {
   using namespace ttest;
 
-  return create_test("atomic_matcher", {
+  return create_test("atomic", {
     create_test("singleton_matcher_transition", 
         singleton_matcher_transition_test),
     create_test("singleton_matcher", singleton_matcher_test),
