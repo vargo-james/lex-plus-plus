@@ -4,6 +4,8 @@
 
 #include "ttest/simple_test.h"
 
+#include <memory>
+
 namespace ttest {
 
 void simple_test::do_test() {

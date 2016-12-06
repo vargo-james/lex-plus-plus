@@ -6,7 +6,8 @@
 #ifndef _ttest_h_
 #define _ttest_h_
 
+#include "ttest/compound_test.h"
 #include "ttest/simple_test.h"
-#include "test_machinery.h"
+#include "ttest/test_suite.h"
 
 #endif// _ttest_h_

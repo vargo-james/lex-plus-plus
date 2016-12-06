@@ -1,7 +1,10 @@
 #ifndef _simple_test_h_
 #define _simple_test_h_
 
-#include "test_machinery.h"
+#include "ttest/test_suite.h"
+
+#include <functional>
+#include <string>
 
 namespace ttest {
 
