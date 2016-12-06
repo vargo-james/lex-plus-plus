@@ -32,17 +32,19 @@ class test_suite {
   test_suite(const std::string& name)
     : unit_name_ {name} {}
 
-  virtual void run_test() = 0; 
+  void run_test() {do_test();}
+
   void report_errors(std::ostream& os) const;
   size_t error_count() const {return errors_.size();}
 
   error_log& error_list() {return errors_;}
-
  protected:
   void append_error(const std::string& msg);
   void append_error() {append_error({});}
 
  private:
+  virtual void do_test() = 0; 
+
   std::string unit_name_;
   error_log errors_;
 
@@ -57,10 +59,10 @@ class simple_test : public test_suite {
     : test_suite(name), 
       test_ {test} {}
 
-  void run_test() override;
-
  private:
   test_type test_;
+
+  void do_test() override;
 };
 
 class compound_test : public test_suite {
@@ -71,11 +73,10 @@ class compound_test : public test_suite {
   compound_test(const std::string& name, 
       std::initializer_list<pointer> component_tests);
 
-  void run_test() override;
-
  private:
   std::vector<pointer> components;
 
+  void do_test() override;
   void qualify_errors(const error_log& log);
 };
 

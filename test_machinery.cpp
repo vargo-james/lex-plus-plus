@@ -20,7 +20,7 @@ void test_suite::append_error(const std::string& msg) {
   errors_.push_back(message);
 }
 
-void simple_test::run_test() {
+void simple_test::do_test() {
   if (test_()) {
     append_error();
   }
@@ -34,7 +34,7 @@ compound_test::compound_test(const std::string& name,
   }
 }
 
-void compound_test::run_test() {
+void compound_test::do_test() {
   for (auto& test: components) {
     test->run_test();
     auto messages = test->error_list();
