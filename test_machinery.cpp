@@ -12,9 +12,17 @@ void test_suite::report_errors(std::ostream& os) const {
   }
 }
 
+void test_suite::append_error(const std::string& msg) {
+  auto message = name();
+  if (!msg.empty()) {
+    message.append("::" + msg);
+  }
+  errors_.push_back(message);
+}
+
 void simple_test::run_test() {
   if (test_()) {
-    error_list().push_back(name());
+    append_error();
   }
 }
 
@@ -30,9 +38,13 @@ void compound_test::run_test() {
   for (auto& test: components) {
     test->run_test();
     auto messages = test->error_list();
-    for (auto& msg: messages) {
-      error_list().push_back(name() + "::" + msg);
-    }
+    qualify_errors(messages);
+  }
+}
+
+void compound_test::qualify_errors(const error_log& log) {
+  for (const auto& msg: log) {
+    append_error(msg);
   }
 }
 

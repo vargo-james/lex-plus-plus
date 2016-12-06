@@ -16,6 +16,7 @@
 #ifndef _test_machinery_h_
 #define _test_machinery_h_
 
+#include <cstddef>
 #include <functional>
 #include <initializer_list>
 #include <memory>
@@ -36,16 +37,16 @@ class test_suite {
   size_t error_count() const {return errors_.size();}
 
   error_log& error_list() {return errors_;}
+
  protected:
-  std::string name() const {return unit_name_;}
+  void append_error(const std::string& msg);
+  void append_error() {append_error({});}
 
  private:
   std::string unit_name_;
   error_log errors_;
 
-  void report_error(std::ostream& os) const {
-    os << name() << ": ";
-  }
+  std::string name() const {return unit_name_;}
 };
 
 class simple_test : public test_suite {
@@ -64,6 +65,7 @@ class simple_test : public test_suite {
 
 class compound_test : public test_suite {
  public:
+  using test_suite::error_log;
   using test_suite::pointer;
 
   compound_test(const std::string& name, 
@@ -73,6 +75,8 @@ class compound_test : public test_suite {
 
  private:
   std::vector<pointer> components;
+
+  void qualify_errors(const error_log& log);
 };
 
 test_suite::pointer create_test(const std::string& name, 
