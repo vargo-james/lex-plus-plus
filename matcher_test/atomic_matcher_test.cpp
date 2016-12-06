@@ -49,7 +49,6 @@ int singleton_matcher_transition_test() {
   if (copy.update('x') != match_state::MISMATCH) {
     ++error_count;
   }
-  return 1;
   return error_count;
 }
 
@@ -65,7 +64,6 @@ int singleton_matcher_test() {
 
   error_count += matcher_compare(matcher, ";", {match_state::MISMATCH});
 
-  return 1;
   return error_count;
 }
 
@@ -97,5 +95,27 @@ int universal_singleton_matcher_test() {
   error_count += matcher_compare(matcher, ";", {match_state::FINAL_MATCH});
 
   return error_count;
+}
+
+void string_matcher_test(ttest::error_log& log) {
+  auto matcher = string_matcher<std::string>("Exact;");
+
+  if (matcher_compare(matcher, "ExaCt;", {
+        match_state::UNDECIDED, match_state::UNDECIDED, 
+        match_state::UNDECIDED, match_state::MISMATCH,
+        match_state::MISMATCH, match_state::MISMATCH 
+      })) {
+    log.append("ExaCt;");
+  }
+
+  matcher.initialize();
+  if (matcher_compare(matcher, "Exact;;", {
+        match_state::UNDECIDED, match_state::UNDECIDED, 
+        match_state::UNDECIDED, match_state::UNDECIDED,
+        match_state::UNDECIDED, match_state::FINAL_MATCH,
+        match_state::MISMATCH 
+      })) {
+    log.append("Exact;;");
+  }
 }
 

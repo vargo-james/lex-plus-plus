@@ -9,17 +9,19 @@
 
 int main() {
   using std::cerr;
+  using namespace ttest;
 
-  auto lib_test_ptr = ttest::create_test("library test", {
+  auto lib_test = create_test("lib", {
       create_matcher_module_test()
-    });
-  lib_test_ptr->run_test();
-  lib_test_ptr->report(std::cerr);
+      });
 
-  auto error_count = lib_test_ptr->error_count();
+  lib_test->run_test();
+  lib_test->report(std::cerr);
+
+  auto error_count = lib_test->error_count();
 
   if (error_count > 0) {
-    std::cerr << '\n' << error_count << " errors detected.\n";
+    std::cerr << error_count << " errors detected.\n";
   }
   else {
     std::cerr << "No errors detected.\n";

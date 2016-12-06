@@ -16,7 +16,6 @@ int matcher_trans_test() {
       return 1;
     }
   }
-  return 1;
   return 0;
 }
 
