@@ -4,19 +4,10 @@
 
 #include "ttest/simple_test.h"
 
-#include <memory>
-
 namespace ttest {
-
-void simple_test::do_test() {
-  if (test_()) {
-    append_error();
-  }
-}
-
-test_suite::pointer create_test(const std::string& name, 
-    const simple_test::test_type& test) {
-  return std::make_shared<simple_test>(name, test);
-}
+simple_test::simple_test(const message_type& name, const alt_test_type& test)
+  : simple_test(name, [test](error_log& log) { 
+      if(test()) log.append();
+    }) {}
 
 } //namespace ttest

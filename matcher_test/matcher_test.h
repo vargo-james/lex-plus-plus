@@ -20,12 +20,18 @@ int matcher_initialize_test();
 // test for a constructor copy constructed from a default constructed object.
 int matcher_constructor_test();
 
+inline int matcher_fake_test(ttest::error_log& log) {
+  log.append("ERROR");
+  return 1;
+}
+
 inline ttest::test_suite::pointer create_matcher_test() {
   using namespace ttest;
 
   return create_test("matcher test", {
     create_test("matcher initialize", matcher_initialize_test),
-    create_test("matcher constructor", matcher_constructor_test)
+    create_test("matcher constructor", matcher_constructor_test),
+    create_test("fake", matcher_fake_test)
   });
 }
 

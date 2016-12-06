@@ -14,7 +14,7 @@ int main() {
       create_matcher_module_test()
     });
   lib_test_ptr->run_test();
-  lib_test_ptr->report_errors(std::cerr);
+  lib_test_ptr->report(std::cerr);
 
   auto error_count = lib_test_ptr->error_count();
 

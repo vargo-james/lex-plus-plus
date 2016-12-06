@@ -3,7 +3,7 @@
 
 namespace ttest {
 
-void error_log::report(ostream& os) {
+void error_log::report(ostream& os) const {
   for (const auto& msg: log_) {
     os << msg << '\n';
   }

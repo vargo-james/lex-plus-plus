@@ -14,7 +14,7 @@ class error_log {
   error_log(const message_type& name): qualifying_name_ {name} {}
 
   size_t size() const {return log_.size();}
-  void report(ostream& os);
+  void report(ostream& os) const;
 
   void append(const message_type& msg);
   void append() {append({});}

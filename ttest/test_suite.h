@@ -9,6 +9,8 @@
 #ifndef _test_suite_h_
 #define _test_suite_h_
 
+#include "ttest/error_log.h"
+
 #include <cstddef>
 #include <memory>
 #include <ostream>
@@ -19,31 +21,33 @@ namespace ttest {
 
 class test_suite {
  public:
-  using error_log = std::vector<std::string>;
+  using message_type = error_log::message_type;
+  using ostream = error_log::ostream;
   using pointer = std::shared_ptr<test_suite>;
 
-  test_suite(const std::string& name)
-    : unit_name_ {name} {}
+  test_suite(const message_type& name)
+    : errors_(name) {}
 
   void run_test() {do_test();}
 
-  void report_errors(std::ostream& os) const;
+  void report(ostream& os) const {errors_.report(os);}
+  
   size_t error_count() const {return errors_.size();}
 
  protected:
-  void append_error(const std::string& msg);
-  void append_error() {append_error({});}
+  void append_error(const message_type& msg) {errors_.append(msg);}
+  void append_error() {errors_.append();}
+  // This function should properly be a private method of the compound_test
+  // class. However, it needs to access a protected method on separate
+  // instances of test_suite objects. That is not directly possible.
   void collect_errors(const std::vector<pointer>& subtests);
+
+  error_log& errors() {return errors_;}
 
  private:
   virtual void do_test() = 0; 
-  void qualify_errors(const error_log& log);
-  std::string name() const {return unit_name_;}
-  error_log& error_list() {return errors_;}
 
-  std::string unit_name_;
   error_log errors_;
-
 };
 
 
