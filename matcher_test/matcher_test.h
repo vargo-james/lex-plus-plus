@@ -5,7 +5,7 @@
 #define _matcher_test_h_
 
 #include "matcher/matcher.h"
-#include "test_machinery.h"
+#include "ttest/ttest.h"
 
 #include <string>
 #include <vector>
@@ -20,7 +20,9 @@ int matcher_initialize_test();
 // test for a constructor copy constructed from a default constructed object.
 int matcher_constructor_test();
 
-inline test_suite::pointer create_matcher_test() {
+inline ttest::test_suite::pointer create_matcher_test() {
+  using namespace ttest;
+
   return create_test("matcher test", {
     create_test("matcher initialize", matcher_initialize_test),
     create_test("matcher constructor", matcher_constructor_test)

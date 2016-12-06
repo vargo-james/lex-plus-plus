@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 
+namespace ttest {
+
 class test_suite {
  public:
   using error_log = std::vector<std::string>;
@@ -53,20 +55,6 @@ class test_suite {
 
 };
 
-class simple_test : public test_suite {
- public:
-  using test_type = std::function<int()>;
-
-  simple_test(const std::string& name, const test_type& test) 
-    : test_suite(name), 
-      test_ {test} {}
-
- private:
-  test_type test_;
-
-  void do_test() override;
-};
-
 class compound_test : public test_suite {
  public:
   using test_suite::error_log;
@@ -82,9 +70,7 @@ class compound_test : public test_suite {
 };
 
 test_suite::pointer create_test(const std::string& name, 
-    const simple_test::test_type& test);
-
-test_suite::pointer create_test(const std::string& name, 
     const std::initializer_list<test_suite::pointer>& test_list);
 
+}//namespace ttest
 #endif// _test_machinery_h_

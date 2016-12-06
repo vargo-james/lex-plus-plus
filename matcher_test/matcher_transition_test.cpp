@@ -4,7 +4,7 @@
  */ 
 
 #include "matcher/matcher_transition.h"
-#include "test_machinery.h"
+#include "ttest/ttest.h"
 
 using namespace lex;
 

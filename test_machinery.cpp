@@ -2,9 +2,11 @@
  * This implements the aggregation of tests in the test_suite class.
  */
 
-#include "test_machinery.h"
+#include "ttest/ttest.h"
 
 #include <utility>
+
+namespace ttest {
 
 void test_suite::report_errors(std::ostream& os) const {
   for (const auto& msg : errors_) {
@@ -28,12 +30,6 @@ void test_suite::collect_errors(const std::vector<pointer>& subtests) {
   }
 }
 
-void simple_test::do_test() {
-  if (test_()) {
-    append_error();
-  }
-}
-
 compound_test::compound_test(const std::string& name, 
     std::initializer_list<pointer> component_tests)
   : test_suite(name) {
@@ -53,11 +49,7 @@ void test_suite::qualify_errors(const error_log& log) {
 }
 
 test_suite::pointer create_test(const std::string& name, 
-    const simple_test::test_type& test) {
-  return std::make_shared<simple_test>(name, test);
-}
-
-test_suite::pointer create_test(const std::string& name, 
     const std::initializer_list<test_suite::pointer>& test_list) {
   return std::make_shared<compound_test>(name, test_list);
 }
+}//namespace ttest

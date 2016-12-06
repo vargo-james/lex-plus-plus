@@ -4,11 +4,13 @@
 #define _matcher_transition_test_h_
 
 #include "matcher/matcher_transition.h"
-#include "test_machinery.h"
+#include "ttest/ttest.h"
 
 int matcher_trans_test();
 
-inline test_suite::pointer create_matcher_transition_test() {
+inline ttest::test_suite::pointer create_matcher_transition_test() {
+  using namespace ttest;
+
   return create_test("matcher transition", matcher_trans_test);
 }
 

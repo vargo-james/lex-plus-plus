@@ -2,7 +2,7 @@
  * In this file, we run all the tests.
  */
 #include "matcher_test/matcher_module_test.h"
-#include "test_machinery.h"
+#include "ttest/ttest.h"
 
 #include <iostream>
 
@@ -10,7 +10,7 @@
 int main() {
   using std::cerr;
 
-  auto lib_test_ptr = create_test("library test", {
+  auto lib_test_ptr = ttest::create_test("library test", {
       create_matcher_module_test()
     });
   lib_test_ptr->run_test();

@@ -5,7 +5,7 @@
 
 #include "atomic_matcher_test.h"
 #include "matcher_test.h"
-#include "test_machinery.h"
+#include "ttest/ttest.h"
 
 #include <string>
 

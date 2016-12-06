@@ -4,9 +4,11 @@
 #include "matcher_transition_test.h"
 #include "matcher_test.h"
 #include "atomic_matcher_test.h"
-#include "test_machinery.h"
+#include "ttest/ttest.h"
 
-inline test_suite::pointer create_matcher_module_test() {
+inline ttest::test_suite::pointer create_matcher_module_test() {
+  using namespace ttest;
+
   return create_test("matcher module", {
       create_matcher_test()
       , create_matcher_transition_test()

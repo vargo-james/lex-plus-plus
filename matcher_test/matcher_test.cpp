@@ -3,9 +3,10 @@
  */
 
 #include "matcher_test/matcher_test.h"
-#include "test_machinery.h"
+#include "ttest/ttest.h"
 
 #include <cassert>
+#include <string>
 
 using namespace lex;
 
@@ -26,8 +27,6 @@ int matcher_compare(matcher<char>& matcher, const std::string& updates,
   // Return 0 if the updates were consistent with the predictions.
   return 0;
 }
-
-const std::string match_test {"matcher_test: "};
 
 int default_matcher_test(matcher<char>& mat) {
   return matcher_compare(mat, "a", {match_state::MISMATCH}, 
