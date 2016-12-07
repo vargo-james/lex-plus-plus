@@ -8,7 +8,6 @@
 
 void concatenation_test(ttest::error_log& log) {
   using namespace lex;
-  using namespace detail;
   using std::move;
 
   auto str1_matcher = string_matcher<std::string>("ab");

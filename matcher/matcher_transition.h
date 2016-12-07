@@ -6,6 +6,7 @@
 #include <memory>
 
 namespace lex {
+namespace detail {
 
 // A matcher_transition object manages the state transitions for the 
 // matcher class. It does the work for both the update() and initialize()
@@ -39,5 +40,6 @@ class matcher_transition_cloner : public matcher_transition<Char> {
   }
 };
 
+}//namespace detail
 }//namespace lex
 #endif// _matcher_transition_h_

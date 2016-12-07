@@ -153,6 +153,7 @@ match_state concatenate_transition<Matcher>::initialize() {
   }
   return r_state;
 }
+}//namespace detail
 
 // This function creates the concatenation object.
 template <typename MatcherContainer>
@@ -161,11 +162,10 @@ concatenate(MatcherContainer&& container) {
   using matcher_type = typename MatcherContainer::value_type;
   using std::forward;
 
-  matcher_factory<concatenate_transition<matcher_type>> fac;
+  matcher_factory<detail::concatenate_transition<matcher_type>> fac;
   return fac.create(forward<MatcherContainer>(container));
 }
 
 
-}//namespace detail
 }//namespace lex
 #endif// _concatenation_h_

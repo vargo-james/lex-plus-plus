@@ -118,12 +118,12 @@ matcher_replicator_transition<Matcher>::update(const char_type& ch) {
   if (undecided) return match_state::UNDECIDED;
   return match_state::MISMATCH;
 }
+}//namespace detail
 
 template <typename Matcher>
 Matcher replicate(Matcher&& matcher, replication rep) {
-  matcher_factory<matcher_replicator_transition<Matcher>> fac;
+  matcher_factory<detail::matcher_replicator_transition<Matcher>> fac;
   return fac.create(std::forward<Matcher>(matcher), rep);
 }
-}//namespace detail
 }//namespace lex
 #endif// _replication_h_

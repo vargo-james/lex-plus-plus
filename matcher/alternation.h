@@ -120,16 +120,16 @@ match_state alternation_transition<Matcher>::initialize() {
 
   return alternation_state(initial_state.begin(), initial_state.end());
 }
+}//namespace detail
 
 template <typename MatcherContainer>
 typename MatcherContainer::value_type
 alternation(MatcherContainer&& container) {
   using matchers = typename MatcherContainer::value_type;
 
-  matcher_factory<alternation_transition<matchers>> fac;
+  matcher_factory<detail::alternation_transition<matchers>> fac;
   return fac.create(std::forward<MatcherContainer>(container));
 }
 
-}//namespace detail
 }//namespace lex
 #endif// _alternation_h_

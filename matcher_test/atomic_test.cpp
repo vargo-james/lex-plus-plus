@@ -20,7 +20,7 @@ using namespace lex;
 int singleton_matcher_transition_test() {
   int error_count {0};
 
-  singleton_matcher_transition<char> trans('a');
+  detail::singleton_matcher_transition<char> trans('a');
   auto copy = trans;
   if (trans.update('a') != match_state::FINAL_MATCH) {
     ++error_count;

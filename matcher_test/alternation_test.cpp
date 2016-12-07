@@ -7,7 +7,6 @@
 
 void alternation_test(ttest::error_log& log) {
   using namespace lex;
-  using namespace detail;
   using std::move;
   using std::string;
 

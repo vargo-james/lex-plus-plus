@@ -11,7 +11,7 @@ void char_replication_test(ttest::error_log& log) {
   auto char_match = singleton_matcher('x');
   replication repl(1,3);
 
-  auto matcher = detail::replicate(std::move(char_match), repl);
+  auto matcher = replicate(std::move(char_match), repl);
   
   if (matcher_compare(matcher, "xxC;", {
         match_state::MATCH, match_state::MATCH, 
@@ -38,7 +38,7 @@ void char_replication_test(ttest::error_log& log) {
 
   auto alt_char_match = singleton_matcher('.');
   replication alt_repl(0, -1);
-  auto alt_matcher = detail::replicate(std::move(alt_char_match), alt_repl);
+  auto alt_matcher = replicate(std::move(alt_char_match), alt_repl);
 
   if (matcher_compare(alt_matcher, ".....x", {
         match_state::MATCH, match_state::MATCH, 
@@ -56,7 +56,7 @@ void string_replication_test(ttest::error_log& log) {
 
   auto str_match = string_matcher<std::string>("ab");
   replication repl(1,3);
-  auto matcher = detail::replicate(move(str_match), repl);
+  auto matcher = replicate(move(str_match), repl);
 
   if (matcher_compare(matcher, "ababac", {
         match_state::UNDECIDED, match_state::MATCH, 
@@ -83,7 +83,7 @@ void universal_replication_test(ttest::error_log& log) {
   using std::move;
   auto universal = universal_singleton_matcher<char>();
   replication repl(1,3);
-  auto matcher = detail::replicate(move(universal), repl);
+  auto matcher = replicate(move(universal), repl);
 
   if (matcher_compare(matcher, "ab5&", {
         match_state::MATCH, match_state::MATCH, 
@@ -96,7 +96,6 @@ void universal_replication_test(ttest::error_log& log) {
 
 void repeated_replication_test(ttest::error_log& log) {
   using namespace lex;
-  using namespace detail;
   using std::move;
   auto single_char = singleton_matcher('y');
   replication repl1(1,2);

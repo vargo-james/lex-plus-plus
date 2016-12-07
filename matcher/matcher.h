@@ -30,11 +30,12 @@ template <typename Char>
 class matcher {
  public:
   using char_type = Char;
-  using transition_pointer = typename matcher_transition<char_type>::pointer;
+  using transition_pointer = 
+    typename detail::matcher_transition<char_type>::pointer;
 
   // The default matcher matches an empty string.
   matcher() 
-    : transition_ {matcher_transition<char_type>{}.clone()},
+    : transition_ {detail::matcher_transition<char_type>{}.clone()},
       state_ {transition_->initialize()} {}
   // Most matcher objects are constructed from a transition_pointer object.
   explicit matcher(transition_pointer&& f) 
