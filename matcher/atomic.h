@@ -8,6 +8,7 @@
 namespace lex {
 
 // The Regex transition object corresponding to a single char.
+namespace detail {
 template <typename Char>
 struct singleton_matcher_transition 
   : public matcher_transition_cloner<
@@ -40,9 +41,10 @@ match_state singleton_matcher_transition<Char>::initialize() {
   return match_state::UNDECIDED;
 }
 
+}//namespace detail
 template <typename Char>
 matcher<Char> singleton_matcher(const Char& ch) {
-  matcher_factory<singleton_matcher_transition<Char>> fac;
+  matcher_factory<detail::singleton_matcher_transition<Char>> fac;
   return fac.create(ch);
 }
 
@@ -51,6 +53,7 @@ matcher<Char> singleton_matcher(const Char& ch) {
 // E.g. [:alpha:]
 // In order for the initialize() method to be semantically correct, 
 // the predicate Pred must be stateless.
+namespace detail {
 template <typename Char>
 class predicate_matcher_transition 
   : public matcher_transition_cloner<
@@ -82,26 +85,29 @@ template <typename Char>
 match_state predicate_matcher_transition<Char>::initialize() {
   return match_state::UNDECIDED;
 }
-
+}//namespace detail
 template <typename Char>
 matcher<Char> predicate_matcher(const predicate_type_t<Char>& p) {
-  matcher_factory<predicate_matcher_transition<Char>> fac;
+  matcher_factory<detail::predicate_matcher_transition<Char>> fac;
   return fac.create(p);
 }
 
-
+/*
 template <typename Char>
 struct always_true {
   bool operator()(const Char&) {return true;}
-};
+};*/
 
 // This creates a matcher that matches a '.'. The predicate
 // always returns true.
 template <typename Char>
 matcher<Char> universal_singleton_matcher() {
-  return predicate_matcher<Char>(always_true<Char>{});
+  return predicate_matcher<Char>([](const auto&){return true;});
+  //return predicate_matcher<Char>(always_true<Char>{});
 }
 
+
+namespace detail {
 template <typename Iterator>
 class string_matcher_transition 
   : public matcher_transition_cloner<string_matcher_transition<Iterator>, 
@@ -138,11 +144,12 @@ match_state string_matcher_transition<Iterator>::initialize() {
   current = 0;
   return string.empty()? match_state::FINAL_MATCH : match_state::UNDECIDED;
 }
+}//namespace detail
 
 template <typename Iterator>
 matcher<char_type_t<Iterator>>
 string_matcher(Iterator begin, Iterator end) {
-  matcher_factory<string_matcher_transition<Iterator>> fac;
+  matcher_factory<detail::string_matcher_transition<Iterator>> fac;
   return fac.create(begin, end);
 }
 
