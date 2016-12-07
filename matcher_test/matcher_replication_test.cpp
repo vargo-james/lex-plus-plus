@@ -93,3 +93,24 @@ void universal_replication_test(ttest::error_log& log) {
   }
   matcher.initialize();
 }
+
+void repeated_replication_test(ttest::error_log& log) {
+  using namespace lex;
+  using namespace detail;
+  using std::move;
+  auto single_char = singleton_matcher('y');
+  replication repl1(1,2);
+  replication repl2(2,3);
+  auto matcher1 = replicate(move(single_char), repl1);
+  auto matcher = replicate(move(matcher1), repl2);
+  
+  if (matcher_compare(matcher, "yyyyyyy", {
+        match_state::UNDECIDED, match_state::MATCH, 
+        match_state::MATCH, match_state::MATCH,
+        match_state::MATCH, match_state::FINAL_MATCH,
+        match_state::MISMATCH
+      })) {
+    log.append("yyyyyyy");
+  }
+  matcher.initialize();
+}
