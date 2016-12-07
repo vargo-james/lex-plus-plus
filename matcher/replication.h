@@ -1,5 +1,5 @@
-#ifndef _matcher_replication_h_
-#define _matcher_replication_h_
+#ifndef _replication_h_
+#define _replication_h_
 
 #include "matcher/matcher.h"
 
@@ -126,4 +126,4 @@ Matcher replicate(Matcher&& matcher, replication rep) {
 }
 }//namespace detail
 }//namespace lex
-#endif// _matcher_replication_h_
+#endif// _replication_h_

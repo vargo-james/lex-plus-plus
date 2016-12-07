@@ -1,5 +1,5 @@
-#ifndef _matcher_concatenation_h_
-#define _matcher_concatenation_h_
+#ifndef _concatenation_h_
+#define _concatenation_h_
 
 #include "matcher/matcher.h"
 
@@ -9,6 +9,7 @@
 #include <utility>
 
 namespace lex {
+namespace detail {
 // We need to handle concatenation of a list of matchers.
 // We need to keep a list of all the individual matchers in their
 // initial states.
@@ -165,5 +166,6 @@ concatenate(MatcherContainer&& container) {
 }
 
 
+}//namespace detail
 }//namespace lex
-#endif// _matcher_concatenation_h_
+#endif// _concatenation_h_

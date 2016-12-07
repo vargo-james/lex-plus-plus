@@ -1,5 +1,5 @@
-#ifndef _atomic_matcher_h_
-#define _atomic_matcher_h_
+#ifndef _atomic_h_
+#define _atomic_h_
 
 #include "matcher/matcher.h"
 
@@ -154,4 +154,4 @@ string_matcher(const String& str) {
 }
 
 }//namespace lex
-#endif// _atomic_matcher_h_
+#endif// _atomic_h_

@@ -1,5 +1,5 @@
-#ifndef _matcher_alternation_h_
-#define _matcher_alternation_h_
+#ifndef _alternation_h_
+#define _alternation_h_
 
 #include "matcher/matcher.h"
 
@@ -132,4 +132,4 @@ alternation(MatcherContainer&& container) {
 
 }//namespace detail
 }//namespace lex
-#endif// _matcher_alternation_h_
+#endif// _alternation_h_

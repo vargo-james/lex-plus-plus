@@ -1,5 +1,5 @@
-#ifndef _matcher_replication_test_h_
-#define _matcher_replication_test_h_
+#ifndef _replication_test_h_
+#define _replication_test_h_
 
 #include "ttest/ttest.h"
 
@@ -8,7 +8,7 @@ void string_replication_test(ttest::error_log& log);
 void universal_replication_test(ttest::error_log& log);
 void repeated_replication_test(ttest::error_log& log);
 
-inline ttest::test_suite::pointer create_matcher_replication_test() {
+inline ttest::test_suite::pointer create_replication_test() {
   using namespace ttest;
 
   return create_test("replication", {
@@ -19,4 +19,4 @@ inline ttest::test_suite::pointer create_matcher_replication_test() {
   });
 }
 
-#endif// _matcher_replication_test_h_
+#endif// _replication_test_h_

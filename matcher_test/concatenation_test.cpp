@@ -1,13 +1,14 @@
-#include "matcher_test/matcher_concatenation_test.h"
+#include "matcher_test/concatenation_test.h"
 #include "matcher_test/matcher_test.h"
-#include "matcher/atomic_matcher.h"
-#include "matcher/matcher_concatenation.h"
+#include "matcher/atomic.h"
+#include "matcher/concatenation.h"
 
 #include <string>
 #include <vector>
 
 void concatenation_test(ttest::error_log& log) {
   using namespace lex;
+  using namespace detail;
   using std::move;
 
   auto str1_matcher = string_matcher<std::string>("ab");

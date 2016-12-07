@@ -1,7 +1,7 @@
 #include "matcher_test/matcher_test.h"
-#include "matcher_test/matcher_replication_test.h"
-#include "matcher/atomic_matcher.h"
-#include "matcher/matcher_replication.h"
+#include "matcher_test/replication_test.h"
+#include "matcher/atomic.h"
+#include "matcher/replication.h"
 
 #include <utility>
 

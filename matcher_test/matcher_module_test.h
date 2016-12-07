@@ -3,10 +3,10 @@
 
 #include "matcher_transition_test.h"
 #include "matcher_test.h"
-#include "atomic_matcher_test.h"
-#include "matcher_alternation_test.h"
-#include "matcher_concatenation_test.h"
-#include "matcher_replication_test.h"
+#include "atomic_test.h"
+#include "alternation_test.h"
+#include "concatenation_test.h"
+#include "replication_test.h"
 #include "ttest/ttest.h"
 
 inline ttest::test_suite::pointer create_matcher_module_test() {
@@ -15,10 +15,10 @@ inline ttest::test_suite::pointer create_matcher_module_test() {
   return create_test("matcher", {
       create_matcher_test()
       , create_matcher_transition_test()
-      , create_atomic_matcher_test(),
-      create_matcher_replication_test(),
-      create_matcher_concatenation_test(),
-      create_matcher_alternation_test()
+      , create_atomic_test(),
+      create_replication_test(),
+      create_concatenation_test(),
+      create_alternation_test()
   });
 }
 

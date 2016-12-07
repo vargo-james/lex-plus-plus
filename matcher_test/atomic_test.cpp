@@ -1,9 +1,9 @@
 /*
- * In this file, the test functions for the atomic_matcher 
+ * In this file, the test functions for the atomic 
  * header are defined.
  */
 
-#include "atomic_matcher_test.h"
+#include "atomic_test.h"
 #include "matcher_test.h"
 #include "ttest/ttest.h"
 
