@@ -30,14 +30,14 @@ template <typename Char>
 class matcher {
  public:
   using char_type = Char;
-  using state_transition = state_transition_ptr<char_type>;
+  using transition_pointer = typename matcher_transition<char_type>::pointer;
 
   // The default matcher matches an empty string.
   matcher() 
     : transition_ {matcher_transition<char_type>{}.clone()},
       state_ {transition_->initialize()} {}
-  // Most matcher objects are constructed from a state_transition object.
-  explicit matcher(state_transition&& f) 
+  // Most matcher objects are constructed from a transition_pointer object.
+  explicit matcher(transition_pointer&& f) 
     : transition_ {std::move(f)},
       state_ {transition_->initialize()} {}
   // Copy and Move constructors
@@ -52,10 +52,10 @@ class matcher {
   // This method returns the matcher to its original state.
   // If the matcher was copy or move constructed from another matcher, then 
   // the state is converted to the original state of the original matcher 
-  // which was constructed from a state_transition object.
+  // which was constructed from a transition_pointer object.
   void initialize() {state_ = transition_->initialize();}
  private:
-  state_transition transition_;
+  transition_pointer transition_;
   match_state state_;
 };
 
@@ -82,7 +82,7 @@ matcher<Char>& matcher<Char>::operator=(matcher&& r) {
   state_ = r.state_;
   return *this;
 }
-// The update method checks the state and defers to the state_transition
+// The update method checks the state and defers to the transition_pointer
 // object if any work is necessary.
 template <typename Char>
 void matcher<Char>::update(const char_type& ch) {
@@ -93,15 +93,15 @@ void matcher<Char>::update(const char_type& ch) {
     state_ = match_state::MISMATCH;
     return;
   }
-  else {
+  else {  // state == match_state::UNDECIDED or match_state::MATCH
     state_ = transition_->update(ch);
     return;
   }
 }
 
-// All nontrivial  matcher objects are created from a state_transition object.
+// All nontrivial matcher objects are created from a transition_pointer object.
 // So we use this factory class to facilitate the creation of a matcher object
-// directly from the constructor arguments of the state_transition object.
+// directly from the constructor arguments of the transition_pointer object.
 template <typename Transition>
 struct matcher_factory {
   using char_type = typename Transition::char_type;

@@ -7,6 +7,9 @@
 
 namespace lex {
 
+// A matcher_transition object manages the state transitions for the 
+// matcher class. It does the work for both the update() and initialize()
+// methods.
 template <typename Char>
 class matcher_transition {
  public:
@@ -24,6 +27,8 @@ class matcher_transition {
   clone() const {return std::make_unique<matcher_transition>();}
 };
 
+// This bit of CRTP automatically correctly defines the clone
+// method for all classes derived from this cloner class.
 template <typename Derived, typename Char>
 class matcher_transition_cloner : public matcher_transition<Char> {
  public:
@@ -33,10 +38,6 @@ class matcher_transition_cloner : public matcher_transition<Char> {
     return std::make_unique<Derived>(static_cast<Derived const&>(*this));
   }
 };
-
-template <typename Char>
-using state_transition_ptr = 
-  std::unique_ptr<matcher_transition<Char>>;
 
 }//namespace lex
 #endif// _matcher_transition_h_
