@@ -1,9 +1,9 @@
 #ifndef _lexer_alt_h_
 #define _lexer_alt_h_
 
-#include "lexer_impl.h"
-#include "input_buffer.h"
-#include "translator.h"
+#include "lex/lexer_impl.h"
+#include "iterator_adapter/input_buffer.h"
+#include "lex/translator.h"
 
 #include <iterator>
 #include <memory>

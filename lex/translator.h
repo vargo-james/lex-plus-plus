@@ -1,7 +1,7 @@
 #ifndef _translator_h_
 #define _translator_h_
 
-#include "regex_factory.h"
+#include "regex/regex_factory.h"
 #include "matcher/matcher.h"
 
 #include <functional>

@@ -1,9 +1,9 @@
 #ifndef _lexer_impl_h_
 #define _lexer_impl_h_
 
-#include "buffer_iterator.h"
+#include "iterator_adapter/buffer_iterator.h"
 #include "matcher/matcher.h"
-#include "translator.h"
+#include "lex/translator.h"
 
 #include <cassert>
 #include <string>

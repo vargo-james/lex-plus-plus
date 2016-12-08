@@ -1,10 +1,10 @@
 #ifndef _iterator_adapter_h_
 #define _iterator_adapter_h_
 
-#include "input_buffer.h"
-#include "buffer_iterator.h"
-#include "translator.h"
-#include "lexer_impl.h"
+#include "iterator_adapter/input_buffer.h"
+#include "iterator_adapter/buffer_iterator.h"
+#include "lex/translator.h"
+#include "lex/lexer_impl.h"
 
 #include <cstddef>
 #include <iterator>
