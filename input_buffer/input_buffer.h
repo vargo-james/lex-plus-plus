@@ -55,21 +55,21 @@ class input_buffer {
 };
 
 template <typename InputIter, typename Storage>
-typename input_storage<InputIter, Storage>::iterator
-input_storage<InputIter, Storage>::begin() {
+typename input_buffer<InputIter, Storage>::iterator
+input_buffer<InputIter, Storage>::begin() {
   return iterator(this, 0);
 }
 
 template <typename InputIter, typename Storage>
-typename input_storage<InputIter, Storage>::iterator
-input_storage<InputIter, Storage>::end() {
+typename input_buffer<InputIter, Storage>::iterator
+input_buffer<InputIter, Storage>::end() {
   return iterator(this);
 }
 
 // We use the lag flag because we do not want to increment the input iterator
 // current until we actually need to dereference it.
 template <typename InputIter, typename Storage>
-bool input_storage<InputIter, Storage>::get() {
+bool input_buffer<InputIter, Storage>::get() {
   if (lag) {
     ++current;
   }
@@ -81,8 +81,8 @@ bool input_storage<InputIter, Storage>::get() {
 
 // This will invalidate iterators.
 template <typename InputIter, typename Storage>
-typename input_storage<InputIter, Storage>::iterator
-input_storage<InputIter, Storage>::flush(iterator it) {
+typename input_buffer<InputIter, Storage>::iterator
+input_buffer<InputIter, Storage>::flush(iterator it) {
   auto index = it.index();
   if (index > size()) {
     it.update_storage();

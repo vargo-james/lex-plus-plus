@@ -9,7 +9,7 @@
 using namespace lex;
 
 int matcher_trans_test() {
-  matcher_transition<char> trans;
+  detail::matcher_transition<char> trans;
 
   for (auto ch = 'a'; ch != 'z'; ++ch) {
     if (trans.update(ch) != match_state::MISMATCH) {
