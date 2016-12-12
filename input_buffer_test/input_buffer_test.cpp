@@ -17,11 +17,6 @@ void input_buffer_test(ttest::error_log& log) {
 
   // Initializing the istream_iterator initiates a read from cin.
   // Therefore, this should not be done until you are ready to read.
-  /*
-  istream_iterator<char> b(cin);
-  istream_iterator<char> e;
-  */
-
   using Iterator = istream_iterator<char>;
   noskipws(cin);
   input_buffer<Iterator> buffer(Iterator(cin), Iterator{});

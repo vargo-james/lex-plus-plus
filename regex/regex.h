@@ -2,7 +2,7 @@
 #define _regex_h_
 
 #include "regex_types.h"
-#include "regex/regex_factory_impl.h"
+#include "regex_factory_impl.h"
 
 #include <regex>
 #include <string>

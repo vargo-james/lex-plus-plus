@@ -11,7 +11,8 @@
 # set separately for a given project. 
 program_NAME := test
 program_SOURCES := $(wildcard *.cpp) $(wildcard matcher_test/*.cpp) \
-	$(wildcard ttest/*.cpp) $(wildcard input_buffer_test/*.cpp)
+	$(wildcard ttest/*.cpp) $(wildcard input_buffer_test/*.cpp) \
+	$(wildcard regex_test/*.cpp)
 program_OBJECTS := ${program_SOURCES:.cpp=.o}
 program_INCLUDES := .
 program_LIBRARY_DIRS := 
@@ -55,6 +56,10 @@ $(program_NAME): $(program_OBJECTS)
 	$(POSTCOMPILE)
 
 matcher_test/%.o : matcher_test/%.cpp $(DEPDIR)/%.d
+	$(COMPILE.cc) $(OUTPUT_OPTION) $<
+	$(POSTCOMPILE)
+
+regex_test/%.o : regex_test/%.cpp $(DEPDIR)/%.d
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
 	$(POSTCOMPILE)
 

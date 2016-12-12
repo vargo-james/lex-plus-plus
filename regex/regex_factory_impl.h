@@ -1,12 +1,12 @@
 #ifndef _regex_factory_impl_h_
 #define _regex_factory_impl_h_
 
-#include "alternation.h"
+#include "matcher/alternation.h"
 #include "matcher/atomic.h"
 #include "matcher/concatenation.h"
 #include "matcher/replication.h"
 
-#include "regex/regex_bracket.h"
+#include "regex_bracket.h"
 
 #include <algorithm>
 #include <boost/lexical_cast.hpp>

@@ -1,7 +1,7 @@
 #ifndef regex_factory_h_
 #define regex_factory_h_
 
-#include "regex/regex_factory_impl.h"
+#include "regex_factory_impl.h"
 
 #include <regex>
 
