@@ -1,3 +1,11 @@
+/*
+ * Questions:
+ *  extended_reg_exp(): 
+ *    Do we need emplace_back?
+ *    Do we need to std::move brances.front()?
+ *  ERE_branch
+ *    Do we need emplace_back?
+ */
 #ifndef _regex_factory_impl_h_
 #define _regex_factory_impl_h_
 
@@ -45,7 +53,7 @@ template <typename Iterator>
 void verify_closing(Iterator& begin, Iterator& end,
     char_type_t<Iterator> close) {
   if (begin == end || *begin != close) {
-    throw invalid_close(close); // throws an exception.
+    throw invalid_close(close);
   }
   ++begin;
 }
@@ -118,7 +126,9 @@ char_type_t<Iterator>
 quoted_char(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
 
-  assert(*begin++ == char_type('\\'));
+  assert(*begin == char_type('\\'));
+  ++begin;
+
   if (begin == end) {
     throw regex_error("Invalid regex: unable to read quoted char");
   }
@@ -179,6 +189,12 @@ one_char_or_coll_element_ERE(Iterator& begin, Iterator& end) {
   return singleton_matcher(ordinary_char(begin, end));
 }
 
+// This function reads a single regular expression element without the need
+// to consider replication, concatenation, or alternation. There are two cases.
+// The first case is a parenthetical expression. In that case, the contents
+// inside the parenthesis can be any regular expression, so we must delegate
+// to the top level reader.
+// In the second case, we have a single character or collating element.
 template <typename Iterator>
 matcher<char_type_t<Iterator>>
 single_element(Iterator& begin, Iterator& end) {
@@ -191,7 +207,8 @@ single_element(Iterator& begin, Iterator& end) {
   return one_char_or_coll_element_ERE(begin, end);
 }
 
-// This reads something like .{3}? or (abc){2}*{5,9}
+// This reads something like .{3}? or (abc){2}*{5,9}. That is,
+// a single element which is replicated one or more times.
 template <typename Iterator>
 matcher<char_type_t<Iterator>>
 ERE_expression(Iterator& begin, Iterator& end) {
@@ -212,6 +229,10 @@ ERE_expression(Iterator& begin, Iterator& end) {
   return result;
 }
 
+// This function reads an individual branch, thus the alternation operator |
+// need not be considered. Instead this reads a sequence of composable
+// regular expressions and then concatenates them. The individual units
+// are read using the ERE_expression function.
 template <typename Iterator>
 matcher<char_type_t<Iterator>>
 ERE_branch(Iterator& begin, Iterator& end) {
@@ -233,6 +254,11 @@ ERE_branch(Iterator& begin, Iterator& end) {
   return concatenate(move(expressions));
 }
 
+// This function reads a regular expression and returns the corresponding
+// matcher object.
+// Specifically, it calls a branch reader and combines the branches
+// using matcher alternation. In other words it does the work of parsing
+// regex = branch_1|branch_2|...|branch_k
 template <typename Iterator, typename Traits = 
   std::regex_traits<char_type_t<Iterator>>>
 matcher<char_type_t<Iterator>>

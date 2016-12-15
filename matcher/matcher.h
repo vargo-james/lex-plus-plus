@@ -9,6 +9,7 @@
 
 namespace lex {
 
+
 //DEBUG
 /*
 char rep(match_state s) {
@@ -37,19 +38,22 @@ class matcher {
   matcher() 
     : transition_ {detail::matcher_transition<char_type>{}.clone()},
       state_ {transition_->initialize()} {}
+
   // Most matcher objects are constructed from a transition_pointer object.
   explicit matcher(transition_pointer&& f) 
     : transition_ {std::move(f)},
       state_ {transition_->initialize()} {}
-  // Copy and Move constructors
+
   matcher(const matcher& r);
   matcher& operator=(const matcher& r);
   matcher(matcher&& r);
   matcher& operator=(matcher&& r);
-  // This method reports the current state.
+
   match_state state() const {return state_;}
+
   // This method takes a character and uses it to update the matcher's state.
   void update(const char_type& ch);
+
   // This method returns the matcher to its original state.
   // If the matcher was copy or move constructed from another matcher, then 
   // the state is converted to the original state of the original matcher 

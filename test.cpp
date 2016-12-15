@@ -15,7 +15,7 @@ int main() {
 
   auto lib_test = create_test("lib", {
       create_matcher_module_test(),
-      create_input_buffer_test(),
+      //create_input_buffer_test(),
       create_regex_test()
     });
 

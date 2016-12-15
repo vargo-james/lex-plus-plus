@@ -4,7 +4,7 @@
 
 
 # My editor is set to substitute spaces for tabs. so I prefer to change 
-# the recipe prefix to adjustig my editor.
+# the recipe prefix to adjusting my editor.
 .RECIPEPREFIX =   
 
 # With the exception of the program_OBJECTS variable. These must all be

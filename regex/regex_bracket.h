@@ -1,11 +1,19 @@
+/*
+ *  What about [^]. Should initialize check that?
+ *
+ *  read_next_element needs to be fixed.
+ */
 #ifndef _regex_bracket_expression_h_
 #define _regex_bracket_expression_h_
 
+#include "bracket_list.h"
+#include "range.h"
 #include "regex_types.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <regex>
 #include <string>
 #include <vector>
 #include <utility>
@@ -18,26 +26,6 @@ inline void throw_if_not(bool p) {
   if (!p) {
     throw regex_error("Invalid regex: bad bracket");
   }
-}
-
-// This combines the element predicates of a matching list.
-template <typename Char>
-predicate_type_t<Char> matching_predicates(
-    const std::vector<predicate_type_t<Char>>& predicates) {
-  return [predicates] (const Char& ch) {
-    return std::any_of(predicates.begin(), predicates.end(),
-        [&ch](const auto& p) {return p(ch);});
-  };
-}
-
-// This combines teh element predicates of a non-matching list.
-template <typename Char>
-predicate_type_t<Char> non_matching_predicates(
-    const std::vector<predicate_type_t<Char>>& predicates) {
-  return [predicates] (const Char& ch) {
-    return std::none_of(predicates.begin(), predicates.end(),
-        [&ch](const auto& p) {return p(ch);});
-  };
 }
 
 template <typename Char>
@@ -119,6 +107,8 @@ bracket_class(Iterator& begin, Iterator& end) {
   return built_in_predicate(class_name);
 }
 
+// Question: What does [a-[... mean? It corresponds to a puzzling branch in 
+// this function.
 template <typename Iterator>
 void
 add_predicate(Iterator& begin, Iterator& end, 
@@ -162,7 +152,7 @@ element_predicates(Iterator& begin, Iterator end) {
   auto ch = *begin;
   if (ch == char_type(']') || ch == char_type('-')) {
     auto pred = singleton_predicate(ch);
-    elements.emplace_back(move(pred));
+    elements.push_back(move(pred));
     ++begin;
     throw_if_not(begin != end);
   }
@@ -176,13 +166,33 @@ element_predicates(Iterator& begin, Iterator end) {
   return elements;
 }
 
+// This combines the element predicates of a matching list.
+template <typename Char>
+predicate_type_t<Char> matching_predicates(
+    const std::vector<predicate_type_t<Char>>& predicates) {
+  return [predicates] (const Char& ch) {
+    return std::any_of(predicates.begin(), predicates.end(),
+        [&ch](const auto& p) {return p(ch);});
+  };
+}
+
+// This combines the element predicates of a non-matching list.
+template <typename Char>
+predicate_type_t<Char> non_matching_predicates(
+    const std::vector<predicate_type_t<Char>>& predicates) {
+  return [predicates] (const Char& ch) {
+    return std::none_of(predicates.begin(), predicates.end(),
+        [&ch](const auto& p) {return p(ch);});
+  };
+}
+
 template <typename Iterator>
 predicate_type_t<char_type_t<Iterator>>
 bracket_expression(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
   using std::move;
 
-  assert(*begin == char_type('['));
+  throw_if_not(*begin == char_type('['));
   ++begin;
   throw_if_not(begin != end);
 
@@ -198,6 +208,117 @@ bracket_expression(Iterator& begin, Iterator& end) {
     non_matching_predicates(elements);
 
   return result;
+}
+
+template <typename Char, typename Traits = std::regex_traits<Char>>
+class bracket_reader {
+ public:
+  using char_type = Char;
+  using string_type = typename Traits::string_type;
+  using iterator = typename string_type::const_iterator;
+  using range_type = range<iterator>;
+  using element_type = predicate_type_t<char_type>;
+
+  // Pre: begin points to '['.
+  // Post: begin points past ']'.
+  // Throws regex_error if a formatting error is encountered.
+  element_type read(range_type& r);
+
+ private:
+  bracket_list<element_type> elements;
+
+  // This method is the first to be called. 
+  //   It identifies the correct value of matching_.
+  //   It advances begin to the first character after '[' or '^' 
+  //    in the non-matching case.
+  //   It throws if a formatting error is found.
+  void initialize(range_type& r);
+
+  void read_elements(range_type& r);
+
+  void read_next_element(range_type& r);
+
+  void clear() {elements.clear();}
+  // This combines all the elements that have been read.
+  element_type combine_elements() const;
+};
+
+template <typename Char, typename Traits>
+typename bracket_reader<Char, Traits>::element_type
+bracket_reader<Char, Traits>::read(range_type& r) {
+  initialize(r);
+  read_elements(r);
+  auto p = combine_elements();
+  clear();
+  return p;
+}
+
+template <typename Char, typename Traits>
+void bracket_reader<Char, Traits>::initialize(range_type& r) {
+  r.check_bracket_open();
+  r.checked_advance();
+
+  if (r.current_is(char_type('^'))) {
+    elements.set_matching(false);
+    r.checked_advance();
+  }
+  return;
+}
+
+template <typename Char, typename Traits>
+void bracket_reader<Char, Traits>::read_elements(range_type& r) {
+  using std::move;
+
+  if (r.bracket_close()) {
+    elements.add_element(singleton_predicate(r.current()));
+    r.checked_advance();
+  }
+  if (r.current_is(char_type('-'))) {
+    elements.add_element(singleton_predicate(r.current()));
+    r.checked_advance();
+  }
+
+  while (!r.bracket_close()) {
+    read_next_element(r);
+  }
+  r.check_bracket_close();
+  r.advance();
+}
+
+template <typename Char, typename Traits>
+void bracket_reader<Char, Traits>::read_next_element(range_type& r) {
+
+  if (r.bracket_open()) {
+    auto begin = r.get_begin();
+    auto end = r.get_end();
+    elements.add_element(bracket_class(begin, end));
+    return;
+  }
+
+  auto lower = r.current();
+  r.checked_advance();
+
+  if (r.current_is(char_type('-'))) {
+    r.checked_advance();
+    if (r.bracket_close()) {
+      elements.add_element(singleton_predicate(lower));
+      elements.add_element(singleton_predicate(char_type('-')));
+      return;
+    }
+    // WHAT IS THIS??
+    if (r.bracket_open()) {
+      return;
+    }
+    elements.add_element(range_predicate(lower, r.current()));
+  } else {
+    elements.add_element(singleton_predicate(lower));
+  }
+}
+
+template <typename Char, typename Traits>
+typename bracket_reader<Char, Traits>::element_type 
+bracket_reader<Char, Traits>::combine_elements() const {
+  return elements.combine();
 }
 
 }//namespace detail
