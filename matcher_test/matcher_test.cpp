@@ -42,6 +42,9 @@ int matcher_constructor_test() {
   // Copy construction is tested here.
   matcher<char> mat1;
   auto mat2 = mat1;
+  // Copy Assignment is tested here.
+  matcher<char> mat3;
+  mat3 = mat2;
 
   return error_count;
 }

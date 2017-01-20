@@ -285,6 +285,10 @@ void bracket_reader<Char, Traits>::read_elements(range_type& r) {
   r.advance();
 }
 
+// This currently depends on the free functions:
+//   bracket_class - to read things like [:alpha:]
+//   singleton_predicate - for simple elements
+//   range_predicate - for ranges such as a-z
 template <typename Char, typename Traits>
 void bracket_reader<Char, Traits>::read_next_element(range_type& r) {
 
@@ -305,7 +309,7 @@ void bracket_reader<Char, Traits>::read_next_element(range_type& r) {
       elements.add_element(singleton_predicate(char_type('-')));
       return;
     }
-    // WHAT IS THIS??
+    // WHAT IS THIS?? THIS IS CURRENTLY AN ERROR.
     if (r.bracket_open()) {
       return;
     }

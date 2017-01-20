@@ -72,8 +72,9 @@ matcher<Char>::matcher(const matcher& r)
 // Copy assignment.
 template <typename Char>
 matcher<Char>& matcher<Char>::operator=(const matcher& r) {
-  transition_ = r.transition.clone();
+  transition_ = r.transition_->clone();
   state_ = r.state_;
+  return *this;
 }
 // Move constructor.
 template <typename Char>

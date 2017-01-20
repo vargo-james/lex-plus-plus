@@ -14,6 +14,7 @@
 #include "matcher/concatenation.h"
 #include "matcher/replication.h"
 
+#include "range.h"
 #include "regex_bracket.h"
 
 #include <algorithm>
@@ -288,6 +289,70 @@ extended_reg_exp(Iterator& begin, Iterator& end) {
   }
   return alternation(move(branches));
 }
+
+template <typename Char, typename Traits = std::regex_traits<Char>>
+class regex_reader {
+ public:
+  using char_type = Char;
+  using string_type = typename Traits::string_type;
+  using iterator = typename string_type::const_iterator;
+  using range_type = range<iterator>;
+  using matcher_type = matcher<char_type>;
+
+  regex_reader() = default;
+
+  matcher_type read(range_type& r) {return alternate_branches(r);}
+
+ private:
+  char_type read_symbol(range_type& r) {return r.current();}
+  matcher_type alternate_branches(range_type& r);
+  bool is_disjunction(char_type ch) {return ch == char_type('|');}
+
+  matcher_type read_branch(range_type& r);
+};
+
+template <typename Char, typename Traits>
+typename regex_reader<Char,Traits>::matcher_type
+regex_reader<Char,Traits>::alternate_branches(range_type& r) {
+  using std::move;
+  if (r.empty()) {
+    return {};
+  }
+  std::vector<matcher_type> branches;
+  char_type ch {'\0'};
+  do {
+    if (ch) r.checked_advance();
+    r.set_mark();
+    auto branch = read_branch(r);
+    if (!r.has_advanced()) {
+      break;
+    }
+    branches.push_back(move(branch));
+    if (r.empty()) break;
+    ch = read_symbol(r);
+  } while (is_disjunction(ch));
+
+  if (branches.size() == 1) {
+    return branches.front();
+  }
+  return alternation(move(branches));
+}
+
+template <typename Char, typename Traits>
+typename regex_reader<Char,Traits>::matcher_type
+regex_reader<Char,Traits>::read_branch(range_type& r) {
+  auto b = r.get_begin();
+  auto e = r.get_end();
+
+  auto branch = ERE_branch(b,e);
+
+  while (r.get_begin() != b) {
+    r.checked_advance();
+  }
+
+  return branch;
+}
+
 }//namespace detail
 }//namespace lex
 #endif// _regex_factory_impl_h_

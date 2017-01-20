@@ -34,6 +34,7 @@ class test_suite {
   
   size_t error_count() const {return errors_.size();}
 
+  virtual ~test_suite() = default;
  protected:
   void append_error(const message_type& msg) {errors_.append(msg);}
   void append_error() {errors_.append();}
