@@ -2,7 +2,8 @@
 #define _regex_range_h_
 
 #include <iterator>
-#include <queue>
+#include <stack>
+#include <string>
 
 namespace lex {
 
@@ -21,13 +22,13 @@ class regex_range {
  private:
   iterator current;
   iterator end;
-  std::queue<value_type> buffer;
+  std::stack<value_type, std::basic_string<value_type>> buffer;
 };
 
 template <typename InputIt>
 bool regex_range<InputIt>::get(value_type& ch) {
   if (!buffer.empty()) {
-    ch = buffer.front();
+    ch = buffer.top();
     buffer.pop();
     return true;
   } else if (current != end) {

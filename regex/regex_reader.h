@@ -18,8 +18,7 @@
 namespace lex {
 
 
-template <typename InputIt, 
-          typename Traits = std::regex_traits<
+template <typename InputIt, typename Traits = std::regex_traits<
             typename std::iterator_traits<InputIt>::value_type>>
 class regex_reader {
  public:
@@ -38,7 +37,7 @@ class regex_reader {
   }
 
  private:
-  token_stream<iterator> ts;
+  token_stream<InputIt, Traits> ts;
   flag_type f_;
 
   /*

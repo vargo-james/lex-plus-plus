@@ -20,7 +20,7 @@ inline ttest::test_suite::pointer create_regex_test() {
       create_buffer_test(),
       create_context_test(),
       create_table_test(),
-      //create_token_stream_test(),
+      create_token_stream_test(),
       create_range_test(),
       create_bracket_list_test(),
       create_bracket_test(), 

@@ -33,8 +33,8 @@ void ERE_table_test(ttest::error_log& log) {
   if (table.value('?') != token_type::REPLICATION) {
     log.append("?");
   }
-  if (table.value('}') != token_type::R_BRACE) {
-    log.append("}");
+  if (table.value(')') != token_type::R_PAREN) {
+    log.append(")");
   }
   if (table.value('U') != token_type::LITERAL) {
     log.append("LITERAL");

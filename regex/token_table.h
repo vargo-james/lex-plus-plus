@@ -70,11 +70,9 @@ token_table<CharT> ERE_special_characters() {
   return token_table<CharT> {
     {CharT('.'), token_type::ANY_CHAR},
     {CharT('['), token_type::L_BRACKET},
-    {CharT(']'), token_type::R_BRACKET},
     {CharT('('), token_type::L_PAREN},
     {CharT(')'), token_type::R_PAREN},
     {CharT('{'), token_type::L_BRACE},
-    {CharT('}'), token_type::R_BRACE},
     {CharT('*'), token_type::REPLICATION},
     {CharT('+'), token_type::REPLICATION},
     {CharT('?'), token_type::REPLICATION},
@@ -83,5 +81,6 @@ token_table<CharT> ERE_special_characters() {
     {CharT('$'), token_type::R_ANCHOR}
   };
 }
+
 }//namespace lex
 #endif// _token_table_h_
