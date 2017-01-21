@@ -7,6 +7,7 @@ void literals_test(ttest::error_log& log);
 void replication_test(ttest::error_log& log);
 void bracket_test(ttest::error_log& log);
 void subexpr_test(ttest::error_log& log);
+void icase_test(ttest::error_log& log);
 
 inline ttest::test_suite::pointer create_token_stream_test() {
   using namespace ttest;
@@ -15,6 +16,7 @@ inline ttest::test_suite::pointer create_token_stream_test() {
       create_test("replication", replication_test),
       create_test("bracket", bracket_test),
       create_test("subexpr", subexpr_test),
+      create_test("icase", icase_test),
   });
 
 }

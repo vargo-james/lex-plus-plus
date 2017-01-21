@@ -32,19 +32,13 @@ class regex_reader {
     : ts(b,e,f),
       f_ {f} {}
 
-  matcher_type read() { 
-    return {};
-  }
-
+  matcher_type read() {return {};}
  private:
   token_stream<InputIt, Traits> ts;
   flag_type f_;
 
   /*
-  value_type read_symbol(range_type& r) {return r.current();}
   matcher_type alternate_branches(range_type& r);
-  bool is_disjunction(value_type ch) {return ch == value_type('|');}
-
   matcher_type read_branch(range_type& r);
   */
 };

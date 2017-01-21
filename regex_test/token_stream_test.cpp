@@ -129,6 +129,7 @@ void subexpr_test(ttest::error_log& log) {
   const std::string reg {R"(a(?:)(\?)(?=)"};
   stream_type ts(reg.begin(), reg.end(), std::regex_constants::ECMAScript);
 
+
   if (!compare_token_types(ts, {
         token_type::LITERAL,
         token_type::L_PAREN,
@@ -141,5 +142,21 @@ void subexpr_test(ttest::error_log& log) {
         token_type::POS_LOOKAHEAD
         })) {
     log.append("subexpr");
+  }
+}
+
+void icase_test(ttest::error_log& log) {
+  using Iter = typename std::string::const_iterator;
+  using Traits = std::regex_traits<char>;
+  using stream_type = token_stream<Iter,Traits>;
+  const std::string reg {R"(a(b)"};
+  stream_type ts(reg.begin(), reg.end(), 
+      std::regex_constants::basic | std::regex_constants::icase);
+
+  regex_token<char> token;
+  if (!ts.get(token) || token.value != 'A' || !ts.get(token) ||
+      token.value != '(' || !ts.get(token) || token.value != 'B'
+      || ts.get(token)) {
+    log.append("icase");
   }
 }

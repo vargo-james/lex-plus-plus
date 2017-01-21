@@ -41,6 +41,7 @@ class token_stream {
   range_type range;
   buffer_type buffer;
   regex_context context;
+  Traits traits_i;
 
   void get_from_range(token& out);
   void default_get(token& out);
@@ -49,6 +50,7 @@ class token_stream {
   void bracket_get(token& out);
   void collation_get(token& out, value_type closing_char, 
       token_type closing_token);
+  token literal_token(value_type ch);
 
   // This reads the next two elements from the range. If their values are
   // first, second respectively, then the function returns true. If there
@@ -58,6 +60,17 @@ class token_stream {
   bool pair_reader(value_type& out, value_type first, value_type second);
 
 };
+
+template <typename InputIt, typename Traits>
+typename token_stream<InputIt,Traits>::token
+token_stream<InputIt,Traits>::literal_token(value_type ch) {
+  bool icase = flag & std::regex_constants::icase;
+
+  if (icase) {
+    ch = std::toupper(ch, traits_i.getloc());
+  }
+  return token(ch, token_type::LITERAL);
+}
 
 template <typename Out>
 Out flagged_test(bool flag_condition, std::function<Out()> test, 
@@ -131,17 +144,20 @@ void token_stream<InputIt,Traits>::default_get(token& out) {
     } else if (std::isdigit(escaped_char)) {
       out = token(escaped_char, token_type::BACK_REF);
     } else if (table.contains(escaped_char)) {
-      out = token(escaped_char);
+      out = literal_token(escaped_char);
     } else if (basic) {
-      out = token(escaped_char, extended_table.value(escaped_char));
+      auto val = extended_table.value(escaped_char);
+      out = (val == token_type::LITERAL)? literal_token(escaped_char) :
+        token(escaped_char, val);
     } else {
-      out = token(escaped_char);
+      out = literal_token(escaped_char);
     }
   } else if (ch == '\n' && (grep || egrep)) {
     out = token(value_type('|'), token_type::ALTERNATION);
     return;
   } else {
-    out = token(ch, table.value(ch));
+    auto val = table.value(ch);
+    out = (val == token_type::LITERAL)? literal_token(ch): token(ch,val);
   }
 }
 
@@ -155,10 +171,10 @@ void token_stream<InputIt,Traits>::replication_get(token& out) {
     out = token(value_type('}'), token_type::R_BRACE);
   } else if (ch == value_type(',')) {
     out = token(ch, token_type::COUNT_SEP);
-  } else if (std::isdigit(ch, Traits{}.getloc())) {
+  } else if (std::isdigit(ch, traits_i.getloc())) {
     out = token(ch, token_type::DIGIT);
   } else {
-    out = token(ch);
+    out = literal_token(ch);
   }
 }
 
@@ -200,7 +216,7 @@ void token_stream<InputIt,Traits>::bracket_get(token& out) {
   if (ch == value_type('[')) {
     value_type second(0);
     if (!range.get(second)) {
-      out = token(ch);
+      out = literal_token(ch);
     } else if (second == value_type('.')) {
       out = token(ch, token_type::L_COLLATE);
     } else if (second == value_type(':')) {
@@ -209,7 +225,7 @@ void token_stream<InputIt,Traits>::bracket_get(token& out) {
       out = token(ch, token_type::L_EQUIV);
     } else {
       range.putback(second);
-      out = token(ch);
+      out = literal_token(ch);
     }
   } else if (ch == value_type('^')) {
     out = token(ch, token_type::NEGATION);
@@ -218,7 +234,7 @@ void token_stream<InputIt,Traits>::bracket_get(token& out) {
   } else if (ch == value_type(']')) {
     out = token(ch, token_type::R_BRACKET);
   } else {
-    out = token(ch);
+    out = literal_token(ch);
   }
 }
 
@@ -229,7 +245,7 @@ void token_stream<InputIt,Traits>::collation_get(token& out,
   if (pair_reader(ch, closing_char, value_type(']'))) {
     out = token(ch, closing_token);
   } else {
-    out = token(ch);
+    out = literal_token(ch);
   }
 }
 

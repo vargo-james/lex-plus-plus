@@ -109,7 +109,6 @@ template <typename ForwardIt>
 regex<CharT,Traits>::regex(ForwardIt first, ForwardIt last, flag_type f) 
   : f_ {f} {
   regex_reader<ForwardIt,Traits> reader(first, last, f);
-
   matcher_ = reader.read();
 }
 
