@@ -7,9 +7,9 @@
 #include "simple_buffer.h"
 #include "token_table.h"
 
-#include <cctype>
-#include <locale>
 #include <functional>
+#include <iterator>
+#include <locale>
 #include <regex>
 
 
@@ -45,6 +45,7 @@ class token_stream {
 
   void get_from_range(token& out);
   void default_get(token& out);
+  void default_get_escaped(token& out);
   void replication_get(token& out);
   void subexpr_get(token& out);
   void bracket_get(token& out);
@@ -60,6 +61,35 @@ class token_stream {
   bool pair_reader(value_type& out, value_type first, value_type second);
 
 };
+
+template <typename InputIt, typename Traits>
+void token_stream<InputIt,Traits>::default_get_escaped(token& out) {
+  bool basic = flag & std::regex_constants::basic;
+  bool ECMAScript = flag & std::regex_constants::ECMAScript;
+
+  const auto basic_table = BRE_special_characters<value_type>();
+  const auto extended_table = ERE_special_characters<value_type>();
+  const token_table<value_type>& table = basic? basic_table: extended_table;
+
+  value_type escaped_char(0);
+  if (!range.get(escaped_char)) {
+    out = token(value_type('\\'));
+  } else if (ECMAScript && escaped_char == value_type('b')) {
+    out = token(escaped_char, token_type::WORD_BOUNDARY);
+  } else if (ECMAScript && escaped_char == value_type('B')) {
+    out = token(escaped_char, token_type::NEG_WORD_BOUNDARY);
+  } else if (std::isdigit(escaped_char, traits_i.getloc())) {
+    out = token(escaped_char, token_type::BACK_REF);
+  } else if (table.contains(escaped_char)) {
+    out = literal_token(escaped_char);
+  } else if (basic) {
+    auto val = extended_table.value(escaped_char);
+    out = (val == token_type::LITERAL)? literal_token(escaped_char) :
+      token(escaped_char, val);
+  } else {
+    out = literal_token(escaped_char);
+  }
+}
 
 template <typename InputIt, typename Traits>
 typename token_stream<InputIt,Traits>::token
@@ -134,6 +164,8 @@ void token_stream<InputIt,Traits>::default_get(token& out) {
   value_type ch;
   range.get(ch);
   if (ch == value_type('\\')) {
+    default_get_escaped(out);
+    /*
     value_type escaped_char(0);
     if (!range.get(escaped_char)) {
       out = token(value_type('\\'));
@@ -141,7 +173,7 @@ void token_stream<InputIt,Traits>::default_get(token& out) {
       out = token(escaped_char, token_type::WORD_BOUNDARY);
     } else if (escaped_char == value_type('B')) {
       out = token(escaped_char, token_type::NEG_WORD_BOUNDARY);
-    } else if (std::isdigit(escaped_char)) {
+    } else if (std::isdigit(escaped_char, traits_i.getloc())) {
       out = token(escaped_char, token_type::BACK_REF);
     } else if (table.contains(escaped_char)) {
       out = literal_token(escaped_char);
@@ -152,6 +184,7 @@ void token_stream<InputIt,Traits>::default_get(token& out) {
     } else {
       out = literal_token(escaped_char);
     }
+    */
   } else if (ch == '\n' && (grep || egrep)) {
     out = token(value_type('|'), token_type::ALTERNATION);
     return;

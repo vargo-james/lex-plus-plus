@@ -3,13 +3,14 @@
 # section. It may also be necessary to change the compiler.
 
 
-# My editor is set to substitute spaces for tabs. so I prefer to change 
-# the recipe prefix to adjusting my editor.
+# My editor is set to substitute spaces for tabs. so I prefer changing 
+# the recipe prefix rather than adjusting my editor.
 .RECIPEPREFIX =   
 
-# With the exception of the program_OBJECTS variable. These must all be
+# With the exception of the program_OBJECTS variable, these must all be
 # set separately for a given project. 
 program_NAME := test
+
 program_SOURCES := $(wildcard *.cpp) $(wildcard matcher_test/*.cpp) \
 	$(wildcard ttest/*.cpp) $(wildcard input_buffer_test/*.cpp) \
 	$(wildcard regex_test/*.cpp)
@@ -35,6 +36,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
 COMPILE.cc = $(CXX) $(DEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
+# A DEBUGGING TOOL
 
 .PHONY: all clean
 
@@ -55,18 +57,22 @@ $(program_NAME): $(program_OBJECTS)
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
 	$(POSTCOMPILE)
 
+matcher_test/%.o : matcher_test/%.cpp
 matcher_test/%.o : matcher_test/%.cpp $(DEPDIR)/%.d
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
 	$(POSTCOMPILE)
 
+regex_test/%.o : regex_test/%.cpp
 regex_test/%.o : regex_test/%.cpp $(DEPDIR)/%.d
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
 	$(POSTCOMPILE)
 
+input_buffer_test/%.o : input_buffer_test/%.cpp
 input_buffer_test/%.o : input_buffer_test/%.cpp $(DEPDIR)/%.d
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
 	$(POSTCOMPILE)
 
+ttest/%.o : ttest/%.cpp
 ttest/%.o : ttest/%.cpp $(DEPDIR)/%.d
 	$(COMPILE.cc) $(OUTPUT_OPTION) $<
 	$(POSTCOMPILE)
@@ -83,6 +89,7 @@ $(DEPDIR)/%.d: ;
 clean : 
 	@- $(RM) $(program_NAME) 
 	@- $(RM) $(program_OBJECTS)
+	@- $(RM) $(DEPDIR)/*
 
 # This directs make to read the following files as included makefiles.
--include $(patsubst %,$(DEPDIR)/%.d,$(basename $(program_SOURCES)))
+include $(patsubst %,$(DEPDIR)/%.d,$(basename $(notdir $(program_SOURCES))))

@@ -6,7 +6,9 @@
 
 using namespace lex;
 
+
 void literals_test(ttest::error_log& log) {
+
   using Iter = typename std::string::const_iterator;
   using Traits = std::regex_traits<char>;
 
