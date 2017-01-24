@@ -11,9 +11,7 @@
 # set separately for a given project. 
 program_NAME := test
 
-program_SOURCES := $(wildcard *.cpp) $(wildcard matcher_test/*.cpp) \
-	$(wildcard ttest/*.cpp) $(wildcard input_buffer_test/*.cpp) \
-	$(wildcard regex_test/*.cpp)
+program_SOURCES := $(wildcard **/*.cpp) $(wildcard *.cpp)
 program_OBJECTS := ${program_SOURCES:.cpp=.o}
 program_INCLUDES := .
 program_LIBRARY_DIRS := 
@@ -31,12 +29,13 @@ LDFLAGS += $(foreach library, $(program_LIBRARY_DIRS), -l$(library))
 # using the compiler. The flags instructing it to do so are contained in 
 # the DEPFLAGS variable.
 DEPDIR = .d
-$(shell mkdir -p $(DEPDIR) >/dev/null)
-DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
+$(shell mkdir -p $(dir $(addprefix $(DEPDIR)/, $(program_SOURCES))) >/dev/null)
 
+DEPFILE = $(DEPDIR)/$(basename $(1)).$(2)
+
+DEPFLAGS = -MT $@ -MMD -MP -MF $(call DEPFILE,$@,Td)
 COMPILE.cc = $(CXX) $(DEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
-POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
-# A DEBUGGING TOOL
+POSTCOMPILE = mv -f $(call DEPFILE,$@,Td) $(call DEPFILE,$@,d) 
 
 .PHONY: all clean
 
@@ -53,28 +52,9 @@ $(program_NAME): $(program_OBJECTS)
 # compilation of the object file. We rename dependency files in a separate
 # step in order to avoid leaving corrupted dependency files in case of a
 # failed compilation.
-%.o : %.cpp $(DEPDIR)/%.d
-	$(COMPILE.cc) $(OUTPUT_OPTION) $<
-	$(POSTCOMPILE)
-
-matcher_test/%.o : matcher_test/%.cpp
-matcher_test/%.o : matcher_test/%.cpp $(DEPDIR)/%.d
-	$(COMPILE.cc) $(OUTPUT_OPTION) $<
-	$(POSTCOMPILE)
-
-regex_test/%.o : regex_test/%.cpp
-regex_test/%.o : regex_test/%.cpp $(DEPDIR)/%.d
-	$(COMPILE.cc) $(OUTPUT_OPTION) $<
-	$(POSTCOMPILE)
-
-input_buffer_test/%.o : input_buffer_test/%.cpp
-input_buffer_test/%.o : input_buffer_test/%.cpp $(DEPDIR)/%.d
-	$(COMPILE.cc) $(OUTPUT_OPTION) $<
-	$(POSTCOMPILE)
-
-ttest/%.o : ttest/%.cpp
-ttest/%.o : ttest/%.cpp $(DEPDIR)/%.d
-	$(COMPILE.cc) $(OUTPUT_OPTION) $<
+.SECONDEXPANSION:
+$(program_OBJECTS) : $$(patsubst %.o,%.cpp,$$@) $$(call DEPFILE,$$@,d)
+	$(COMPILE.cc) $(OUTPUT_OPTION) $(patsubst %.o,%.cpp,$@)
 	$(POSTCOMPILE)
 
 # A no-op. If a target does not exist as a file, then it is counted as 
@@ -87,9 +67,9 @@ $(DEPDIR)/%.d: ;
 .PRECIOUS: $(DEPDIR)/%.d
 
 clean : 
-	@- $(RM) $(program_NAME) 
-	@- $(RM) $(program_OBJECTS)
-	@- $(RM) $(DEPDIR)/*
+	- $(RM) $(program_NAME) 
+	- $(RM) $(program_OBJECTS)
+	- $(RM) -r $(DEPDIR)
 
 # This directs make to read the following files as included makefiles.
-include $(patsubst %,$(DEPDIR)/%.d,$(basename $(notdir $(program_SOURCES))))
+-include $(patsubst %,$(DEPDIR)/%.d,$(basename $(program_SOURCES)))

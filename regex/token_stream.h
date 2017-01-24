@@ -62,6 +62,7 @@ class token_stream {
 
 };
 
+
 template <typename InputIt, typename Traits>
 void token_stream<InputIt,Traits>::default_get_escaped(token& out) {
   bool basic = flag & std::regex_constants::basic;
