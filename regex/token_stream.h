@@ -2,7 +2,7 @@
 #define _token_stream_h_
 
 #include "regex_range.h"
-#include "regex_context.h"
+#include "context.h"
 #include "regex_token.h"
 #include "simple_buffer.h"
 #include "token_table.h"
@@ -22,9 +22,9 @@ class token_stream {
   using flag_type = std::regex_constants::syntax_option_type;
   using iterator = InputIt;
   using value_type = typename std::iterator_traits<InputIt>::value_type;
-  using token = regex_token<value_type>;
+  using token = regex_token<value_type,Traits>;
   using buffer_type = simple_buffer<token>;
-  using range_type = regex_range<InputIt>;
+  using range_type = regex_range<InputIt,Traits>;
 
   token_stream(InputIt b, InputIt e, flag_type f)
     : flag {f},
@@ -33,14 +33,14 @@ class token_stream {
   bool get(token& out);
   bool putback(token tok) {return buffer.set(tok);}
 
-  void update_context(token tok) {context.update(tok.type);}
+  void update_context(token tok) {context_i.update(tok.type);}
 
   bool empty() const {return buffer.empty() && range.empty();}
  private:
   flag_type flag;
   range_type range;
   buffer_type buffer;
-  regex_context context;
+  context context_i;
   Traits traits_i;
 
   void get_from_range(token& out);
@@ -91,26 +91,26 @@ bool token_stream<InputIt,Traits>::get(token& out) {
 
 template <typename InputIt, typename Traits>
 void token_stream<InputIt,Traits>::get_from_range(token& out) {
-  switch (context.get()) {
-  case regex_context::DEFAULT:
+  switch (context_i.get()) {
+  case context::DEFAULT:
     default_get(out);
     break;
-  case regex_context::REPLICATION:
+  case context::REPLICATION:
     replication_get(out);
     break;
-  case regex_context::SUBEXPR:
+  case context::SUBEXPR:
     subexpr_get(out);
     break;
-  case regex_context::BRACKET:
+  case context::BRACKET:
     bracket_get(out);
     break;
-  case regex_context::COLLATE:
+  case context::COLLATE:
     collation_get(out, value_type('.'), token_type::R_COLLATE);
     break;
-  case regex_context::EQUIV:
+  case context::EQUIV:
     collation_get(out, value_type('='), token_type::R_EQUIV);
     break;
-  case regex_context::CLASS:
+  case context::CLASS:
     collation_get(out, value_type(':'), token_type::R_CLASS);
     break;
   default:

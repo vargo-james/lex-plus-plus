@@ -1,29 +1,29 @@
-#include "regex_context_test.h"
-#include "regex/regex_context.h"
+#include "context_test.h"
+#include "regex/context.h"
 
 using namespace lex;
 
-void regex_context_test(ttest::error_log& log) {
-  regex_context c;  
+void context_test(ttest::error_log& log) {
+  context c;  
 
-  if (c.get() != regex_context::DEFAULT) {
+  if (c.get() != context::DEFAULT) {
     log.append("default constructor");
   }
 
   c.update(token_type::L_PAREN);
-  if (c.get() != regex_context::SUBEXPR) {
+  if (c.get() != context::SUBEXPR) {
     log.append("subexpr entrance");
   }
   c.update(token_type::R_PAREN);
-  if (c.get() != regex_context::DEFAULT) {
+  if (c.get() != context::DEFAULT) {
     log.append("subexpr exit");
   }
   c.update(token_type::L_BRACKET);
-  if (c.get() != regex_context::BRACKET) {
+  if (c.get() != context::BRACKET) {
     log.append("bracket entrance");
   }
   c.update(token_type::L_COLLATE);
-  if (c.get() != regex_context::COLLATE) {
+  if (c.get() != context::COLLATE) {
     log.append("collate entrance");
   }
 

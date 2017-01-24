@@ -1,3 +1,8 @@
+/*
+ * This file implements the alternation operator on matchers.
+ * This is the '|' operation for regexes.
+ */
+
 #ifndef _alternation_h_
 #define _alternation_h_
 
@@ -35,22 +40,23 @@ match_state alternation_state(MatcherIterator begin,
   return undecided? match_state::UNDECIDED : state;
 }
 
-// This defines the transition function for the bracket combination.
+// This defines the transition function for the alternation of several
+// regexes.
 template <typename Matcher>
 class alternation_transition 
   : public matcher_transition_cloner<
-             alternation_transition<Matcher>, typename Matcher::char_type
+             alternation_transition<Matcher>, typename Matcher::value_type
            > {
  public:
   using matcher_type = Matcher;
-  using char_type = typename Matcher::char_type;
+  using value_type = typename Matcher::value_type;
 
   alternation_transition(const std::vector<matcher_type>& c)
     : initial_state {c} {}
   alternation_transition(std::vector<matcher_type>&& c)
     : initial_state {std::move(c)} {}
 
-  match_state update(const char_type&) override;
+  match_state update(const value_type&) override;
   match_state initialize() override;
  private:
   std::vector<matcher_type> initial_state;
@@ -58,7 +64,7 @@ class alternation_transition
 };
 
 template <typename Matcher>
-match_state alternation_transition<Matcher>::update(const char_type& ch) {
+match_state alternation_transition<Matcher>::update(const value_type& ch) {
   // These flags track what we have seen after traversing the list.
   bool undecided {false};
   bool final_match {false};
@@ -74,7 +80,7 @@ match_state alternation_transition<Matcher>::update(const char_type& ch) {
       match = true;
       ++it;
       break;
-    // If a FINAL_MATCH is found this matchers will not need to be looked
+    // If a FINAL_MATCH is found this matcher will not need to be looked
     // at again.
     case match_state::FINAL_MATCH:
       final_match = true;
@@ -89,6 +95,7 @@ match_state alternation_transition<Matcher>::update(const char_type& ch) {
     case match_state::MISMATCH:
       it = matchers.erase(it);
       break;
+    // This should never happen.
     default:
       ++it;
       break;
@@ -100,8 +107,10 @@ match_state alternation_transition<Matcher>::update(const char_type& ch) {
     return match_state::MATCH;
   } else if (final_match) {
     return match_state::FINAL_MATCH;
+  } else if (undecided) {
+    return match_state::UNDECIDED;
   } else {
-    return undecided? match_state::UNDECIDED : match_state::MISMATCH;
+    return match_state::MISMATCH;
   }
 }
 
@@ -121,6 +130,14 @@ match_state alternation_transition<Matcher>::initialize() {
   return alternation_state(initial_state.begin(), initial_state.end());
 }
 }//namespace detail
+
+/*
+typename <CharT>
+matcher<CharT> alternation(std::vector<matcher<CharT>>&& matchers) {
+  matcher_factory<detail::alternation_transition<matcher<CharT>> fac;
+  return fac.create(std::forward<std::vector<matcher<CharT>>>(matchers));
+}
+*/
 
 template <typename MatcherContainer>
 typename MatcherContainer::value_type

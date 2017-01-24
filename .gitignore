@@ -5,3 +5,4 @@ log
 testfile
 *.swp
 .d*
+extra*

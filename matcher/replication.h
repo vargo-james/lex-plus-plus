@@ -14,12 +14,12 @@ template <typename Matcher>
 class matcher_replicator_transition
   : public matcher_transition_cloner<
       matcher_replicator_transition<Matcher>,
-      typename Matcher::char_type
+      typename Matcher::value_type
     > {
  public:
   using matcher_type = Matcher;
-  using char_type = typename Matcher::char_type;
-  using index_type = size_t;
+  using value_type = typename Matcher::value_type;
+  using index_type = std::size_t;
   using current_progress = std::pair<matcher_type, index_type>;
 
   matcher_replicator_transition(matcher_type&& reg, replication rep)
@@ -31,11 +31,11 @@ class matcher_replicator_transition
       upper {rep.upper},
       matcher {reg} {}
     
-  match_state update(const char_type& ch) override;
+  match_state update(const value_type& ch) override;
   match_state initialize() override;
  private:
-  size_t lower;
-  size_t upper;
+  std::size_t lower;
+  std::size_t upper;
   matcher_type matcher;
   std::list<current_progress> current;
 };
@@ -64,7 +64,7 @@ match_state matcher_replicator_transition<Matcher>::initialize() {
 
 template <typename Matcher>
 match_state 
-matcher_replicator_transition<Matcher>::update(const char_type& ch) {
+matcher_replicator_transition<Matcher>::update(const value_type& ch) {
   bool match {false};
   bool final_match {false};
   bool undecided {false};
@@ -112,11 +112,17 @@ matcher_replicator_transition<Matcher>::update(const char_type& ch) {
       break;
     }
   }
-  if (match) return match_state::MATCH;
-  if (final_match && undecided) return match_state::MATCH;
-  if (final_match) return match_state::FINAL_MATCH;
-  if (undecided) return match_state::UNDECIDED;
-  return match_state::MISMATCH;
+  if (match) {
+    return match_state::MATCH;
+  } else if (final_match && undecided) {
+    return match_state::MATCH;
+  } else if (final_match) {
+    return match_state::FINAL_MATCH;
+  } else if (undecided) {
+    return match_state::UNDECIDED;
+  } else {
+    return match_state::MISMATCH;
+  }
 }
 }//namespace detail
 

@@ -3,11 +3,10 @@
 
 #include <iterator>
 #include <stack>
-#include <string>
 
 namespace lex {
 
-template <typename InputIt>
+template <typename InputIt, typename Traits>
 class regex_range {
  public:
   using iterator = InputIt;
@@ -22,11 +21,11 @@ class regex_range {
  private:
   iterator current;
   iterator end;
-  std::stack<value_type, std::basic_string<value_type>> buffer;
+  std::stack<value_type, typename Traits::string_type> buffer;
 };
 
-template <typename InputIt>
-bool regex_range<InputIt>::get(value_type& ch) {
+template <typename InputIt, typename Traits>
+bool regex_range<InputIt,Traits>::get(value_type& ch) {
   if (!buffer.empty()) {
     ch = buffer.top();
     buffer.pop();
@@ -38,8 +37,8 @@ bool regex_range<InputIt>::get(value_type& ch) {
   return false;
 }
 
-template <typename InputIt>
-void regex_range<InputIt>::putback(value_type ch) {
+template <typename InputIt, typename Traits>
+void regex_range<InputIt,Traits>::putback(value_type ch) {
   buffer.push(ch);
 }
 

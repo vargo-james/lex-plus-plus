@@ -17,8 +17,9 @@ enum class token_type {
   ALTERNATION // |
 };
 
-template <typename CharT>
+template <typename CharT, typename Traits>
 struct regex_token {
+  using string_type = typename Traits::string_type;
   using value_type = CharT;
 
   regex_token() = default;

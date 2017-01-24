@@ -19,12 +19,12 @@ namespace detail {
 template <typename Matcher>
 class concatenate_transition 
   : public matcher_transition_cloner<
-             concatenate_transition<Matcher>, typename Matcher::char_type
+             concatenate_transition<Matcher>, typename Matcher::value_type
            > {
  public:
   using matcher_type = Matcher;
-  using char_type = typename matcher_type::char_type;
-  using index_type = size_t;
+  using value_type = typename matcher_type::value_type;
+  using index_type = std::size_t;
   using current_progress = std::pair<matcher_type, index_type>;
 
   concatenate_transition(const std::vector<matcher_type>& container)
@@ -32,7 +32,7 @@ class concatenate_transition
   concatenate_transition(std::vector<matcher_type>&& container)
     : initial_state(std::move(container)) {}
 
-  match_state update(const char_type& ch) override;
+  match_state update(const value_type& ch) override;
   match_state initialize() override;
  private:
   std::vector<matcher_type> initial_state;
@@ -45,7 +45,7 @@ class concatenate_transition
 // Left = Matcher("[AB]+") with 
 // Right = Matcher("[BC]{2}"). 
 // i.e. Concatenation(Left, Right) = Matcher("[AB]+[BC]{2}");
-// Matcheres are spawned in their initial state.
+// Matchers are spawned in their initial state.
 // Steps represent successive char's in the string to match against.
 // Matching against "ABACCB":
 // Step 0: spawn Left.                state = UNDECIDED
@@ -57,13 +57,15 @@ class concatenate_transition
 //             Right (MISMATCH)    -> detached
 // Step 4 'C': Left (MISMATCH)     -> detached
 //             Right (UNDECIDED)   -> no action
-// Step 5 'C': Right (MATCH)       -> nothing left to spawn. 
-//                                    state = MATCH.
+// Step 5 'C': Right (FINAL_MATCH) -> nothing left to spawn. detached.
+//                                    state = FINAL_MATCH.
+// Step 6 'B': empty list          -> state = MISMATCH
+//
 // Step 6 'B': Right (MISMATCH)    -> detached. list is now empty.
 //                                    state = MISMATCH
 template <typename Matcher>
 match_state 
-concatenate_transition<Matcher>::update(const char_type& ch) {
+concatenate_transition<Matcher>::update(const value_type& ch) {
   bool undecided {false};
   bool final_match {false};
   bool match {false};
@@ -71,7 +73,7 @@ concatenate_transition<Matcher>::update(const char_type& ch) {
   for (auto it = current.begin(); it != current.end();) {
     it->first.update(ch);
     auto state = it->first.state();
-    // matcher points to the next matcher in the initial_state vector.
+    // matcher_index points to the next matcher in the initial_state vector.
     auto matcher_index = it->second;
     switch (state) {
     // If another matcher is available, we spawn a parallel progression.
@@ -92,25 +94,30 @@ concatenate_transition<Matcher>::update(const char_type& ch) {
         undecided = true;
         insert_next(it);
       }
+      // This matcher will no longer match anything, so we detach.
       it = current.erase(it);
       break;
     case match_state::UNDECIDED:
       undecided = true;
       ++it;
       break;
-    // A MISMATCH state is detached.
+    // A MISMATCH state matcher is detached.
     case match_state::MISMATCH:
       it = current.erase(it);
       break;
     }
   }
-  if (match) return match_state::MATCH;
-  if (final_match && undecided) return match_state::MATCH;
-  if (final_match) {
+  if (match) {
+    return match_state::MATCH;
+  } else if (final_match && undecided) {
+    return match_state::MATCH;
+  } else if (final_match) {
     return match_state::FINAL_MATCH;
+  } else if (undecided) {
+    return match_state::UNDECIDED;
+  } else {
+    return match_state::MISMATCH;
   }
-  if (undecided) return match_state::UNDECIDED;
-  return match_state::MISMATCH;
 }
 
 template <typename Matcher>
@@ -139,6 +146,8 @@ match_state concatenate_transition<Matcher>::initialize() {
   for (index_type index = 0; index < initial_state.size(); ++index) {
     r_state = initial_state[index].state();
 
+    // If one of the operands starts out in the MISMATCH state, then the
+    // whole concatenation will also be a MISMATCH with anything.
     if (r_state == match_state::MISMATCH) {
       current.clear();
       return match_state::MISMATCH;
@@ -147,7 +156,7 @@ match_state concatenate_transition<Matcher>::initialize() {
     }
     if (r_state == match_state::UNDECIDED) break;
   }
-
+  
   if (r_state == match_state::FINAL_MATCH) {
     current.clear();
   }

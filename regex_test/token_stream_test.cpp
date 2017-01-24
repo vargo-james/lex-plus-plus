@@ -15,7 +15,7 @@ void literals_test(ttest::error_log& log) {
   token_stream<Iter,Traits> ts(reg.begin(), reg.end(),
       std::regex_constants::extended);
 
-  regex_token<char> token;
+  regex_token<char,Traits> token;
   int count(0);
   for (; ts.get(token); ++count) {
     if (token.type != token_type::LITERAL) {
@@ -40,6 +40,7 @@ void literals_test(ttest::error_log& log) {
   }
 }
 
+
 template <typename InputIt, typename Traits>
 bool compare_token_types(token_stream<InputIt,Traits>& ts, 
     const std::vector<token_type>& types) {
@@ -62,7 +63,7 @@ void replication_test(ttest::error_log& log) {
   const std::string reg {R"(*?+)"};
   stream_type ts(reg.begin(), reg.end(), std::regex_constants::extended);
 
-  regex_token<char> token;
+  regex_token<char,Traits> token;
   while (ts.get(token)) {
     if (token.type != token_type::REPLICATION) {
       log.append("extended replications");
@@ -153,7 +154,7 @@ void icase_test(ttest::error_log& log) {
   stream_type ts(reg.begin(), reg.end(), 
       std::regex_constants::basic | std::regex_constants::icase);
 
-  regex_token<char> token;
+  regex_token<char,Traits> token;
   if (!ts.get(token) || token.value != 'A' || !ts.get(token) ||
       token.value != '(' || !ts.get(token) || token.value != 'B'
       || ts.get(token)) {

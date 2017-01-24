@@ -86,9 +86,9 @@ built_in_predicate(const std::basic_string<Char>& name) {
 }
 
 template <typename Iterator>
-predicate_type_t<char_type_t<Iterator>>
+predicate_type_t<value_type_t<Iterator>>
 bracket_class(Iterator& begin, Iterator& end) {
-  using char_type = char_type_t<Iterator>;
+  using char_type = value_type_t<Iterator>;
 
   throw_if_not(*begin == char_type('['));
   ++begin;
@@ -112,8 +112,8 @@ bracket_class(Iterator& begin, Iterator& end) {
 template <typename Iterator>
 void
 add_predicate(Iterator& begin, Iterator& end, 
-    std::vector<predicate_type_t<char_type_t<Iterator>>>& preds) {
-  using char_type = char_type_t<Iterator>;
+    std::vector<predicate_type_t<value_type_t<Iterator>>>& preds) {
+  using char_type = value_type_t<Iterator>;
 
   if (*begin == char_type('[')) {
     preds.push_back(bracket_class(begin, end));
@@ -140,9 +140,9 @@ add_predicate(Iterator& begin, Iterator& end,
 
 // Post: begin points to the element past the closing bracket ']'.
 template <typename Iterator>
-std::vector<predicate_type_t<char_type_t<Iterator>>>
+std::vector<predicate_type_t<value_type_t<Iterator>>>
 element_predicates(Iterator& begin, Iterator end) {
-  using char_type = char_type_t<Iterator>;
+  using char_type = value_type_t<Iterator>;
   using predicate_type = predicate_type_t<char_type>;
   using std::move;
 
@@ -187,9 +187,9 @@ predicate_type_t<Char> non_matching_predicates(
 }
 
 template <typename Iterator>
-predicate_type_t<char_type_t<Iterator>>
+predicate_type_t<value_type_t<Iterator>>
 bracket_expression(Iterator& begin, Iterator& end) {
-  using char_type = char_type_t<Iterator>;
+  using char_type = value_type_t<Iterator>;
   using std::move;
 
   throw_if_not(*begin == char_type('['));

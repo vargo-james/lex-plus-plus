@@ -15,21 +15,21 @@ struct singleton_matcher_transition
            singleton_matcher_transition<CharT>, CharT
          > {
  public:
-  using typename matcher_transition<CharT>::char_type;
+  using typename matcher_transition<CharT>::value_type;
 
-  singleton_matcher_transition(const char_type& t)
+  singleton_matcher_transition(const value_type& t)
     : match {t} {}
 
   // This only matches when it was previously UNDECIDED and the 
   // character it receives (t), is a match.
-  match_state update(const char_type& t) override;
+  match_state update(const value_type& t) override;
   match_state initialize() override;
  private:
-  char_type match;
+  value_type match;
 };
 
 template <typename CharT>
-match_state singleton_matcher_transition<CharT>::update(const char_type& t) {
+match_state singleton_matcher_transition<CharT>::update(const value_type& t) {
   if (t == match) {
     return match_state::FINAL_MATCH;
   }
@@ -60,7 +60,7 @@ class predicate_matcher_transition
              predicate_matcher_transition<CharT>, CharT
            > {
  public:
-  using typename matcher_transition<CharT>::char_type;
+  using typename matcher_transition<CharT>::value_type;
   using predicate_type = predicate_type_t<CharT>;
 
   predicate_matcher_transition(const predicate_type& p) 
@@ -92,18 +92,11 @@ matcher<CharT> predicate_matcher(const predicate_type_t<CharT>& p) {
   return fac.create(p);
 }
 
-/*
-template <typename CharT>
-struct always_true {
-  bool operator()(const CharT&) {return true;}
-};*/
-
 // This creates a matcher that matches a '.'. The predicate
 // always returns true.
 template <typename CharT>
 matcher<CharT> universal_singleton_matcher() {
   return predicate_matcher<CharT>([](const auto&){return true;});
-  //return predicate_matcher<CharT>(always_true<CharT>{});
 }
 
 
@@ -111,17 +104,21 @@ namespace detail {
 template <typename Iterator>
 class string_matcher_transition 
   : public matcher_transition_cloner<string_matcher_transition<Iterator>, 
-      char_type_t<Iterator>> {
+      value_type_t<Iterator>> {
  public:
-  using char_type = char_type_t<Iterator>;
-  using string_type = std::vector<char_type>;
+  using value_type = value_type_t<Iterator>;
+  using string_type = std::vector<value_type>;
   using size_type = typename string_type::size_type;
 
   string_matcher_transition(Iterator begin, Iterator end)
     : string(begin, end),
       current {0} {}
 
-  match_state update(const char_type& t) override;
+  string_matcher_transition(string_type&& str) 
+    : string {std::move(str)}, 
+      current {0} {}
+
+  match_state update(const value_type& t) override;
   match_state initialize() override;
  private:
   string_type string;
@@ -130,7 +127,7 @@ class string_matcher_transition
 
 template <typename Iterator> 
 match_state 
-string_matcher_transition<Iterator>::update(const char_type& t) {
+string_matcher_transition<Iterator>::update(const value_type& t) {
   if (t == string[current]) {
     ++current;
     if (current == string.size()) return match_state::FINAL_MATCH;
@@ -147,16 +144,15 @@ match_state string_matcher_transition<Iterator>::initialize() {
 }//namespace detail
 
 template <typename Iterator>
-matcher<char_type_t<Iterator>>
+matcher<value_type_t<Iterator>>
 string_matcher(Iterator begin, Iterator end) {
   matcher_factory<detail::string_matcher_transition<Iterator>> fac;
   return fac.create(begin, end);
 }
 
-
 template <typename String>
 matcher<typename String::value_type>
-string_matcher(const String& str) {
+string_matcher(String&& str) {
   return string_matcher(str.begin(), str.end());
 }
 

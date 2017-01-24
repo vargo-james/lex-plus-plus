@@ -6,8 +6,7 @@
 #ifndef _regex_h_
 #define _regex_h_
 
-#include "regex_reader.h"
-//#include "regex_factory_impl.h"
+#include "reader.h"
 
 #include <cstddef>
 #include <cstring>
@@ -108,7 +107,7 @@ template <typename CharT, typename Traits>
 template <typename ForwardIt>
 regex<CharT,Traits>::regex(ForwardIt first, ForwardIt last, flag_type f) 
   : f_ {f} {
-  regex_reader<ForwardIt,Traits> reader(first, last, f);
+  reader<ForwardIt,Traits> reader(first, last, f);
   matcher_ = reader.read();
 }
 

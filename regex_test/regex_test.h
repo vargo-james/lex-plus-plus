@@ -6,7 +6,7 @@
 #include "bracket_test.h"
 #include "bracket_list_test.h"
 #include "range_test.h"
-#include "regex_context_test.h"
+#include "context_test.h"
 #include "simple_buffer_test.h"
 #include "token_stream_test.h"
 #include "token_table_test.h"

@@ -25,6 +25,7 @@ void regex_match_test(ttest::error_log& log) {
     log.append("second");
   }
 
+
   ++it;
   it = my_reg.match(it, e);
   if (it != e) {

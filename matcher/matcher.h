@@ -27,16 +27,16 @@ char rep(match_state s) {
 }
 */
 
-template <typename Char>
+template <typename CharT>
 class matcher {
  public:
-  using char_type = Char;
+  using value_type = CharT;
   using transition_pointer = 
-    typename detail::matcher_transition<char_type>::pointer;
+    typename detail::matcher_transition<value_type>::pointer;
 
   // The default matcher matches an empty string.
   matcher() 
-    : transition_ {detail::matcher_transition<char_type>{}.clone()},
+    : transition_ {detail::matcher_transition<value_type>{}.clone()},
       state_ {transition_->initialize()} {}
 
   // Most matcher objects are constructed from a transition_pointer object.
@@ -45,14 +45,14 @@ class matcher {
       state_ {transition_->initialize()} {}
 
   matcher(const matcher& r);
-  matcher& operator=(const matcher& r);
   matcher(matcher&& r);
+  matcher& operator=(const matcher& r);
   matcher& operator=(matcher&& r);
 
   match_state state() const {return state_;}
 
   // This method takes a character and uses it to update the matcher's state.
-  void update(const char_type& ch);
+  void update(const value_type& ch);
 
   // This method returns the matcher to its original state.
   // If the matcher was copy or move constructed from another matcher, then 
@@ -65,33 +65,33 @@ class matcher {
 };
 
 // Copy constructor.
-template <typename Char>
-matcher<Char>::matcher(const matcher& r)
+template <typename CharT>
+matcher<CharT>::matcher(const matcher& r)
   : transition_ {r.transition_->clone()},
     state_ {r.state_} {}
+// Move constructor.
+template <typename CharT>
+matcher<CharT>::matcher(matcher&& r)
+  : transition_ {std::move(r.transition_)},
+    state_ {r.state_} {}
 // Copy assignment.
-template <typename Char>
-matcher<Char>& matcher<Char>::operator=(const matcher& r) {
+template <typename CharT>
+matcher<CharT>& matcher<CharT>::operator=(const matcher& r) {
   transition_ = r.transition_->clone();
   state_ = r.state_;
   return *this;
 }
-// Move constructor.
-template <typename Char>
-matcher<Char>::matcher(matcher&& r)
-  : transition_ {std::move(r.transition_)},
-    state_ {r.state_} {}
 // Move assignment.
-template <typename Char>
-matcher<Char>& matcher<Char>::operator=(matcher&& r) {
+template <typename CharT>
+matcher<CharT>& matcher<CharT>::operator=(matcher&& r) {
   transition_ = std::move(r.transition_);
   state_ = r.state_;
   return *this;
 }
 // The update method checks the state and defers to the transition_pointer
 // object if any work is necessary.
-template <typename Char>
-void matcher<Char>::update(const char_type& ch) {
+template <typename CharT>
+void matcher<CharT>::update(const value_type& ch) {
   if (state_ == match_state::MISMATCH) {
     return; 
   }
@@ -110,8 +110,8 @@ void matcher<Char>::update(const char_type& ch) {
 // directly from the constructor arguments of the transition_pointer object.
 template <typename Transition>
 struct matcher_factory {
-  using char_type = typename Transition::char_type;
-  using matcher_type = matcher<char_type>;
+  using value_type = typename Transition::value_type;
+  using matcher_type = matcher<value_type>;
 
   template <typename ...Args>
   matcher_type create(Args&& ...args) const {

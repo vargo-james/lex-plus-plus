@@ -12,20 +12,21 @@ namespace lex {
 enum class match_state {MATCH, FINAL_MATCH, MISMATCH, UNDECIDED};
 
 struct replication {
+  replication(): lower {1}, upper {1} {}
   replication(size_t l, size_t u): lower {l}, upper {u} {}
   size_t lower;
   size_t upper;
 };
 
 template <typename CharIterator>
-using char_type_t = 
+using value_type_t = 
   typename std::iterator_traits<CharIterator>::value_type;
 
 template <typename Iterator, typename Char>
 struct enable_iterator {
   using type = 
     std::enable_if_t<
-      std::is_same<Char, char_type_t<Iterator>>::value
+      std::is_same<Char, value_type_t<Iterator>>::value
     >;
 };
 
