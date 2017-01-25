@@ -202,13 +202,11 @@ bool reader<InputIt,Traits>::get_replication(replication& rep) {
 
 template <typename InputIt, typename Traits>
 bool reader<InputIt,Traits>::get_sub_expression(matcher_type& matcher) {
-  ++sub_depth;
   if (!get_alternation(matcher)) return false;
   token tok;
   if (!ts.get(tok) || tok.type != token_type::R_PAREN) {
     return false;
   }
-  --sub_depth;
   return true;
 }
 

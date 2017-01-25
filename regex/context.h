@@ -7,17 +7,23 @@ namespace lex {
 
 class context {
  public:
-  // The name of this enum will not be used outside of this file.
-  enum con {
+  enum site {
     DEFAULT, REPLICATION, SUBEXPR, BRACKET, COLLATE, EQUIV, CLASS
   };
 
   context(): context_ {DEFAULT} {}
 
-  con get() const {return context_;}
+  site get() const {return context_;}
   void update(token_type t);
+  int depth() const {return subexpr_depth;}
+
+  bool first_bracket_char() const {return bracket_first;}
+  bool after_bracket_negation() const {return bracket_after_negation;}
  private:
-  con context_;
+  site context_;
+  int subexpr_depth {0};
+  bool bracket_first {false};
+  bool bracket_after_negation {false};
 
   void default_update(token_type tok);
   void replication_update(token_type tok);
@@ -62,9 +68,17 @@ inline void context::default_update(token_type tok) {
     context_ = REPLICATION;
     break;
   case token_type::L_PAREN:
+    ++subexpr_depth;
     context_ = SUBEXPR;
     break;
+  case token_type::R_PAREN:
+    if (subexpr_depth == 0) {
+      break;
+    }
+    --subexpr_depth;
+    break;
   case token_type::L_BRACKET:
+    bracket_first = true;
     context_ = BRACKET;
     break;
   default:
@@ -77,12 +91,14 @@ inline void context::replication_update(token_type tok) {
 }
 
 inline void context::subexpr_update(token_type tok) {
-  //if (tok == token_type::R_PAREN) context_ = DEFAULT;
   context_ = DEFAULT;
 }
 
 inline void context::bracket_update(token_type tok) {
   switch (tok) {
+  case token_type::NEGATION:
+    bracket_after_negation = true;
+    break;
   case token_type::R_BRACKET:
     context_ = DEFAULT;
     break;
@@ -98,6 +114,7 @@ inline void context::bracket_update(token_type tok) {
   default:
     break;
   }
+  bracket_first = false;
 }
 
 inline void context::coll_update(token_type tok) {

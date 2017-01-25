@@ -28,9 +28,14 @@ void literals_test(ttest::error_log& log) {
     log.append("extended count");
   }
 
-  const std::string grep_reg {"ab()+_{}\\"};
+  const std::string grep_reg {"\nab()+_{}\\"};
   token_stream<Iter,Traits> ts2(grep_reg.begin(), grep_reg.end(),
       std::regex_constants::grep);
+  ts2.get(token);
+  if (token.type != token_type::ALTERNATION) {
+    log.append("grep alternation");
+  }
+
   count = 0;
   for (;ts2.get(token); ++count) {
     if (token.type != token_type::LITERAL) {
@@ -121,7 +126,7 @@ void bracket_test(ttest::error_log& log) {
         token_type::R_COLLATE,
         token_type::R_BRACKET
         })) {
-    log.append("bracket");
+    log.append("extended bracket");
   }
 }
 
@@ -129,22 +134,36 @@ void subexpr_test(ttest::error_log& log) {
   using Iter = typename std::string::const_iterator;
   using Traits = std::regex_traits<char>;
   using stream_type = token_stream<Iter,Traits>;
-  const std::string reg {R"(a(?:)(\?)(?=)"};
+  const std::string reg {R"(a(?:)\?)(?=)"};
   stream_type ts(reg.begin(), reg.end(), std::regex_constants::ECMAScript);
-
 
   if (!compare_token_types(ts, {
         token_type::LITERAL,
         token_type::L_PAREN,
         token_type::NO_SUBEXP,
         token_type::R_PAREN,
+        token_type::LITERAL,
+        token_type::LITERAL,
         token_type::L_PAREN,
+        token_type::ASSERTION
+        })) {
+    log.append("ECMAScript subexpr");
+  }
+
+  stream_type ts2(reg.begin(), reg.end(), std::regex_constants::extended);
+  if (!compare_token_types(ts2, {
+        token_type::LITERAL,
+        token_type::L_PAREN,
+        token_type::REPLICATION,
         token_type::LITERAL,
         token_type::R_PAREN,
+        token_type::LITERAL,
+        token_type::LITERAL,
         token_type::L_PAREN,
-        token_type::POS_LOOKAHEAD
+        token_type::REPLICATION,
+        token_type::LITERAL
         })) {
-    log.append("subexpr");
+    log.append("extended subexpr");
   }
 }
 

@@ -1,16 +1,11 @@
 #include "token_table_test.h"
 #include "regex/token_table.h"
 
+
 using namespace lex;
 
 void table_test(ttest::error_log& log) {
-  token_table<char> table {
-    {'.', token_type::ANY_CHAR},
-    {'[', token_type::L_BRACKET},
-    {'*', token_type::REPLICATION},
-    {'^', token_type::L_ANCHOR},
-    {'$', token_type::R_ANCHOR}
-  };
+  auto table = basic_special_characters<char>();
 
   if (table.contains('&')) {
     log.append("does not contain");
@@ -28,8 +23,8 @@ void table_test(ttest::error_log& log) {
   }
 }
 
-void ERE_table_test(ttest::error_log& log) {
-  auto table = ERE_special_characters<char>();
+void extended_table_test(ttest::error_log& log) {
+  auto table = extended_special_characters<char>();
   if (table.value('?') != token_type::REPLICATION) {
     log.append("?");
   }

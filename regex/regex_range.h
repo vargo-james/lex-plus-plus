@@ -9,18 +9,17 @@ namespace lex {
 template <typename InputIt, typename Traits>
 class regex_range {
  public:
-  using iterator = InputIt;
-  using value_type = typename std::iterator_traits<iterator>::value_type;
+  using value_type = typename std::iterator_traits<InputIt>::value_type;
 
-  regex_range(iterator b, iterator e) : current {b}, end {e} {}
+  regex_range(InputIt b, InputIt e) : current {b}, end {e} {}
 
   bool get(value_type& ch);
   void putback(value_type ch);
 
   bool empty() const {return buffer.empty() && current == end;}
  private:
-  iterator current;
-  iterator end;
+  InputIt current;
+  InputIt end;
   std::stack<value_type, typename Traits::string_type> buffer;
 };
 

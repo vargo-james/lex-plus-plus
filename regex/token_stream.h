@@ -7,6 +7,8 @@
 #include "simple_buffer.h"
 #include "token_table.h"
 
+#include "token_stream_impl.h"
+
 #include <functional>
 #include <iterator>
 #include <locale>
@@ -15,33 +17,65 @@
 
 namespace lex {
 
+template <typename InputIt, typename Traits>
+class new_token_stream {
+ public:
+  using value_type = typename token_stream_impl<InputIt,Traits>::value_type;
+  using token = regex_token<value_type,Traits>;
+  using flag_type = typename token_stream_impl<InputIt,Traits>::flag_type;
+
+  new_token_stream(InputIt b, InputIt e, flag_type f)
+    : impl(b,e,f) {} 
+
+  bool get(token& out);
+  bool putback(token tok) {return buffer.set(tok);}
+  bool empty() const {return buffer.empty() && source_empty();}
+
+ private:
+  simple_buffer<value_type> buffer;
+  token_stream_impl<InputIt,Traits> impl;
+
+  bool source_empty() const {return impl.empty();}
+  void get_from_source(token& out) {impl.get(out);} 
+};
+
+template <typename InputIt, typename Traits>
+bool new_token_stream<InputIt,Traits>::get(token& out) {
+  if (buffer.get(out)) {
+    return true;
+  }
+  if (source_empty()) return false;
+  get_from_source(out);
+  return true;
+}
 
 template <typename InputIt, typename Traits>
 class token_stream {
  public:
   using flag_type = std::regex_constants::syntax_option_type;
-  using iterator = InputIt;
   using value_type = typename std::iterator_traits<InputIt>::value_type;
   using token = regex_token<value_type,Traits>;
-  using buffer_type = simple_buffer<token>;
-  using range_type = regex_range<InputIt,Traits>;
 
   token_stream(InputIt b, InputIt e, flag_type f)
     : flag {f},
-      range(b,e) {}
+      range(b,e),
+      loc {Traits{}.getloc()} {}
 
   bool get(token& out);
   bool putback(token tok) {return buffer.set(tok);}
 
-  void update_context(token tok) {context_i.update(tok.type);}
-
   bool empty() const {return buffer.empty() && range.empty();}
  private:
+  using locale_type = typename Traits::locale_type;
+  using table_type = token_table<value_type>;
+
   flag_type flag;
-  range_type range;
-  buffer_type buffer;
+  regex_range<InputIt,Traits> range;
+  simple_buffer<token> buffer;
   context context_i;
-  Traits traits_i;
+  locale_type loc;
+
+  bool flag_includes(flag_type f) const {return flag & f;}
 
   void get_from_range(token& out);
   void default_get(token& out);
@@ -49,6 +83,7 @@ class token_stream {
   void replication_get(token& out);
   void subexpr_get(token& out);
   void bracket_get(token& out);
+  void bracket_get_sub_bracket(token& out);
   void collation_get(token& out, value_type closing_char, 
       token_type closing_token);
   token literal_token(value_type ch);
@@ -60,53 +95,26 @@ class token_stream {
   // the function returns false.
   bool pair_reader(value_type& out, value_type first, value_type second);
 
+  // Context observers.
+  void update_context(token tok) {context_i.update(tok.type);}
+  int context_depth() const {return context_i.depth();}
+  auto get_context() const {return context_i.get();}
+  bool context_first_bracket_char() const {
+    return context_i.first_bracket_char();
+  }
+  bool context_after_bracket_negation() const {
+    return context_i.after_bracket_negation();
+  }
 };
 
 
 template <typename InputIt, typename Traits>
-void token_stream<InputIt,Traits>::default_get_escaped(token& out) {
-  bool basic = flag & std::regex_constants::basic;
-  bool ECMAScript = flag & std::regex_constants::ECMAScript;
-
-  const auto basic_table = BRE_special_characters<value_type>();
-  const auto extended_table = ERE_special_characters<value_type>();
-  const token_table<value_type>& table = basic? basic_table: extended_table;
-
-  value_type escaped_char(0);
-  if (!range.get(escaped_char)) {
-    out = token(value_type('\\'));
-  } else if (ECMAScript && escaped_char == value_type('b')) {
-    out = token(escaped_char, token_type::WORD_BOUNDARY);
-  } else if (ECMAScript && escaped_char == value_type('B')) {
-    out = token(escaped_char, token_type::NEG_WORD_BOUNDARY);
-  } else if (std::isdigit(escaped_char, traits_i.getloc())) {
-    out = token(escaped_char, token_type::BACK_REF);
-  } else if (table.contains(escaped_char)) {
-    out = literal_token(escaped_char);
-  } else if (basic) {
-    auto val = extended_table.value(escaped_char);
-    out = (val == token_type::LITERAL)? literal_token(escaped_char) :
-      token(escaped_char, val);
-  } else {
-    out = literal_token(escaped_char);
-  }
-}
-
-template <typename InputIt, typename Traits>
 typename token_stream<InputIt,Traits>::token
 token_stream<InputIt,Traits>::literal_token(value_type ch) {
-  bool icase = flag & std::regex_constants::icase;
-
-  if (icase) {
-    ch = std::toupper(ch, traits_i.getloc());
+  if (flag_includes(flag_type::icase)) {
+    ch = std::toupper(ch, loc);
   }
   return token(ch, token_type::LITERAL);
-}
-
-template <typename Out>
-Out flagged_test(bool flag_condition, std::function<Out()> test, 
-    std::function<Out()> alternate_test) {
-  return flag_condition? test(): alternate_test();
 }
 
 template <typename InputIt, typename Traits>
@@ -116,13 +124,12 @@ bool token_stream<InputIt,Traits>::get(token& out) {
   }
   if (range.empty()) return false;
   get_from_range(out);
-  update_context(out);
   return true;
 }
 
 template <typename InputIt, typename Traits>
 void token_stream<InputIt,Traits>::get_from_range(token& out) {
-  switch (context_i.get()) {
+  switch (get_context()) {
   case context::DEFAULT:
     default_get(out);
     break;
@@ -147,57 +154,43 @@ void token_stream<InputIt,Traits>::get_from_range(token& out) {
   default:
     break;
   }
+  update_context(out);
 }
 
 template <typename InputIt, typename Traits>
 void token_stream<InputIt,Traits>::default_get(token& out) {
-  bool basic = flag & std::regex_constants::basic;
-  bool grep = flag & std::regex_constants::grep;
-  bool egrep = flag & std::regex_constants::egrep;
-
-  basic = basic || grep;
-
-  const auto basic_table = BRE_special_characters<value_type>();
-  const auto extended_table = ERE_special_characters<value_type>();
-
-  const token_table<value_type>& table = basic? basic_table: extended_table;
-
   value_type ch;
   range.get(ch);
   if (ch == value_type('\\')) {
     default_get_escaped(out);
-    /*
-    value_type escaped_char(0);
-    if (!range.get(escaped_char)) {
-      out = token(value_type('\\'));
-    } else if (escaped_char == value_type('b')) {
-      out = token(escaped_char, token_type::WORD_BOUNDARY);
-    } else if (escaped_char == value_type('B')) {
-      out = token(escaped_char, token_type::NEG_WORD_BOUNDARY);
-    } else if (std::isdigit(escaped_char, traits_i.getloc())) {
-      out = token(escaped_char, token_type::BACK_REF);
-    } else if (table.contains(escaped_char)) {
-      out = literal_token(escaped_char);
-    } else if (basic) {
-      auto val = extended_table.value(escaped_char);
-      out = (val == token_type::LITERAL)? literal_token(escaped_char) :
-        token(escaped_char, val);
-    } else {
-      out = literal_token(escaped_char);
-    }
-    */
-  } else if (ch == '\n' && (grep || egrep)) {
-    out = token(value_type('|'), token_type::ALTERNATION);
-    return;
   } else {
-    auto val = table.value(ch);
+    const auto special_table = special_character_table<value_type>(flag);
+    auto val = special_table.value(ch);
+    if (val == token_type::R_PAREN && context_depth() == 0) {
+      val = token_type::LITERAL;
+    }
     out = (val == token_type::LITERAL)? literal_token(ch): token(ch,val);
   }
 }
 
 template <typename InputIt, typename Traits>
+void token_stream<InputIt,Traits>::default_get_escaped(token& out) {
+  const auto escape_table = escape_character_table<value_type>(flag);
+  value_type escaped_char(0);
+  if (!range.get(escaped_char)) {
+    out = token(value_type('\\'));
+  } else {
+    auto val = escape_table.value(escaped_char);
+    if (val == token_type::LITERAL) {
+      out = literal_token(escaped_char);
+    }
+    out = token(escaped_char, val);
+  }
+}
+
+template <typename InputIt, typename Traits>
 void token_stream<InputIt,Traits>::replication_get(token& out) {
-  bool basic = flag & std::regex_constants::basic;
+  bool basic = flag & flag_type::basic;
 
   value_type ch(0);
   if ((basic  && pair_reader(ch, value_type('\\'), value_type('}'))) ||
@@ -205,7 +198,7 @@ void token_stream<InputIt,Traits>::replication_get(token& out) {
     out = token(value_type('}'), token_type::R_BRACE);
   } else if (ch == value_type(',')) {
     out = token(ch, token_type::COUNT_SEP);
-  } else if (std::isdigit(ch, traits_i.getloc())) {
+  } else if (std::isdigit(ch, loc)) {
     out = token(ch, token_type::DIGIT);
   } else {
     out = literal_token(ch);
@@ -215,7 +208,7 @@ void token_stream<InputIt,Traits>::replication_get(token& out) {
 template <typename InputIt, typename Traits>
 void token_stream<InputIt,Traits>::subexpr_get(token& out) {
   // This method is only necessary for ECMAScript.
-  bool ECMAScript = flag & std::regex_constants::ECMAScript;
+  bool ECMAScript = flag & flag_type::ECMAScript;
   if (!ECMAScript) {
     default_get(out);
     return;
@@ -231,9 +224,9 @@ void token_stream<InputIt,Traits>::subexpr_get(token& out) {
     range.putback(first);
     default_get(out);
   } else if (second == value_type('=')) {
-    out = token(second, token_type::POS_LOOKAHEAD);
+    out = token(second, token_type::ASSERTION);
   } else if (second == value_type('!')) {
-    out = token(second, token_type::NEG_LOOKAHEAD);
+    out = token(second, token_type::ASSERTION);
   } else if (second == value_type(':')) {
     out = token(second, token_type::NO_SUBEXP);
   } else {
@@ -244,10 +237,30 @@ void token_stream<InputIt,Traits>::subexpr_get(token& out) {
 }
 
 template <typename InputIt, typename Traits>
+void token_stream<InputIt,Traits>::bracket_get_sub_bracket(token& out) {
+  value_type ch('[');
+  value_type second(0);
+  if (!range.get(second)) {
+    out = literal_token(ch);
+  } else if (second == value_type('.')) {
+    out = token(ch, token_type::L_COLLATE);
+  } else if (second == value_type(':')) {
+    out = token(ch, token_type::L_CLASS);
+  } else if (second == value_type('=')) {
+    out = token(ch, token_type::L_EQUIV);
+  } else {
+    range.putback(second);
+    out = literal_token(ch);
+  }
+}
+
+template <typename InputIt, typename Traits>
 void token_stream<InputIt,Traits>::bracket_get(token& out) {
   value_type ch(0);
   range.get(ch);
   if (ch == value_type('[')) {
+    bracket_get_sub_bracket(out);
+    /*
     value_type second(0);
     if (!range.get(second)) {
       out = literal_token(ch);
@@ -261,12 +274,21 @@ void token_stream<InputIt,Traits>::bracket_get(token& out) {
       range.putback(second);
       out = literal_token(ch);
     }
+    */
   } else if (ch == value_type('^')) {
-    out = token(ch, token_type::NEGATION);
+    if (context_first_bracket_char()) {
+      out = token(ch, token_type::NEGATION);
+    } else {
+      out = literal_token(ch);
+    }
+  } else if (ch == value_type(']')) {
+    if (context_first_bracket_char() || context_after_bracket_negation()) {
+      out = literal_token(ch);
+    } else {
+      out = token(ch, token_type::R_BRACKET);
+    }
   } else if (ch == value_type('-')) {
     out = token(ch, token_type::RANGE_DASH);
-  } else if (ch == value_type(']')) {
-    out = token(ch, token_type::R_BRACKET);
   } else {
     out = literal_token(ch);
   }
