@@ -14,7 +14,7 @@ namespace lex {
 template <typename InputIt, typename Traits>
 class token_stream_impl {
  public:
-  using flag_type = std::regex_constants::syntax_option_type;
+  using flag_type = regex_constants::syntax_option_type;
   using value_type = typename regex_range<InputIt>::value_type;
   using token = regex_token<value_type,Traits>;
   using locale_type = typename Traits::locale_type;

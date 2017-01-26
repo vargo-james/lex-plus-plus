@@ -24,28 +24,28 @@ class regex {
   using traits_type = Traits;
   using string_type = typename Traits::string_type;
   using locale_type = typename Traits::locale_type;
-  using flag_type = std::regex_constants::syntax_option_type;
+  using flag_type = regex_constants::syntax_option_type;
 
   //Constructors
   regex() = default;
   regex(const regex& other) = default;
   regex(regex&& other) = default;
 
-  explicit regex(const CharT* s, flag_type f = std::regex_constants::extended)
+  explicit regex(const CharT* s, flag_type f = regex_constants::extended)
     : regex(s, s + strlen(s), f) {}
   regex(const CharT* s, std::size_t n, 
-      flag_type f = std::regex_constants::extended)
+      flag_type f = regex_constants::extended)
     : regex(s, s + n, f) {}
   template <typename ST, typename SA>
   explicit regex(const std::basic_string<CharT,ST,SA>& str,
-      flag_type f = std::regex_constants::extended) 
+      flag_type f = regex_constants::extended) 
     : regex(std::begin(str), std::end(str), f) {}
   regex(const std::initializer_list<CharT>& init, 
-      flag_type f = std::regex_constants::extended)
+      flag_type f = regex_constants::extended)
     : regex(std::begin(init), std::end(init), f) {}
   template <typename ForwardIt>
   regex(ForwardIt first, ForwardIt last, 
-      flag_type f = std::regex_constants::extended);
+      flag_type f = regex_constants::extended);
 
   // Destructor
   ~regex() = default;
@@ -65,25 +65,25 @@ class regex {
   // Assign
   regex& assign(const regex& other) {return *this = other;}
   regex& assign(regex&& other) {return *this = std::move(other);}
-  regex& assign(const CharT* s, flag_type f = std::regex_constants::extended) {
+  regex& assign(const CharT* s, flag_type f = regex_constants::extended) {
     return *this = regex(s, f);
   }
   regex& assign(const CharT* s, std::size_t n, 
-      flag_type f = std::regex_constants::extended) {
+      flag_type f = regex_constants::extended) {
     return *this = regex(s,n,f);
   }
   template <typename ST, typename SA>
   regex& assign(const std::basic_string<CharT,ST,SA>& str,
-      flag_type f = std::regex_constants::extended) {
+      flag_type f = regex_constants::extended) {
     return *this = regex(str, f);
   }
   template <typename InputIt>
   regex& assign(InputIt first, InputIt last, 
-      flag_type f = std::regex_constants::extended) {
+      flag_type f = regex_constants::extended) {
     return *this = regex(std::basic_string<CharT>(first, last), f);
   }
   regex& assign(const std::initializer_list<CharT>& init,
-      flag_type f = std::regex_constants::extended) {
+      flag_type f = regex_constants::extended) {
     return *this = regex(init, f);
   }
 

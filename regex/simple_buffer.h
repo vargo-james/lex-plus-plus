@@ -1,3 +1,6 @@
+/*
+ * This buffer acts like a stack.
+ */
 #ifndef _simple_buffer_h_
 #define _simple_buffer_h_
 

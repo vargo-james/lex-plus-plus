@@ -5,45 +5,67 @@
 #include <functional>
 #include <iterator>
 #include <stdexcept>
-#include <type_traits>
 
 namespace lex {
 
 enum class match_state {MATCH, FINAL_MATCH, MISMATCH, UNDECIDED};
 
-struct replication {
-  replication(): lower {1}, upper {1} {}
-  replication(size_t l, size_t u): lower {l}, upper {u} {}
-  size_t lower;
-  size_t upper;
+struct replication_data {
+  replication_data(): lower {1}, upper {1} {}
+  replication_data(std::size_t l, std::size_t u): lower {l}, upper {u} {}
+  std::size_t lower;
+  std::size_t upper;
 };
+
+struct regex_constants {
+  enum error_type {
+    error_collate,
+    error_ctype,
+    error_escape,
+    error_backref,
+    error_brack,
+    error_paren,
+    error_brace,
+    error_badbrace,
+    error_range,
+    error_space,
+    error_badrepeat,
+    error_complexity,
+    error_stack
+  };
+
+  enum syntax_option_type {
+    icase = 1,
+    nosubs = 2,
+    optimize = 4,
+    collate = 8,
+    multiline = 16,
+    ECMAScript = 32,
+    basic = 64,
+    extended = 128,
+    awk = 256,
+    grep = 512,
+    egrep = 1024
+  };
+};
+
+inline regex_constants::syntax_option_type 
+operator|(regex_constants::syntax_option_type left,
+    regex_constants::syntax_option_type right) {
+  return static_cast<regex_constants::syntax_option_type>(
+      static_cast<int>(left) | static_cast<int>(right));
+}
+inline regex_constants::syntax_option_type 
+operator&(regex_constants::syntax_option_type left,
+    regex_constants::syntax_option_type right) {
+  return static_cast<regex_constants::syntax_option_type>(
+      static_cast<int>(left) & static_cast<int>(right));
+}
 
 template <typename CharIterator>
 using value_type_t = 
   typename std::iterator_traits<CharIterator>::value_type;
 
-template <typename Iterator, typename Char>
-struct enable_iterator {
-  using type = 
-    std::enable_if_t<
-      std::is_same<Char, value_type_t<Iterator>>::value
-    >;
-};
-
-template <typename Iterator, typename Char>
-using enable_iterator_t = typename enable_iterator<Iterator,Char>::type;
-
-template <typename Container, typename T>
-struct enable_container {
-  using type = 
-    std::enable_if<
-      std::is_same<T, typename Container::value_type>::value
-    >;
-};
-
-template <typename Container, typename T>
-using enable_container_t = typename enable_container<Container, T>::type;
-     
 template <typename Char>
 using predicate_type_t = std::function<bool(const Char&)>;
 

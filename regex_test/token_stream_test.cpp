@@ -29,7 +29,7 @@ void literals_test(ttest::error_log& log) {
   const std::string reg {R"(a\*b&'>\n\[x\(yz)"};
 
   token_stream<Iter,Traits> ts(reg.begin(), reg.end(),
-      std::regex_constants::extended);
+      regex_constants::extended);
 
   regex_token<char,Traits> token;
   int count(0);
@@ -44,7 +44,7 @@ void literals_test(ttest::error_log& log) {
 
   const std::string grep_reg {"\nab()+_{}\\"};
   token_stream<Iter,Traits> ts2(grep_reg.begin(), grep_reg.end(),
-      std::regex_constants::grep);
+      regex_constants::grep);
   ts2.get(token);
   if (token.type != token_type::ALTERNATION) {
     log.append("grep alternation");
@@ -62,7 +62,7 @@ void literals_test(ttest::error_log& log) {
 
   const std::string ecma_reg {R"(\a\p\q\v\b\u\*\31)"};
   token_stream<Iter,Traits> ts3(ecma_reg.begin(), ecma_reg.end(), 
-      std::regex_constants::ECMAScript);
+      regex_constants::ECMAScript);
   bool escapes = compare_token_types(ts3, {
       token_type::LITERAL,
       token_type::LITERAL, 
@@ -86,7 +86,7 @@ void replication_test(ttest::error_log& log) {
   using stream_type = token_stream<Iter,Traits>;
 
   const std::string reg {R"(*?+)"};
-  stream_type ts(reg.begin(), reg.end(), std::regex_constants::extended);
+  stream_type ts(reg.begin(), reg.end(), regex_constants::extended);
 
   regex_token<char,Traits> token;
   while (ts.get(token)) {
@@ -96,7 +96,7 @@ void replication_test(ttest::error_log& log) {
   }
 
   const std::string reg2 {R"({3,66X})"};
-  stream_type ts2(reg2.begin(), reg2.end(), std::regex_constants::extended);
+  stream_type ts2(reg2.begin(), reg2.end(), regex_constants::extended);
   if (!compare_token_types(ts2, {
         token_type::L_BRACE,
         token_type::DIGIT,
@@ -111,7 +111,7 @@ void replication_test(ttest::error_log& log) {
 
   const std::string basic_reg {R"(\{2,})"};
   stream_type ts3(basic_reg.begin(), basic_reg.end(), 
-      std::regex_constants::basic);
+      regex_constants::basic);
   if (!compare_token_types(ts3, {
         token_type::L_BRACE,
         token_type::DIGIT,
@@ -127,7 +127,7 @@ void bracket_test(ttest::error_log& log) {
   using Traits = std::regex_traits<char>;
   using stream_type = token_stream<Iter,Traits>;
   const std::string reg {R"([^ab)[:xy:]-[..]])"};
-  stream_type ts(reg.begin(), reg.end(), std::regex_constants::extended);
+  stream_type ts(reg.begin(), reg.end(), regex_constants::extended);
 
   if (!compare_token_types(ts, {
         token_type::L_BRACKET,
@@ -153,7 +153,7 @@ void subexpr_test(ttest::error_log& log) {
   using Traits = std::regex_traits<char>;
   using stream_type = token_stream<Iter,Traits>;
   const std::string reg {R"(a(?:)\?)(?=)"};
-  stream_type ts(reg.begin(), reg.end(), std::regex_constants::ECMAScript);
+  stream_type ts(reg.begin(), reg.end(), regex_constants::ECMAScript);
 
   if (!compare_token_types(ts, {
         token_type::LITERAL,
@@ -168,7 +168,7 @@ void subexpr_test(ttest::error_log& log) {
     log.append("ECMAScript subexpr");
   }
 
-  stream_type ts2(reg.begin(), reg.end(), std::regex_constants::extended);
+  stream_type ts2(reg.begin(), reg.end(), regex_constants::extended);
   if (!compare_token_types(ts2, {
         token_type::LITERAL,
         token_type::L_PAREN,
@@ -191,7 +191,7 @@ void icase_test(ttest::error_log& log) {
   using stream_type = token_stream<Iter,Traits>;
   const std::string reg {R"(a(b)"};
   stream_type ts(reg.begin(), reg.end(), 
-      std::regex_constants::basic | std::regex_constants::icase);
+      regex_constants::basic | regex_constants::icase);
 
   regex_token<char,Traits> token;
   if (!ts.get(token) || token.value != 'A' || !ts.get(token) ||

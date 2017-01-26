@@ -22,11 +22,11 @@ class matcher_replicator_transition
   using index_type = std::size_t;
   using current_progress = std::pair<matcher_type, index_type>;
 
-  matcher_replicator_transition(matcher_type&& reg, replication rep)
+  matcher_replicator_transition(matcher_type&& reg, replication_data rep)
     : lower {rep.lower},
       upper {rep.upper},
       matcher {std::move(reg)} {}
-  matcher_replicator_transition(const matcher_type& reg, replication rep)
+  matcher_replicator_transition(const matcher_type& reg, replication_data rep)
     : lower {rep.lower},
       upper {rep.upper},
       matcher {reg} {}
@@ -127,7 +127,7 @@ matcher_replicator_transition<Matcher>::update(const value_type& ch) {
 }//namespace detail
 
 template <typename Matcher>
-Matcher replicate(Matcher&& matcher, replication rep) {
+Matcher replicate(Matcher&& matcher, replication_data rep) {
   matcher_factory<detail::matcher_replicator_transition<Matcher>> fac;
   return fac.create(std::forward<Matcher>(matcher), rep);
 }

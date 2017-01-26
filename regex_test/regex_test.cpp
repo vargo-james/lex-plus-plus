@@ -37,13 +37,13 @@ void regex_test(ttest::error_log& log) {
   regex<char> reg1(std::string("qwerty"));
   auto reg2 = reg1;
 
-  regex<char> super_reg(std::string("qwerty"), std::regex_constants::icase);
+  regex<char> super_reg(std::string("qwerty"), regex_constants::icase);
 
   regex<char> error({'a', 'b'});
-  regex<char> error2({'a', 'b'}, std::regex_constants::ECMAScript);
+  regex<char> error2({'a', 'b'}, regex_constants::ECMAScript);
 
   regex<char> reg3(std::initializer_list<char>{'q','w','e','r','t','y'}, 
-      std::regex_constants::ECMAScript);
+      regex_constants::ECMAScript);
 
   reg2.assign(super_reg);
 

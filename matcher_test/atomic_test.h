@@ -12,7 +12,6 @@ int singleton_matcher_transition_test();
 int singleton_matcher_test();
 int predicate_matcher_test();
 int universal_singleton_matcher_test();
-void string_matcher_test(ttest::error_log& log);
 
 inline ttest::test_suite::pointer create_atomic_test() {
   using namespace ttest;
@@ -24,7 +23,6 @@ inline ttest::test_suite::pointer create_atomic_test() {
     create_test("predicate_matcher", predicate_matcher_test),
     create_test("universal_singleton matcher", 
         universal_singleton_matcher_test),
-    create_test("string_matcher", string_matcher_test)
   });
 }
 

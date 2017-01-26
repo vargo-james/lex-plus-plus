@@ -11,6 +11,7 @@
 #define _token_table_h_
 
 #include "regex_token.h"
+#include "regex_types.h"
 
 #include <algorithm>
 #include <initializer_list>
@@ -182,8 +183,8 @@ token_table<CharT> ECMAScript_table() {
 
 template <typename CharT>
 token_table<CharT> 
-make_token_table(std::regex_constants::syntax_option_type flag) {
-  using flag_type = std::regex_constants::syntax_option_type;
+make_token_table(regex_constants::syntax_option_type flag) {
+  using flag_type = regex_constants::syntax_option_type;
   if (flag & flag_type::basic) {
     return basic_table<CharT>();
   }

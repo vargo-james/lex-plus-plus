@@ -1,12 +1,13 @@
 /*
  * This class reads a regex from a range and a 
- * std::regex_constants::syntax_option_type variable.
+ * regex_constants::syntax_option_type variable.
  */
 
 #ifndef _reader_h_
 #define _reader_h_
 
 #include "matcher/atomic.h"
+#include "matcher/string_literal.h"
 #include "matcher/matcher.h"
 #include "matcher/alternation.h"
 #include "matcher/concatenation.h"
@@ -24,7 +25,7 @@ namespace lex {
 template <typename InputIt, typename Traits>
 class reader {
  public:
-  using flag_type = std::regex_constants::syntax_option_type;
+  using flag_type = regex_constants::syntax_option_type;
   using iterator = InputIt;
   using value_type = typename std::iterator_traits<InputIt>::value_type;
   using matcher_type = matcher<value_type>;
@@ -49,7 +50,7 @@ class reader {
   bool get_literals(matcher_type& matcher);
   bool get_bracket(matcher_type& matcher);
   bool get_sub_expression(matcher_type& matcher);
-  bool get_replication(replication& rep);
+  bool get_replication(replication_data& rep);
 
   template <typename Compositor>
   matcher_type compose(std::vector<matcher_type>&& elements, 
@@ -110,7 +111,7 @@ bool reader<InputIt,Traits>::get_expression(matcher_type& matcher) {
   if (ts.empty()) return false;
   if (!get_element(matcher)) return false;
 
-  for (replication rep; get_replication(rep);) {
+  for (replication_data rep; get_replication(rep);) {
     matcher = replicate(move(matcher), rep);
   }
   return true;
@@ -168,7 +169,7 @@ bool reader<InputIt,Traits>::get_literals(matcher_type& matcher) {
 }
 
 template <typename InputIt, typename Traits>
-bool reader<InputIt,Traits>::get_replication(replication& rep) {
+bool reader<InputIt,Traits>::get_replication(replication_data& rep) {
   return false;
   /*
   replication_reader rep_reader;

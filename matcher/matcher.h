@@ -32,11 +32,11 @@ class matcher {
  public:
   using value_type = CharT;
   using transition_pointer = 
-    typename detail::matcher_transition<value_type>::pointer;
+    typename matcher_transition<value_type>::pointer;
 
   // The default matcher matches an empty string.
   matcher() 
-    : transition_ {detail::matcher_transition<value_type>{}.clone()},
+    : transition_ {matcher_transition<value_type>{}.clone()},
       state_ {transition_->initialize()} {}
 
   // Most matcher objects are constructed from a transition_pointer object.

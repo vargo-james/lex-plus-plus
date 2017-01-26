@@ -73,7 +73,7 @@ size_t read_number(Iterator& begin, Iterator& end) {
 }
 
 template <typename Iterator>
-replication read_dupl_range(Iterator& begin, Iterator& end) {
+replication_data read_dupl_range(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
   ++begin;
 
@@ -84,42 +84,42 @@ replication read_dupl_range(Iterator& begin, Iterator& end) {
 
   if (*begin == char_type('}')) {
       ++begin;
-      return replication(lower, lower);
+      return replication_data(lower, lower);
   }
   // The next line ensures that the next char is a comma.
   verify_closing(begin, end, char_type(','));
 
   if (*begin == char_type('}')) {
     ++begin;
-    return replication(lower, std::numeric_limits<size_t>::max());
+    return replication_data(lower, std::numeric_limits<size_t>::max());
   }
   auto upper = read_number(begin, end);
   verify_closing(begin, end, char_type('}'));
 
-  return replication(lower, upper);
+  return replication_data(lower, upper);
 }
 
 template <typename Iterator>
-replication ERE_dupl_symbol(Iterator& begin, Iterator& end) {
+replication_data ERE_dupl_symbol(Iterator& begin, Iterator& end) {
   using char_type = char_type_t<Iterator>;
-  if (begin == end) return replication(1,1);
+  if (begin == end) return replication_data(1,1);
   char_type ch = *begin;
   switch (ch) {
   case char_type('*'):
     ++begin;
-    return replication(0, std::numeric_limits<size_t>::max());
+    return replication_data(0, std::numeric_limits<size_t>::max());
   case char_type('+'):
     ++begin;
-    return replication(1, std::numeric_limits<size_t>::max());
+    return replication_data(1, std::numeric_limits<size_t>::max());
   case char_type('?'):
     ++begin;
-    return replication(0, 1);
+    return replication_data(0, 1);
   case char_type('{'):
     return read_dupl_range(begin, end);
   default:
     break;
   }
-  return replication(1,1);
+  return replication_data(1,1);
 }
 
 template <typename Iterator>

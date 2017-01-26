@@ -1,6 +1,7 @@
 #include "matcher_test/concatenation_test.h"
 #include "matcher_test/matcher_test.h"
 #include "matcher/atomic.h"
+#include "matcher/string_literal.h"
 #include "matcher/concatenation.h"
 
 #include <string>
