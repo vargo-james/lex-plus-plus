@@ -6,8 +6,6 @@
 #include "regex_token.h"
 #include "token_table.h"
 
-#include <functional>
-#include <iterator>
 #include <locale>
 #include <regex>
 
@@ -17,24 +15,24 @@ template <typename InputIt, typename Traits>
 class token_stream_impl {
  public:
   using flag_type = std::regex_constants::syntax_option_type;
-  using value_type = typename regex_range<InputIt,Traits>::value_type;
+  using value_type = typename regex_range<InputIt>::value_type;
   using token = regex_token<value_type,Traits>;
   using locale_type = typename Traits::locale_type;
 
   token_stream_impl(InputIt b, InputIt e, flag_type f)
-    : source(b,e),
+    : table {make_token_table<value_type>(f)},
+      source(b,e),
       loc {Traits{}.getloc()},
-      flag {f},
-      table {make_token_table<value_type>(f)} {}
+      flag {f} {}
 
   bool empty() const {return source.empty();}
   void get(token& out);
  private:
-  regex_range<InputIt,Traits> source;
+  token_table<value_type> table;
+  regex_range<InputIt> source;
   locale_type loc;
   context con;
   flag_type flag;
-  token_table<value_type> table;
 
   void get(token& out, context::site site);
   void default_get(token& out);
@@ -130,7 +128,6 @@ template <typename InputIt, typename Traits>
 void token_stream_impl<InputIt,Traits>::replication_get(token& out) {
   bool basic = flag_includes(flag_type::basic) || 
     flag_includes(flag_type::grep);
-
   value_type ch(0);
   if ((basic  && pair_reader(ch, value_type('\\'), value_type('}'))) ||
       (!basic && source.get(ch) && ch == value_type('}'))) {
@@ -162,41 +159,51 @@ void token_stream_impl<InputIt,Traits>::subexpr_get(token& out) {
   if (first != value_type('?') || !source.get(second)) {
     source.putback(first);
     default_get(out);
-  } else if (second == value_type('=')) {
+    return;
+  } 
+  switch (second) {
+  case value_type('='):
+  case value_type('!'):
     out = token(second, token_type::ASSERTION);
-  } else if (second == value_type('!')) {
-    out = token(second, token_type::ASSERTION);
-  } else if (second == value_type(':')) {
+    break;
+  case value_type(':'):
     out = token(second, token_type::NO_SUBEXP);
-  } else {
+    break;
+  default:
     source.putback(second);
     source.putback(first);
     default_get(out);
-  } 
+  }
 }
 
 template <typename InputIt, typename Traits>
 void token_stream_impl<InputIt,Traits>::bracket_get(token& out) {
   value_type ch(0);
   source.get(ch);
-  if (ch == value_type('[')) {
+  switch (ch) {
+  case value_type('['):
     bracket_get_sub_bracket(out);
-  } else if (ch == value_type('^')) {
+    break;
+  case value_type('^'):
     if (context_first_bracket_char()) {
       out = token(ch, token_type::NEGATION);
     } else {
       out = literal_token(ch);
     }
-  } else if (ch == value_type(']')) {
+    break;
+  case value_type(']'):
     if (context_first_bracket_char() || context_after_bracket_negation()) {
       out = literal_token(ch);
     } else {
       out = token(ch, token_type::R_BRACKET);
     }
-  } else if (ch == value_type('-')) {
+    break;
+  case value_type('-'):
     out = token(ch, token_type::RANGE_DASH);
-  } else {
+    break;
+  default:
     out = literal_token(ch);
+    break;
   }
 }
 
@@ -206,15 +213,22 @@ void token_stream_impl<InputIt,Traits>::bracket_get_sub_bracket(token& out) {
   value_type second(0);
   if (!source.get(second)) {
     out = literal_token(ch);
-  } else if (second == value_type('.')) {
+    return;
+  } 
+  switch (second) {
+  case value_type('.'):
     out = token(ch, token_type::L_COLLATE);
-  } else if (second == value_type(':')) {
+    break;
+  case value_type(':'):
     out = token(ch, token_type::L_CLASS);
-  } else if (second == value_type('=')) {
+    break;
+  case value_type('='):
     out = token(ch, token_type::L_EQUIV);
-  } else {
+    break;
+  default:
     source.putback(second);
     out = literal_token(ch);
+    break;
   }
 }
 

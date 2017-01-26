@@ -7,6 +7,20 @@
 using namespace lex;
 
 
+template <typename InputIt, typename Traits>
+bool compare_token_types(token_stream<InputIt,Traits>& ts, 
+    const std::vector<token_type>& types) {
+  using token = typename token_stream<InputIt,Traits>::token;
+  token tok;
+  for (auto t: types) {
+    ts.get(tok);
+    if (t != tok.type) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void literals_test(ttest::error_log& log) {
 
   using Iter = typename std::string::const_iterator;
@@ -45,22 +59,26 @@ void literals_test(ttest::error_log& log) {
   if (count != 9) {
     log.append("grep count");
   }
-}
 
-
-template <typename InputIt, typename Traits>
-bool compare_token_types(token_stream<InputIt,Traits>& ts, 
-    const std::vector<token_type>& types) {
-  using token_type = typename token_stream<InputIt,Traits>::token;
-  token_type tok;
-  for (auto t: types) {
-    ts.get(tok);
-    if (t != tok.type) {
-      return false;
-    }
+  const std::string ecma_reg {R"(\a\p\q\v\b\u\*\31)"};
+  token_stream<Iter,Traits> ts3(ecma_reg.begin(), ecma_reg.end(), 
+      std::regex_constants::ECMAScript);
+  bool escapes = compare_token_types(ts3, {
+      token_type::LITERAL,
+      token_type::LITERAL, 
+      token_type::LITERAL, 
+      token_type::CONTROL_CHAR,
+      token_type::ASSERTION,
+      token_type::CHAR_CLASS,
+      token_type::LITERAL, 
+      token_type::BACK_REF, 
+      token_type::LITERAL, 
+    });
+  if (!escapes) {
+    log.append("escapes");
   }
-  return true;
 }
+
 
 void replication_test(ttest::error_log& log) {
   using Iter = typename std::string::const_iterator;

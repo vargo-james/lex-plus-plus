@@ -1,4 +1,8 @@
 /*
+ * A table tells a token_stream how to interpret characters outside of a 
+ * bracket expression and outside of braces. That is, it interprets all the
+ * special characters and escape characters in the regex.
+ *
  * Notes:
  *  The UNICODE_ESCAPE is hidden.
  */
@@ -9,7 +13,7 @@
 #include "regex_token.h"
 
 #include <algorithm>
-#include <iterator>
+#include <initializer_list>
 #include <regex>
 #include <utility>
 #include <vector>

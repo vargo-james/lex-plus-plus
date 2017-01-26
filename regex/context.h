@@ -72,9 +72,11 @@ inline void context::default_update(token_type tok) {
     context_ = SUBEXPR;
     break;
   case token_type::R_PAREN:
+    /*
     if (subexpr_depth == 0) {
       break;
     }
+    */
     --subexpr_depth;
     break;
   case token_type::L_BRACKET:
@@ -92,6 +94,7 @@ inline void context::replication_update(token_type tok) {
 
 inline void context::subexpr_update(token_type tok) {
   context_ = DEFAULT;
+  default_update(tok);
 }
 
 inline void context::bracket_update(token_type tok) {
