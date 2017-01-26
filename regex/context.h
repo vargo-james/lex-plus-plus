@@ -98,7 +98,8 @@ inline void context::bracket_update(token_type tok) {
   switch (tok) {
   case token_type::NEGATION:
     bracket_after_negation = true;
-    break;
+    bracket_first = false;
+    return;
   case token_type::R_BRACKET:
     context_ = DEFAULT;
     break;
@@ -115,6 +116,7 @@ inline void context::bracket_update(token_type tok) {
     break;
   }
   bracket_first = false;
+  bracket_after_negation = false;
 }
 
 inline void context::coll_update(token_type tok) {

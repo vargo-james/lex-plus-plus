@@ -24,7 +24,8 @@ class token_stream_impl {
   token_stream_impl(InputIt b, InputIt e, flag_type f)
     : source(b,e),
       loc {Traits{}.getloc()},
-      flag {f} {}
+      flag {f},
+      table {make_token_table<value_type>(f)} {}
 
   bool empty() const {return source.empty();}
   void get(token& out);
@@ -33,17 +34,25 @@ class token_stream_impl {
   locale_type loc;
   context con;
   flag_type flag;
+  token_table<value_type> table;
 
   void get(token& out, context::site site);
   void default_get(token& out);
   void default_get_escaped(token& out);
+  void replication_get(token& out);
+  void subexpr_get(token& out);
+  void bracket_get(token& out);
+  void bracket_get_sub_bracket(token& out);
+  void collation_get(token& out, value_type closing_char, 
+      token_type closing_token);
+
+  token literal_token(value_type ch) const;
+
+  bool pair_reader(value_type& out, value_type first, value_type second);
 
   bool flag_includes(flag_type f) const {return flag & f;}
 
   void update_context(token tok) {con.update(tok.type);}
-
-  token literal_token(value_type ch) const;
-
   int context_depth() const {return con.depth();}
   context::site get_context() const {return con.get();}
   bool context_first_bracket_char() const {
@@ -67,7 +76,6 @@ token_stream_impl<InputIt,Traits>::get(token& out, context::site site) {
   case context::DEFAULT:
     default_get(out);
     break;
-    /*
   case context::REPLICATION:
     replication_get(out);
     break;
@@ -86,7 +94,6 @@ token_stream_impl<InputIt,Traits>::get(token& out, context::site site) {
   case context::CLASS:
     collation_get(out, value_type(':'), token_type::R_CLASS);
     break;
-  */
   }
 }
 
@@ -97,8 +104,7 @@ void token_stream_impl<InputIt,Traits>::default_get(token& out) {
   if (ch == value_type('\\')) {
     default_get_escaped(out);
   } else {
-    const auto special_table = special_character_table<value_type>(flag);
-    auto val = special_table.value(ch);
+    auto val = table.special_value(ch);
     if (val == token_type::R_PAREN && context_depth() == 0) {
       val = token_type::LITERAL;
     }
@@ -108,16 +114,118 @@ void token_stream_impl<InputIt,Traits>::default_get(token& out) {
 
 template <typename InputIt, typename Traits>
 void token_stream_impl<InputIt,Traits>::default_get_escaped(token& out) {
-  const auto escape_table = escape_character_table<value_type>(flag);
   value_type escaped_char(0);
   if (!source.get(escaped_char)) {
     out = token(value_type('\\'));
   } else {
-    auto val = escape_table.value(escaped_char);
+    auto val = table.escaped_value(escaped_char);
     if (val == token_type::LITERAL) {
       out = literal_token(escaped_char);
     }
     out = token(escaped_char, val);
+  }
+}
+
+template <typename InputIt, typename Traits>
+void token_stream_impl<InputIt,Traits>::replication_get(token& out) {
+  bool basic = flag_includes(flag_type::basic) || 
+    flag_includes(flag_type::grep);
+
+  value_type ch(0);
+  if ((basic  && pair_reader(ch, value_type('\\'), value_type('}'))) ||
+      (!basic && source.get(ch) && ch == value_type('}'))) {
+    out = token(value_type('}'), token_type::R_BRACE);
+  } else if (ch == value_type(',')) {
+    out = token(ch, token_type::COUNT_SEP);
+  } else if (std::isdigit(ch, loc)) {
+    out = token(ch, token_type::DIGIT);
+  } else {
+    out = literal_token(ch);
+  }
+}
+
+template <typename InputIt, typename Traits>
+void token_stream_impl<InputIt,Traits>::subexpr_get(token& out) {
+  // This method is only necessary for ECMAScript.
+  bool ECMAScript = flag & flag_type::ECMAScript;
+  if (!ECMAScript) {
+    default_get(out);
+    return;
+  }
+
+  value_type first(0);
+  value_type second(0);
+  source.get(first);
+
+  // We are looking for a two char sequence ?X, where X stands for
+  // either =,!, or :.
+  if (first != value_type('?') || !source.get(second)) {
+    source.putback(first);
+    default_get(out);
+  } else if (second == value_type('=')) {
+    out = token(second, token_type::ASSERTION);
+  } else if (second == value_type('!')) {
+    out = token(second, token_type::ASSERTION);
+  } else if (second == value_type(':')) {
+    out = token(second, token_type::NO_SUBEXP);
+  } else {
+    source.putback(second);
+    source.putback(first);
+    default_get(out);
+  } 
+}
+
+template <typename InputIt, typename Traits>
+void token_stream_impl<InputIt,Traits>::bracket_get(token& out) {
+  value_type ch(0);
+  source.get(ch);
+  if (ch == value_type('[')) {
+    bracket_get_sub_bracket(out);
+  } else if (ch == value_type('^')) {
+    if (context_first_bracket_char()) {
+      out = token(ch, token_type::NEGATION);
+    } else {
+      out = literal_token(ch);
+    }
+  } else if (ch == value_type(']')) {
+    if (context_first_bracket_char() || context_after_bracket_negation()) {
+      out = literal_token(ch);
+    } else {
+      out = token(ch, token_type::R_BRACKET);
+    }
+  } else if (ch == value_type('-')) {
+    out = token(ch, token_type::RANGE_DASH);
+  } else {
+    out = literal_token(ch);
+  }
+}
+
+template <typename InputIt, typename Traits>
+void token_stream_impl<InputIt,Traits>::bracket_get_sub_bracket(token& out) {
+  value_type ch('[');
+  value_type second(0);
+  if (!source.get(second)) {
+    out = literal_token(ch);
+  } else if (second == value_type('.')) {
+    out = token(ch, token_type::L_COLLATE);
+  } else if (second == value_type(':')) {
+    out = token(ch, token_type::L_CLASS);
+  } else if (second == value_type('=')) {
+    out = token(ch, token_type::L_EQUIV);
+  } else {
+    source.putback(second);
+    out = literal_token(ch);
+  }
+}
+
+template <typename InputIt, typename Traits>
+void token_stream_impl<InputIt,Traits>::collation_get(token& out, 
+    value_type closing_char, token_type closing_token) {
+  value_type ch(0);
+  if (pair_reader(ch, closing_char, value_type(']'))) {
+    out = token(ch, closing_token);
+  } else {
+    out = literal_token(ch);
   }
 }
 
@@ -128,6 +236,22 @@ token_stream_impl<InputIt,Traits>::literal_token(value_type ch) const {
     ch = std::toupper(ch, loc);
   }
   return token(ch, token_type::LITERAL);
+}
+
+template <typename InputIt, typename Traits>
+bool token_stream_impl<InputIt,Traits>::pair_reader(value_type& out, 
+    value_type first, value_type second) {
+  source.get(out);
+  if (out == first && !source.empty()) {
+    value_type ch(0);
+    source.get(ch);
+    if (ch == second) {
+      return true;
+    } else {
+      source.putback(second);
+    }
+  }
+  return false;
 }
 
 }// namespace lex

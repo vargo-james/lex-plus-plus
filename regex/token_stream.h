@@ -18,13 +18,13 @@
 namespace lex {
 
 template <typename InputIt, typename Traits>
-class new_token_stream {
+class token_stream {
  public:
   using value_type = typename token_stream_impl<InputIt,Traits>::value_type;
   using token = regex_token<value_type,Traits>;
   using flag_type = typename token_stream_impl<InputIt,Traits>::flag_type;
 
-  new_token_stream(InputIt b, InputIt e, flag_type f)
+  token_stream(InputIt b, InputIt e, flag_type f)
     : impl(b,e,f) {} 
 
   bool get(token& out);
@@ -32,7 +32,7 @@ class new_token_stream {
   bool empty() const {return buffer.empty() && source_empty();}
 
  private:
-  simple_buffer<value_type> buffer;
+  simple_buffer<token> buffer;
   token_stream_impl<InputIt,Traits> impl;
 
   bool source_empty() const {return impl.empty();}
@@ -40,7 +40,7 @@ class new_token_stream {
 };
 
 template <typename InputIt, typename Traits>
-bool new_token_stream<InputIt,Traits>::get(token& out) {
+bool token_stream<InputIt,Traits>::get(token& out) {
   if (buffer.get(out)) {
     return true;
   }
@@ -49,31 +49,34 @@ bool new_token_stream<InputIt,Traits>::get(token& out) {
   return true;
 }
 
+/*
 template <typename InputIt, typename Traits>
 class token_stream {
  public:
   using flag_type = std::regex_constants::syntax_option_type;
   using value_type = typename std::iterator_traits<InputIt>::value_type;
   using token = regex_token<value_type,Traits>;
+  using locale_type = typename Traits::locale_type;
 
   token_stream(InputIt b, InputIt e, flag_type f)
     : flag {f},
       range(b,e),
-      loc {Traits{}.getloc()} {}
+      loc {Traits{}.getloc()},
+      table {make_token_table<value_type>(f)} {}
+
 
   bool get(token& out);
   bool putback(token tok) {return buffer.set(tok);}
 
   bool empty() const {return buffer.empty() && range.empty();}
  private:
-  using locale_type = typename Traits::locale_type;
-  using table_type = token_table<value_type>;
 
   flag_type flag;
   regex_range<InputIt,Traits> range;
   simple_buffer<token> buffer;
   context context_i;
   locale_type loc;
+  token_table<value_type> table;
 
   bool flag_includes(flag_type f) const {return flag & f;}
 
@@ -164,8 +167,9 @@ void token_stream<InputIt,Traits>::default_get(token& out) {
   if (ch == value_type('\\')) {
     default_get_escaped(out);
   } else {
-    const auto special_table = special_character_table<value_type>(flag);
-    auto val = special_table.value(ch);
+    //const auto special_table = special_character_table<value_type>(flag);
+    //auto val = special_table.value(ch);
+    auto val = table.special_value(ch);
     if (val == token_type::R_PAREN && context_depth() == 0) {
       val = token_type::LITERAL;
     }
@@ -175,12 +179,13 @@ void token_stream<InputIt,Traits>::default_get(token& out) {
 
 template <typename InputIt, typename Traits>
 void token_stream<InputIt,Traits>::default_get_escaped(token& out) {
-  const auto escape_table = escape_character_table<value_type>(flag);
+  //const auto escape_table = escape_character_table<value_type>(flag);
   value_type escaped_char(0);
   if (!range.get(escaped_char)) {
     out = token(value_type('\\'));
   } else {
-    auto val = escape_table.value(escaped_char);
+    //auto val = escape_table.value(escaped_char);
+    auto val = table.escaped_value(escaped_char);
     if (val == token_type::LITERAL) {
       out = literal_token(escaped_char);
     }
@@ -260,21 +265,6 @@ void token_stream<InputIt,Traits>::bracket_get(token& out) {
   range.get(ch);
   if (ch == value_type('[')) {
     bracket_get_sub_bracket(out);
-    /*
-    value_type second(0);
-    if (!range.get(second)) {
-      out = literal_token(ch);
-    } else if (second == value_type('.')) {
-      out = token(ch, token_type::L_COLLATE);
-    } else if (second == value_type(':')) {
-      out = token(ch, token_type::L_CLASS);
-    } else if (second == value_type('=')) {
-      out = token(ch, token_type::L_EQUIV);
-    } else {
-      range.putback(second);
-      out = literal_token(ch);
-    }
-    */
   } else if (ch == value_type('^')) {
     if (context_first_bracket_char()) {
       out = token(ch, token_type::NEGATION);
@@ -320,6 +310,7 @@ bool token_stream<InputIt,Traits>::pair_reader(value_type& out, value_type first
   }
   return false;
 }
+*/
 
 }//namespace lex
 #endif// _token_stream_h_
