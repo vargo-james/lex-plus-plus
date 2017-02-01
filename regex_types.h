@@ -19,6 +19,7 @@ struct replication_data {
 
 struct regex_constants {
   enum error_type {
+    error_none,
     error_collate,
     error_ctype,
     error_escape,
@@ -31,7 +32,9 @@ struct regex_constants {
     error_space,
     error_badrepeat,
     error_complexity,
-    error_stack
+    error_stack,
+    error_unsupported,
+    error_badalt
   };
 
   enum syntax_option_type {
@@ -49,13 +52,13 @@ struct regex_constants {
   };
 };
 
-inline regex_constants::syntax_option_type 
+inline constexpr regex_constants::syntax_option_type 
 operator|(regex_constants::syntax_option_type left,
     regex_constants::syntax_option_type right) {
   return static_cast<regex_constants::syntax_option_type>(
       static_cast<int>(left) | static_cast<int>(right));
 }
-inline regex_constants::syntax_option_type 
+inline constexpr regex_constants::syntax_option_type 
 operator&(regex_constants::syntax_option_type left,
     regex_constants::syntax_option_type right) {
   return static_cast<regex_constants::syntax_option_type>(

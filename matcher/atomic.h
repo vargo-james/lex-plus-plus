@@ -3,6 +3,7 @@
 
 #include "matcher/matcher.h"
 
+#include <locale>
 #include <vector>
 
 namespace lex {
@@ -97,6 +98,56 @@ matcher<CharT> predicate_matcher(const predicate_type_t<CharT>& p) {
 template <typename CharT>
 matcher<CharT> universal_singleton_matcher() {
   return predicate_matcher<CharT>([](const auto&){return true;});
+}
+
+template <typename CharT, typename Traits>
+matcher<CharT> character_class_matcher(CharT ch) {
+  typename Traits::locale_type loc;
+  switch (ch) {
+  case CharT('.'):
+    return predicate_matcher<CharT>([](const auto& ch) {return true;});
+  case CharT('w'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return std::isalnum(ch, loc) || ch == CharT('_');
+        });
+  case CharT('W'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return !std::isalnum(ch, loc) && ch != CharT('_');
+        });
+  case CharT('d'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return std::isdigit(ch, loc);
+        });
+  case CharT('D'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return !std::isdigit(ch, loc);
+        });
+  case CharT('s'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return std::isspace(ch, loc);
+        });
+  case CharT('S'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return !std::isspace(ch, loc);
+        });
+  case CharT('l'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return std::islower(ch, loc);
+        });
+  case CharT('L'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return !std::islower(ch, loc);
+        });
+  case CharT('u'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return std::isupper(ch, loc);
+        });
+  case CharT('U'):
+    return predicate_matcher<CharT>([loc](const auto& ch) {
+          return !std::isupper(ch, loc);
+        });
+  }
+  return {};
 }
 
 

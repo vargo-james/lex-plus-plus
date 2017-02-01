@@ -7,6 +7,7 @@
 #include "bracket_list_test.h"
 #include "range_test.h"
 #include "regex_range_test.h"
+#include "replication_reader_test.h"
 #include "context_test.h"
 #include "simple_buffer_test.h"
 #include "token_stream_test.h"
@@ -23,6 +24,7 @@ inline ttest::test_suite::pointer create_regex_test() {
       create_context_test(),
       create_table_test(),
       create_token_stream_test(),
+      create_replication_reader_test(),
       create_range_test(),
       create_bracket_list_test(),
       create_bracket_test(), 

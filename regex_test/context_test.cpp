@@ -1,13 +1,14 @@
 #include "context_test.h"
-#include "regex/context.h"
+#include "regex/expression_context.h"
 
 #include <utility>
 #include <vector>
 
 using namespace lex;
 
-bool compare(context& c,
-    const std::vector<std::pair<token_type,context::site>>& test) {
+bool compare(expression_context& c,
+    const std::vector<std::pair<token_type,expression_context::context>>& test)
+  {
   for (auto p: test) {
     c.update(p.first);
     if (c.get() != p.second) return false;
@@ -16,39 +17,40 @@ bool compare(context& c,
 }
 
 void context_switching_test(ttest::error_log& log) {
-  context c;  
+  regex_constants::error_type ec;
+  expression_context c(ec, regex_constants::ECMAScript);  
 
-  if (c.get() != context::DEFAULT) {
+  if (c.get() != expression_context::EXPRESSION) {
     log.append("default constructor");
   }
 
  c.update(token_type::L_PAREN);
- if (c.get() != context::SUBEXPR) {
+ if (c.get() != expression_context::SUBEXPR) {
    log.append("subexp");
  }
  c.update(token_type::LITERAL);
- if (c.get() != context::DEFAULT) {
+ if (c.get() != expression_context::EXPRESSION) {
    log.append("default context");
  }
  c.update(token_type::R_PAREN);
- if (c.get() != context::DEFAULT) {
+ if (c.get() != expression_context::EXPRESSION) {
    log.append("simple test");
  }
 
   bool comp1 = compare(c, {
-        {token_type::L_PAREN,context::SUBEXPR},
-        {token_type::LITERAL,context::DEFAULT},
-        {token_type::R_PAREN,context::DEFAULT},
-        {token_type::L_BRACKET,context::BRACKET},
-        {token_type::L_COLLATE,context::COLLATE},
-        {token_type::ASSERTION,context::COLLATE},
-        {token_type::BACK_REF,context::COLLATE},
-        {token_type::LITERAL,context::COLLATE},
-        {token_type::R_PAREN,context::COLLATE},
-        {token_type::R_COLLATE,context::BRACKET},
-        {token_type::R_PAREN,context::BRACKET},
-        {token_type::LITERAL,context::BRACKET},
-        {token_type::R_BRACKET,context::DEFAULT},
+        {token_type::L_PAREN,expression_context::SUBEXPR},
+        {token_type::LITERAL,expression_context::EXPRESSION},
+        {token_type::R_PAREN,expression_context::EXPRESSION},
+        {token_type::L_BRACKET,expression_context::BRACKET},
+        {token_type::L_COLLATE,expression_context::COLLATE},
+        {token_type::ASSERTION,expression_context::COLLATE},
+        {token_type::BACK_REF,expression_context::COLLATE},
+        {token_type::LITERAL,expression_context::COLLATE},
+        {token_type::R_PAREN,expression_context::COLLATE},
+        {token_type::R_COLLATE,expression_context::BRACKET},
+        {token_type::R_PAREN,expression_context::BRACKET},
+        {token_type::LITERAL,expression_context::BRACKET},
+        {token_type::R_BRACKET,expression_context::EXPRESSION},
       });
 
   if (!comp1) {
@@ -60,15 +62,15 @@ void context_switching_test(ttest::error_log& log) {
   }
 
   c.update(token_type::L_PAREN);
-  if (c.get() != context::SUBEXPR) {
+  if (c.get() != expression_context::SUBEXPR) {
     log.append("subexpr entrance");
   }
   c.update(token_type::L_BRACKET);
-  if (c.get() != context::BRACKET) {
+  if (c.get() != expression_context::BRACKET) {
     log.append("bracket entrance");
   }
   c.update(token_type::L_COLLATE);
-  if (c.get() != context::COLLATE) {
+  if (c.get() != expression_context::COLLATE) {
     log.append("collate entrance");
   }
   if (c.depth() != 1) {
@@ -76,7 +78,7 @@ void context_switching_test(ttest::error_log& log) {
   }
 }
 
-bool depth_test(context& c, 
+bool depth_test(expression_context& c, 
     const std::vector<std::pair<token_type,int>>& test) {
   int net_depth {c.depth()};
   for (auto p: test) {
@@ -88,7 +90,8 @@ bool depth_test(context& c,
 }
 
 void context_depth_test(ttest::error_log& log) {
-  context c;
+  regex_constants::error_type ec;
+  expression_context c(ec, regex_constants::ECMAScript);
 
   bool depth_comp = depth_test(c, {
         {token_type::L_PAREN, 1},
@@ -119,7 +122,8 @@ void context_depth_test(ttest::error_log& log) {
 }
 
 void bracket_context_test(ttest::error_log& log) {
-  context c;
+  regex_constants::error_type ec;
+  expression_context c(ec, regex_constants::extended);
   c.update(token_type::L_BRACKET);
   if (!c.first_bracket_char()) {
     log.append("first");
@@ -154,7 +158,7 @@ void bracket_context_test(ttest::error_log& log) {
     log.append("first 2");
   }
   c.update(token_type::R_BRACKET);
-  if (c.get() != context::DEFAULT) {
+  if (c.get() != expression_context::EXPRESSION) {
     log.append("bracket closure");
   }
 
@@ -162,7 +166,7 @@ void bracket_context_test(ttest::error_log& log) {
     log.append("bracket cleanup");
   }
 
-  context d;
+  expression_context d(ec, regex_constants::basic);
   d.update(token_type::L_BRACKET);
   d.update(token_type::NEGATION);
   if (!d.after_bracket_negation()) {

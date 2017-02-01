@@ -2,11 +2,13 @@
 #include "regex_test.h"
 #include "regex/regex.h"
 
-#include <iostream>
 #include <regex>
 #include <string>
 
+#include <iostream>
+
 using namespace lex;
+
 
 void regex_match_test(ttest::error_log& log) {
   regex<char> my_reg("abc");
@@ -25,12 +27,69 @@ void regex_match_test(ttest::error_log& log) {
     log.append("second");
   }
 
-
   ++it;
   it = my_reg.match(it, e);
   if (it != e) {
     log.append("third");
   }
+
+  regex<char> reg2("x{5}");
+  test_string = "xxxxxx";
+  b = test_string.begin();
+  it = reg2.match(b, test_string.end());
+  if (it != b + 5) {
+    log.append("basic repeat");
+  }
+
+  regex<char> reg3("\\w{3,}", regex_constants::ECMAScript);
+  test_string = "ab_32 ";
+  b = test_string.begin();
+  it = reg3.match(b, test_string.end());
+  if (it != b + 5) {
+    log.append("char class");
+  }
+
+  std::cout << "size of regex_traits<char>: " << 
+    sizeof(std::regex_traits<char>{}) <<
+    '\n';
+  std::cout << "size of size_t: " << 
+    sizeof(size_t) <<
+    '\n';
+  std::cout << "size of void*: " << 
+    sizeof(void*) <<
+    '\n';
+  std::cout << "size of error_type: " << 
+    sizeof(regex_constants::error_type) <<
+    '\n';
+  std::cout << "size of matcher<char>: " << 
+    sizeof(matcher<char>) <<
+    '\n';
+  std::cout << "size of std::string: " << 
+    sizeof(std::basic_string<char>) <<
+    '\n';
+  std::cout << "size of std::vector: " << 
+    sizeof(std::vector<int>) <<
+    '\n';
+  std::cout << "size of token_table<char> " << 
+    sizeof(token_table<char>) <<
+    '\n';
+  std::cout << "size of regex_range " << 
+    sizeof(regex_range<char*>) <<
+    '\n';
+  std::cout << "size of simple_buffer<char,2> " << 
+    sizeof(simple_buffer<char,2>) <<
+    '\n';
+  std::cout << "size of token_stream_impl " << 
+    sizeof(token_stream_impl<char*,std::regex_traits<char>>) <<
+    '\n';
+  std::cout << "size of std::cout " << 
+    sizeof(std::cout) <<
+    '\n';
+  std::cout << "size of context " << 
+    sizeof(expression_context) <<
+    '\n';
+
+  std::cout << '\n';
 }
 
 void regex_test(ttest::error_log& log) {

@@ -1,6 +1,8 @@
 #ifndef _regex_token_h_
 #define _regex_token_h_
 
+#include <cstddef>
+
 namespace lex {
 
 enum class token_type {
@@ -18,7 +20,8 @@ enum class token_type {
   CONTROL,
   HEX_ESCAPE,
   UNICODE_ESCAPE,
-  ALTERNATION // |
+  ALTERNATION,
+  COUNT // |
 };
 
 template <typename CharT, typename Traits>
@@ -27,11 +30,22 @@ struct regex_token {
   using value_type = CharT;
 
   regex_token() = default;
-  regex_token(value_type val) : value{val}, type{token_type::LITERAL} {}
-  regex_token(value_type val, token_type t) : value{val}, type{t} {}
+  regex_token(value_type c): ch {c}, type {token_type::LITERAL}, count {0} {}
+  regex_token(value_type c, token_type t): ch {c}, type {t}, count {0} {}
+  regex_token(const string_type& s, token_type t)
+    : ch {'\0'}, 
+      type {t}, 
+      str {s}, 
+      count {0} {}
+  regex_token(std::size_t cnt, token_type t)
+    : ch {'\0'}, 
+      type {t}, 
+      count {cnt} {}
 
-  value_type value;
+  value_type ch;
   token_type type;
+  string_type str;
+  std::size_t count;
 };
 
 }//namespace lex

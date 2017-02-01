@@ -34,6 +34,9 @@ class token_table {
 
   token_type special_value(key_type key) const {return value(key,specials);}
   token_type escaped_value(key_type key) const {return value(key,escapes);}
+  bool is_ordinary(key_type key) const {
+    return special_value(key) == token_type::LITERAL;
+  }
 
   void insert_special(const entry_type& val) {specials.push_back(val);}
   void insert_escaped(const entry_type& val) {escapes.push_back(val);}
@@ -157,6 +160,8 @@ token_table<CharT> ECMAScript_table() {
     {CharT('7'), token_type::BACK_REF},
     {CharT('8'), token_type::BACK_REF},
     {CharT('9'), token_type::BACK_REF},
+    {CharT('x'), token_type::HEX_ESCAPE},
+    {CharT('u'), token_type::UNICODE_ESCAPE},
     {CharT('w'), token_type::CHAR_CLASS},
     {CharT('W'), token_type::CHAR_CLASS},
     {CharT('d'), token_type::CHAR_CLASS},
@@ -173,8 +178,6 @@ token_table<CharT> ECMAScript_table() {
     {CharT('t'), token_type::CONTROL_CHAR},
     {CharT('v'), token_type::CONTROL_CHAR},
     {CharT('c'), token_type::CONTROL},
-    {CharT('x'), token_type::HEX_ESCAPE},
-    {CharT('u'), token_type::UNICODE_ESCAPE},
     {CharT('c'), token_type::CONTROL},
     {CharT('b'), token_type::ASSERTION},
     {CharT('B'), token_type::ASSERTION}

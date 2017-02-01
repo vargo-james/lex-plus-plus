@@ -128,6 +128,7 @@ matcher_replicator_transition<Matcher>::update(const value_type& ch) {
 
 template <typename Matcher>
 Matcher replicate(Matcher&& matcher, replication_data rep) {
+  //if (rep.lower == rep.upper == 1) return matcher;
   matcher_factory<detail::matcher_replicator_transition<Matcher>> fac;
   return fac.create(std::forward<Matcher>(matcher), rep);
 }

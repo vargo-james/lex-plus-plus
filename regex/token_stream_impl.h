@@ -1,8 +1,14 @@
+/*
+ * Inspect expression_getters for possible errors.
+ */
+
 #ifndef _token_stream_impl_h_
 #define _token_stream_impl_h_
 
+#include "error_tracker.h"
+#include "syntax_option.h"
 #include "regex_range.h"
-#include "context.h"
+#include "expression_context.h"
 #include "regex_token.h"
 #include "token_table.h"
 
@@ -12,260 +18,349 @@
 namespace lex {
 
 template <typename InputIt, typename Traits>
-class token_stream_impl {
+class token_stream_impl : public error_tracker, public syntax_option {
  public:
-  using flag_type = regex_constants::syntax_option_type;
+  using syntax_option::flag_type;
+  using error_tracker::error_type;
   using value_type = typename regex_range<InputIt>::value_type;
   using token = regex_token<value_type,Traits>;
-  using locale_type = typename Traits::locale_type;
+  using traits_type = Traits;
 
-  token_stream_impl(InputIt b, InputIt e, flag_type f)
-    : table {make_token_table<value_type>(f)},
-      source(b,e),
-      loc {Traits{}.getloc()},
-      flag {f} {}
+  token_stream_impl(regex_range<InputIt>& src, flag_type f, error_type& er)
+    : error_tracker(er),
+      syntax_option(f),
+      table {make_token_table<value_type>(f)},
+      source(src),
+      con(er, f) {}
 
   bool empty() const {return source.empty();}
-  void get(token& out);
+  bool get(token& out);
+
+  expression_context get_context() const {return con;}
  private:
   token_table<value_type> table;
-  regex_range<InputIt> source;
-  locale_type loc;
-  context con;
-  flag_type flag;
+  traits_type traits_;
+  regex_range<InputIt>& source;
+  expression_context con;
 
-  void get(token& out, context::site site);
-  void default_get(token& out);
-  void default_get_escaped(token& out);
-  void replication_get(token& out);
-  void subexpr_get(token& out);
-  void bracket_get(token& out);
-  void bracket_get_sub_bracket(token& out);
-  void collation_get(token& out, value_type closing_char, 
+  bool get(token& out, expression_context::context context);
+  bool expression_get(token& out);
+  bool expression_get_escaped(token& out);
+  bool replication_get(token& out);
+  bool subexpr_get(token& out);
+  bool bracket_get(token& out);
+  bool bracket_get_sub_bracket(token& out);
+  bool collation_get(token& out, value_type closing_char, 
       token_type closing_token);
-
-  token literal_token(value_type ch) const;
-
-  bool pair_reader(value_type& out, value_type first, value_type second);
-
-  bool flag_includes(flag_type f) const {return flag & f;}
 
   void update_context(token tok) {con.update(tok.type);}
   int context_depth() const {return con.depth();}
-  context::site get_context() const {return con.get();}
   bool context_first_bracket_char() const {
     return con.first_bracket_char();
   }
   bool context_after_bracket_negation() const {
     return con.after_bracket_negation();
   }
+
+  void set_token(token& tok, value_type ch, token_type type);
+  void set_token(token& tok, value_type ch) {
+    set_token(tok, ch, token_type::LITERAL);
+  }
+  // This is meant to be called in the EXPRESSION context.
+  bool unmatched_right_delimiter(token& tok); 
+  void check_for_right_delimiters();
+  void convert_control_char(token& tok);
 };
 
 template <typename InputIt, typename Traits>
-void token_stream_impl<InputIt,Traits>::get(token& out) {
-  get(out, get_context());
+bool token_stream_impl<InputIt,Traits>::get(token& out) {
+  if (source.empty()) {
+    check_for_right_delimiters();
+    return false;
+  }
+
+  get(out, con.get());
   update_context(out);
+  return !error();
 }
 
 template <typename InputIt, typename Traits>
-void 
-token_stream_impl<InputIt,Traits>::get(token& out, context::site site) {
-  switch (site) {
-  case context::DEFAULT:
-    default_get(out);
+void token_stream_impl<InputIt,Traits>::check_for_right_delimiters() {
+  if (context_depth() > 0) {
+    set_error(error_type::error_paren);
+  } 
+
+  switch (con.get()) {
+  case expression_context::BRACKET:
+  case expression_context::COLLATE:
+  case expression_context::EQUIV:
+  case expression_context::CLASS:
+    set_error(error_type::error_brack);
     break;
-  case context::REPLICATION:
+  case expression_context::REPLICATION_LOWER:
+    set_error(error_type::error_brace);
+    break;
+  default:
+    break;
+  }
+}
+
+template <typename InputIt, typename Traits>
+bool token_stream_impl<InputIt,Traits>::get(token& out, 
+    expression_context::context context) {
+  switch (context) {
+  case expression_context::EXPRESSION:
+    expression_get(out);
+    break;
+  case expression_context::REPLICATION_LOWER:
     replication_get(out);
     break;
-  case context::SUBEXPR:
+  case expression_context::SUBEXPR:
     subexpr_get(out);
     break;
-  case context::BRACKET:
+  case expression_context::BRACKET:
     bracket_get(out);
     break;
-  case context::COLLATE:
+  case expression_context::COLLATE:
     collation_get(out, value_type('.'), token_type::R_COLLATE);
     break;
-  case context::EQUIV:
+  case expression_context::EQUIV:
     collation_get(out, value_type('='), token_type::R_EQUIV);
     break;
-  case context::CLASS:
+  case expression_context::CLASS:
     collation_get(out, value_type(':'), token_type::R_CLASS);
     break;
+  default:
+    break;
   }
+  return !error();
 }
 
 template <typename InputIt, typename Traits>
-void token_stream_impl<InputIt,Traits>::default_get(token& out) {
+bool token_stream_impl<InputIt,Traits>::expression_get(token& out) {
   value_type ch;
   source.get(ch);
+  
   if (ch == value_type('\\')) {
-    default_get_escaped(out);
+     expression_get_escaped(out);
   } else {
-    auto val = table.special_value(ch);
-    if (val == token_type::R_PAREN && context_depth() == 0) {
-      val = token_type::LITERAL;
-    }
-    out = (val == token_type::LITERAL)? literal_token(ch): token(ch,val);
+    auto type = table.special_value(ch);
+    set_token(out, ch, type);
   }
+  unmatched_right_delimiter(out);
+  convert_control_char(out);
+  return !error();
 }
 
 template <typename InputIt, typename Traits>
-void token_stream_impl<InputIt,Traits>::default_get_escaped(token& out) {
-  value_type escaped_char(0);
+bool token_stream_impl<InputIt,Traits>::expression_get_escaped(token& out) {
+  value_type escaped_char('\0');
+
   if (!source.get(escaped_char)) {
-    out = token(value_type('\\'));
-  } else {
-    auto val = table.escaped_value(escaped_char);
-    if (val == token_type::LITERAL) {
-      out = literal_token(escaped_char);
-    }
-    out = token(escaped_char, val);
-  }
+    set_error(error_type::error_escape);
+    set_token(out, '\\');
+    return false;
+  } 
+
+  auto type = table.escaped_value(escaped_char);
+  // Only ECMAScript is happy to interpret escaped ordinary characters.
+  if (type == token_type::LITERAL && 
+      !ECMAScript() &&
+      table.is_ordinary(escaped_char)) { 
+    set_error(error_type::error_escape);
+  } 
+  set_token(out, escaped_char, type);
+  return !error();
 }
 
 template <typename InputIt, typename Traits>
-void token_stream_impl<InputIt,Traits>::replication_get(token& out) {
-  bool basic = flag_includes(flag_type::basic) || 
-    flag_includes(flag_type::grep);
-  value_type ch(0);
-  if ((basic  && pair_reader(ch, value_type('\\'), value_type('}'))) ||
-      (!basic && source.get(ch) && ch == value_type('}'))) {
-    out = token(value_type('}'), token_type::R_BRACE);
-  } else if (ch == value_type(',')) {
-    out = token(ch, token_type::COUNT_SEP);
-  } else if (std::isdigit(ch, loc)) {
-    out = token(ch, token_type::DIGIT);
-  } else {
-    out = literal_token(ch);
-  }
-}
-
-template <typename InputIt, typename Traits>
-void token_stream_impl<InputIt,Traits>::subexpr_get(token& out) {
-  // This method is only necessary for ECMAScript.
-  bool ECMAScript = flag & flag_type::ECMAScript;
-  if (!ECMAScript) {
-    default_get(out);
-    return;
-  }
-
-  value_type first(0);
-  value_type second(0);
+bool token_stream_impl<InputIt,Traits>::replication_get(token& out) {
+  value_type first('\0');
   source.get(first);
 
+  if (first == value_type(',')) {
+    set_token(out, first, token_type::COUNT_SEP);
+  } 
+  else if (std::isdigit(first, traits_.getloc())) {
+    set_token(out, first, token_type::DIGIT);
+  }
+  else if ((basic() || grep()) && first != value_type('\\')) {
+    set_token(out, first);
+    set_error(error_type::error_badbrace);
+  }
+  else {
+    if (!basic() && !grep()) {
+      source.putback(first);
+    }
+    if (!source.get(first) || first != value_type('}')) {
+      set_token(out, first);
+      set_error(error_type::error_badbrace);
+    } else {
+      set_token(out, first, token_type::R_BRACE);
+    }
+  }
+  return !error();
+}
+
+template <typename InputIt, typename Traits>
+bool token_stream_impl<InputIt,Traits>::subexpr_get(token& out) {
+  value_type first('\0');
+  value_type second('\0');
+  source.get(first);
   // We are looking for a two char sequence ?X, where X stands for
   // either =,!, or :.
   if (first != value_type('?') || !source.get(second)) {
     source.putback(first);
-    default_get(out);
-    return;
+    return expression_get(out);
   } 
   switch (second) {
   case value_type('='):
   case value_type('!'):
-    out = token(second, token_type::ASSERTION);
-    break;
+    set_token(out, second, token_type::ASSERTION);
+    return true;
   case value_type(':'):
-    out = token(second, token_type::NO_SUBEXP);
-    break;
+    set_token(out, second, token_type::NO_SUBEXP);
+    return true;
   default:
     source.putback(second);
     source.putback(first);
-    default_get(out);
+    return expression_get(out);
   }
 }
 
 template <typename InputIt, typename Traits>
-void token_stream_impl<InputIt,Traits>::bracket_get(token& out) {
-  value_type ch(0);
+bool token_stream_impl<InputIt,Traits>::bracket_get(token& out) {
+  value_type ch('\0');
   source.get(ch);
   switch (ch) {
   case value_type('['):
-    bracket_get_sub_bracket(out);
-    break;
+    return bracket_get_sub_bracket(out);
   case value_type('^'):
     if (context_first_bracket_char()) {
-      out = token(ch, token_type::NEGATION);
+      set_token(out, ch, token_type::NEGATION);
     } else {
-      out = literal_token(ch);
+      set_token(out, ch);
     }
     break;
   case value_type(']'):
     if (context_first_bracket_char() || context_after_bracket_negation()) {
-      out = literal_token(ch);
+      set_token(out, ch);
     } else {
-      out = token(ch, token_type::R_BRACKET);
+      set_token(out, ch, token_type::R_BRACKET);
     }
     break;
   case value_type('-'):
-    out = token(ch, token_type::RANGE_DASH);
+    if (context_first_bracket_char() || context_after_bracket_negation()) {
+      set_token(out, ch);
+    } else {
+      set_token(out, ch, token_type::RANGE_DASH);
+    }
     break;
   default:
-    out = literal_token(ch);
+    set_token(out, ch);
     break;
   }
+  return true;
 }
 
 template <typename InputIt, typename Traits>
-void token_stream_impl<InputIt,Traits>::bracket_get_sub_bracket(token& out) {
+bool token_stream_impl<InputIt,Traits>::bracket_get_sub_bracket(token& out) {
   value_type ch('[');
-  value_type second(0);
+  value_type second('\0');
   if (!source.get(second)) {
-    out = literal_token(ch);
-    return;
+    set_error(error_type::error_brack);
+    set_token(out, ch);
+    return false;
   } 
   switch (second) {
   case value_type('.'):
-    out = token(ch, token_type::L_COLLATE);
+    set_token(out, ch, token_type::L_COLLATE);
     break;
   case value_type(':'):
-    out = token(ch, token_type::L_CLASS);
+    set_token(out, ch, token_type::L_CLASS);
     break;
   case value_type('='):
-    out = token(ch, token_type::L_EQUIV);
+    set_token(out, ch, token_type::L_EQUIV);
     break;
   default:
     source.putback(second);
-    out = literal_token(ch);
+    set_token(out, ch);
     break;
   }
+  return true;
 }
 
 template <typename InputIt, typename Traits>
-void token_stream_impl<InputIt,Traits>::collation_get(token& out, 
+bool token_stream_impl<InputIt,Traits>::collation_get(token& out, 
     value_type closing_char, token_type closing_token) {
-  value_type ch(0);
-  if (pair_reader(ch, closing_char, value_type(']'))) {
-    out = token(ch, closing_token);
+  value_type first('\0');
+  value_type second('\0');
+  source.get(first);
+  if (first != closing_char || !source.get(second)) {
+    set_token(out, first);
+  } else if (second != value_type(']')) {
+    source.putback(second);
+    set_token(out, first);
   } else {
-    out = literal_token(ch);
+    set_token(out, first, closing_token);
   }
+  return true;
 }
 
 template <typename InputIt, typename Traits>
-typename token_stream_impl<InputIt,Traits>::token
-token_stream_impl<InputIt,Traits>::literal_token(value_type ch) const {
-  if (flag_includes(flag_type::icase)) {
-    ch = std::toupper(ch, loc);
-  }
-  return token(ch, token_type::LITERAL);
-}
-
-template <typename InputIt, typename Traits>
-bool token_stream_impl<InputIt,Traits>::pair_reader(value_type& out, 
-    value_type first, value_type second) {
-  source.get(out);
-  if (out == first && !source.empty()) {
-    value_type ch(0);
-    source.get(ch);
-    if (ch == second) {
-      return true;
-    } else {
-      source.putback(second);
+bool token_stream_impl<InputIt,Traits>::unmatched_right_delimiter(token& tok) {
+  if (context_depth() <= 0 && tok.type == token_type::R_PAREN) {
+    // Extended REs convert mismatched right parens to literals.
+    if (extended() || egrep()) {
+      tok.type = token_type::LITERAL;
+    } 
+    else { 
+      set_error(error_type::error_paren);
     }
   }
-  return false;
+  else if (tok.type == token_type::R_BRACKET) {
+    set_error(error_type::error_brack);
+  } 
+  else if (tok.type == token_type::R_BRACE) {
+    set_error(error_type::error_brace);
+  }
+  return !error();
+}
+
+template <typename InputIt, typename Traits>
+void token_stream_impl<InputIt,Traits>::convert_control_char(token& tok) {
+  if (tok.type == token_type::CONTROL_CHAR) {
+    value_type ch = tok.ch;
+
+    switch (ch) {
+    case 'f':
+      ch = '\f';
+      break;
+    case 'n':
+      ch = '\n';
+      break;
+    case 'v':
+      ch = '\v';
+      break;
+    case 'r':
+      ch = '\r';
+      break;
+    case 't':
+      ch = '\t';
+      break;
+    }
+    set_token(tok, ch, token_type::LITERAL);
+  }
+}
+
+template <typename InputIt, typename Traits>
+void token_stream_impl<InputIt,Traits>::set_token(token& tok, value_type ch,
+    token_type type) {
+  if (icase() && type == token_type::LITERAL) {
+    tok = token(std::toupper(ch,traits_.getloc()), type);
+  } else {
+    tok = token(ch, type);
+  }
 }
 
 }// namespace lex

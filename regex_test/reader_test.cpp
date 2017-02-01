@@ -10,7 +10,9 @@ void reader_literals_test(ttest::error_log& log) {
   using Reader = reader<Iter,Traits>;
 
   std::string reg {R"(abc&()\[)"}; 
-  Reader reader(reg.begin(), reg.end(), regex_constants::basic);
+  regex_range<Iter> ran(reg.begin(), reg.end());
+  regex_constants::error_type ec;
+  Reader reader(ran, regex_constants::basic, ec);
   auto matcher = reader.read();
 
   auto comp = matcher_compare(matcher, "abc&()[", {
@@ -31,7 +33,9 @@ void reader_alternation_test(ttest::error_log& log) {
   using Reader = reader<Iter,Traits>;
 
   std::string reg {R"(ab\|c)"}; 
-  Reader reader(reg.begin(), reg.end(), regex_constants::basic);
+  regex_range<Iter> ran(reg.begin(), reg.end());
+  regex_constants::error_type ec;
+  Reader reader(ran, regex_constants::basic, ec);
   auto matcher = reader.read();
 
   auto comp = matcher_compare(matcher, "abc", {
@@ -50,7 +54,9 @@ void reader_alternation_test(ttest::error_log& log) {
   }
 
   std::string reg2 {"ab\na"};
-  Reader reader2(reg2.begin(), reg2.end(), regex_constants::grep);
+  regex_range<Iter> ran2(reg2.begin(), reg2.end());
+  regex_constants::error_type ec2;
+  Reader reader2(ran2, regex_constants::grep, ec2);
   matcher = reader2.read();
 
   comp = matcher_compare(matcher, "ax", {
