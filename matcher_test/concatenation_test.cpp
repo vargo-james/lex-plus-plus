@@ -1,8 +1,8 @@
-#include "matcher_test/concatenation_test.h"
 #include "matcher_test/matcher_test.h"
 #include "matcher/atomic.h"
 #include "matcher/string_literal.h"
 #include "matcher/concatenation.h"
+#include "ttest/ttest.h"
 
 #include <string>
 #include <vector>
@@ -18,7 +18,7 @@ void concatenation_test(ttest::error_log& log) {
 
   auto matcher = concatenate(move(list));
 
-  if (matcher_compare(matcher, "abxyz", {
+  if (matcher_discrepancies(matcher, "abxyz", {
         match_state::UNDECIDED, match_state::UNDECIDED, 
         match_state::UNDECIDED, match_state::FINAL_MATCH, 
         match_state::MISMATCH 
@@ -28,3 +28,7 @@ void concatenation_test(ttest::error_log& log) {
   matcher.initialize();
 }
 
+ttest::test_suite::pointer create_concatenation_test() {
+  using ttest::create_test;
+  return create_test("concatenation", concatenation_test);
+}

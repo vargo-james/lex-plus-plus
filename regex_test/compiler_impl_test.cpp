@@ -42,7 +42,7 @@ void get_element_test(ttest::error_log& log, const basic_string<CharT>& pattern,
   auto matcher = compiler.get_element();
   log.append_if("error: " + pattern, !matcher);
 
-  auto comp = matcher_compare(*matcher, match, expected_states);
+  auto comp = matcher_discrepancies(*matcher, match, expected_states);
   log.append_if("incorrect states: " + to_narrow_string(match), comp);
 }
 

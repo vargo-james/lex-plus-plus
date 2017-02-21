@@ -10,7 +10,7 @@
 
 using namespace lex;
 
-int matcher_compare(matcher<char>& matcher, const std::string& updates, 
+int matcher_discrepancies(matcher<char>& matcher, const std::string& updates, 
     const std::vector<match_state>& states, match_state initial) {
   // First we check that our test is well formed.
   assert(updates.size() == states.size());
@@ -29,7 +29,7 @@ int matcher_compare(matcher<char>& matcher, const std::string& updates,
 }
 
 int default_matcher_test(matcher<char>& mat) {
-  return matcher_compare(mat, "a", {match_state::MISMATCH}, 
+  return matcher_discrepancies(mat, "a", {match_state::MISMATCH}, 
       match_state::FINAL_MATCH);
 }
 

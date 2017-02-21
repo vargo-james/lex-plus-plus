@@ -1,8 +1,8 @@
 #include "matcher_test/matcher_test.h"
-#include "matcher_test/replication_test.h"
 #include "matcher/string_literal.h"
 #include "matcher/atomic.h"
 #include "matcher/replication.h"
+#include "ttest/ttest.h"
 
 #include <utility>
 
@@ -14,7 +14,7 @@ void char_replication_test(ttest::error_log& log) {
 
   auto matcher = replicate(std::move(char_match), repl);
   
-  if (matcher_compare(matcher, "xxC;", {
+  if (matcher_discrepancies(matcher, "xxC;", {
         match_state::MATCH, match_state::MATCH, 
         match_state::MISMATCH, match_state::MISMATCH
       })) {
@@ -22,7 +22,7 @@ void char_replication_test(ttest::error_log& log) {
   }
   matcher.initialize();
 
-  if (matcher_compare(matcher, "xxx.", {
+  if (matcher_discrepancies(matcher, "xxx.", {
         match_state::MATCH, match_state::MATCH, 
         match_state::FINAL_MATCH, match_state::MISMATCH
       })) {
@@ -30,7 +30,7 @@ void char_replication_test(ttest::error_log& log) {
   }
   matcher.initialize();
 
-  if (matcher_compare(matcher, "ab", {
+  if (matcher_discrepancies(matcher, "ab", {
         match_state::MISMATCH, match_state::MISMATCH
       })) {
     log.append("ab");
@@ -41,7 +41,7 @@ void char_replication_test(ttest::error_log& log) {
   replication_data alt_repl(0, -1);
   auto alt_matcher = replicate(std::move(alt_char_match), alt_repl);
 
-  if (matcher_compare(alt_matcher, ".....x", {
+  if (matcher_discrepancies(alt_matcher, ".....x", {
         match_state::MATCH, match_state::MATCH, 
         match_state::MATCH, match_state::MATCH,
         match_state::MATCH, match_state::MISMATCH
@@ -59,7 +59,7 @@ void string_replication_test(ttest::error_log& log) {
   replication_data repl(1,3);
   auto matcher = replicate(move(str_match), repl);
 
-  if (matcher_compare(matcher, "ababac", {
+  if (matcher_discrepancies(matcher, "ababac", {
         match_state::UNDECIDED, match_state::MATCH, 
         match_state::UNDECIDED, match_state::MATCH,
         match_state::UNDECIDED, match_state::MISMATCH
@@ -68,7 +68,7 @@ void string_replication_test(ttest::error_log& log) {
   }
   matcher.initialize();
 
-  if (matcher_compare(matcher, "abababc", {
+  if (matcher_discrepancies(matcher, "abababc", {
         match_state::UNDECIDED, match_state::MATCH, 
         match_state::UNDECIDED, match_state::MATCH,
         match_state::UNDECIDED, match_state::FINAL_MATCH,
@@ -86,7 +86,7 @@ void universal_replication_test(ttest::error_log& log) {
   replication_data repl(1,3);
   auto matcher = replicate(move(universal), repl);
 
-  if (matcher_compare(matcher, "ab5&", {
+  if (matcher_discrepancies(matcher, "ab5&", {
         match_state::MATCH, match_state::MATCH, 
         match_state::FINAL_MATCH, match_state::MISMATCH 
       })) {
@@ -104,7 +104,7 @@ void repeated_replication_test(ttest::error_log& log) {
   auto matcher1 = replicate(move(single_char), repl1);
   auto matcher = replicate(move(matcher1), repl2);
   
-  if (matcher_compare(matcher, "yyyyyyy", {
+  if (matcher_discrepancies(matcher, "yyyyyyy", {
         match_state::UNDECIDED, match_state::MATCH, 
         match_state::MATCH, match_state::MATCH,
         match_state::MATCH, match_state::FINAL_MATCH,
@@ -113,4 +113,15 @@ void repeated_replication_test(ttest::error_log& log) {
     log.append("yyyyyyy");
   }
   matcher.initialize();
+}
+
+ttest::test_suite::pointer create_replication_test() {
+  using namespace ttest;
+
+  return create_test("replication", {
+      create_test("char", char_replication_test),
+      create_test("string", string_replication_test),
+      create_test("universal", universal_replication_test),
+      create_test("repeated", repeated_replication_test)
+  });
 }

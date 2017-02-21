@@ -48,7 +48,7 @@ void test_matcher(ttest::error_log& log, const basic_string<CharT>& pattern,
   compiler<decltype(char_source)> reg_compiler(char_source, ec, syntax);
   auto matcher = reg_compiler.compile();
 
-  auto comp = matcher_compare(*matcher, match, expected_states);
+  auto comp = matcher_discrepancies(*matcher, match, expected_states);
 
   log.append_if("incorrect states: " + to_narrow_string(match), comp);
 }
@@ -76,7 +76,7 @@ void compiler_alternation_test(ttest::error_log& log) {
   Reader compiler(ran, ec, regex_constants::basic);
   auto matcher = compiler.compile();
 
-  auto comp = matcher_compare(*matcher, "abc", {
+  auto comp = matcher_discrepancies(*matcher, "abc", {
       match_state::UNDECIDED, match_state::FINAL_MATCH,
       match_state::MISMATCH
       });
@@ -84,7 +84,7 @@ void compiler_alternation_test(ttest::error_log& log) {
     log.append("first");
   }
   matcher->initialize();
-  comp = matcher_compare(*matcher, "ca", {
+  comp = matcher_discrepancies(*matcher, "ca", {
       match_state::MATCH, match_state::MISMATCH
       });
   if (!comp) {
@@ -97,14 +97,14 @@ void compiler_alternation_test(ttest::error_log& log) {
   Reader compiler2(ran2, ec2, regex_constants::grep);
   matcher = compiler2.compile();
 
-  comp = matcher_compare(*matcher, "ax", {
+  comp = matcher_discrepancies(*matcher, "ax", {
       match_state::MATCH, match_state::MISMATCH
       });
   if (!comp) {
     log.append("grep first");
   }
   matcher->initialize();
-  comp = matcher_compare(*matcher, "ab", {
+  comp = matcher_discrepancies(*matcher, "ab", {
       match_state::MATCH, match_state::FINAL_MATCH
       });
   if (!comp) {

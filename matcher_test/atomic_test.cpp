@@ -3,7 +3,7 @@
  * header are defined.
  */
 
-#include "atomic_test.h"
+#include "matcher/atomic.h"
 #include "matcher_test.h"
 #include "ttest/ttest.h"
 
@@ -57,12 +57,12 @@ int singleton_matcher_test() {
 
   auto matcher = singleton_matcher('b');
 
-  error_count += matcher_compare(matcher, "bb", 
+  error_count += matcher_discrepancies(matcher, "bb", 
       {match_state::FINAL_MATCH, match_state::MISMATCH});
 
   matcher.initialize();
 
-  error_count += matcher_compare(matcher, ";", {match_state::MISMATCH});
+  error_count += matcher_discrepancies(matcher, ";", {match_state::MISMATCH});
 
   return error_count;
 }
@@ -73,11 +73,11 @@ int predicate_matcher_test() {
   auto matcher = 
     predicate_matcher<char>([](const char& ch){return islower(ch);});
 
-  error_count += matcher_compare(matcher, "rb", 
+  error_count += matcher_discrepancies(matcher, "rb", 
       {match_state::FINAL_MATCH, match_state::MISMATCH});
 
   matcher.initialize();
-  error_count += matcher_compare(matcher, ";", {match_state::MISMATCH});
+  error_count += matcher_discrepancies(matcher, ";", {match_state::MISMATCH});
 
   return error_count;
 }
@@ -87,14 +87,25 @@ int universal_singleton_matcher_test() {
 
   auto matcher = universal_singleton_matcher<char>();
 
-  error_count += matcher_compare(matcher, "rb", 
+  error_count += matcher_discrepancies(matcher, "rb", 
       {match_state::FINAL_MATCH, match_state::MISMATCH});
 
   matcher.initialize();
 
-  error_count += matcher_compare(matcher, ";", {match_state::FINAL_MATCH});
+  error_count += matcher_discrepancies(matcher, ";", {match_state::FINAL_MATCH});
 
   return error_count;
 }
 
+ttest::test_suite::pointer create_atomic_test() {
+  using namespace ttest;
 
+  return create_test("atomic", {
+    create_test("singleton_matcher_transition", 
+        singleton_matcher_transition_test),
+    create_test("singleton_matcher", singleton_matcher_test),
+    create_test("predicate_matcher", predicate_matcher_test),
+    create_test("universal_singleton matcher", 
+        universal_singleton_matcher_test),
+  });
+}

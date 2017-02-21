@@ -13,7 +13,7 @@ void test_string_literal(ttest::error_log& log, const string& pattern,
   
   auto matcher = string_matcher(std::move(pattern));
 
-  log.append_if(pattern, matcher_compare(matcher, comparison, states));
+  log.append_if(pattern, matcher_discrepancies(matcher, comparison, states));
 }
 
 void string_literal_test(ttest::error_log& log) {

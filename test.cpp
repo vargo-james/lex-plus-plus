@@ -1,12 +1,12 @@
 /*
  * In this file, we run all the tests.
  */
-#include "matcher_test/matcher_module_test.h"
 #include "input_buffer_test/input_buffer_test.h"
 #include "ttest/ttest.h"
 
 #include <iostream>
 
+ttest::test_suite::pointer create_matcher_module_test();
 ttest::test_suite::pointer create_regex_module_test();
 
 int main() {
