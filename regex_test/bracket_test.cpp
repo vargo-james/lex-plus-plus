@@ -1,10 +1,10 @@
 #include "bracket_test.h"
-#include "regex/range.h"
 #include "regex/regex_bracket.h"
 
 #include <string>
 #include <vector>
 
+/*
 using namespace lex;
 using namespace detail;
 
@@ -104,3 +104,4 @@ void range_test(ttest::error_log& log) {
   }
 
 }
+*/

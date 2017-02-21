@@ -19,7 +19,7 @@ struct replication_data {
 
 struct regex_constants {
   enum error_type {
-    error_none,
+    error_none = 0,
     error_collate,
     error_ctype,
     error_escape,
@@ -50,19 +50,26 @@ struct regex_constants {
     grep = 512,
     egrep = 1024
   };
+
+  enum context_type {
+    expression,
+    subexpression,
+    brace,
+    bracket
+  };
 };
 
 inline constexpr regex_constants::syntax_option_type 
 operator|(regex_constants::syntax_option_type left,
     regex_constants::syntax_option_type right) {
   return static_cast<regex_constants::syntax_option_type>(
-      static_cast<int>(left) | static_cast<int>(right));
+      static_cast<unsigned int>(left) | static_cast<unsigned int>(right));
 }
 inline constexpr regex_constants::syntax_option_type 
 operator&(regex_constants::syntax_option_type left,
     regex_constants::syntax_option_type right) {
   return static_cast<regex_constants::syntax_option_type>(
-      static_cast<int>(left) & static_cast<int>(right));
+      static_cast<unsigned int>(left) & static_cast<unsigned int>(right));
 }
 
 template <typename CharIterator>

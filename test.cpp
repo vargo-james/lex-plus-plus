@@ -3,11 +3,11 @@
  */
 #include "matcher_test/matcher_module_test.h"
 #include "input_buffer_test/input_buffer_test.h"
-#include "regex_test/regex_test.h"
 #include "ttest/ttest.h"
 
 #include <iostream>
 
+ttest::test_suite::pointer create_regex_module_test();
 
 int main() {
   using std::cerr;
@@ -16,7 +16,7 @@ int main() {
   auto lib_test = create_test("lib", {
       create_matcher_module_test(),
       //create_input_buffer_test(),
-      create_regex_test()
+      create_regex_module_test()
     });
 
   lib_test->run_test();

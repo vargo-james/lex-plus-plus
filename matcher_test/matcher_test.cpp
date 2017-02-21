@@ -33,6 +33,9 @@ int default_matcher_test(matcher<char>& mat) {
       match_state::FINAL_MATCH);
 }
 
+// This tests whether the default constructed matcher has the correct
+// state upon construction, after being updated once. And it does the same
+// test for a constructor copy constructed from a default constructed object.
 int matcher_constructor_test() {
   int error_count {0};
 
@@ -49,7 +52,8 @@ int matcher_constructor_test() {
   return error_count;
 }
 
-// In this test, we do a basic test of the initialize method.
+// This tests whether a default constructed matcher will correctly 
+// reinitialize itself when its initialize method is called.
 int matcher_initialize_test() {
   int error_count {0};
 
@@ -71,3 +75,11 @@ int matcher_initialize_test() {
   return error_count;
 }
 
+ttest::test_suite::pointer create_matcher_test() {
+  using ttest::create_test;
+
+  return create_test("matcher", {
+    create_test("matcher initialize", matcher_initialize_test),
+    create_test("matcher constructor", matcher_constructor_test)
+  });
+}

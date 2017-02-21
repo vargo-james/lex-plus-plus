@@ -7,7 +7,6 @@
 #define _regex_bracket_expression_h_
 
 #include "bracket_list.h"
-#include "range.h"
 #include "regex_types.h"
 
 #include <algorithm>
@@ -18,6 +17,7 @@
 #include <vector>
 #include <utility>
 
+/*
 namespace lex {
 namespace detail {
 
@@ -327,5 +327,6 @@ bracket_reader<Char, Traits>::combine_elements() const {
 
 }//namespace detail
 }//namespace lex
+*/
 
 #endif// _regex_bracket_expression_h_

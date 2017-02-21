@@ -1,6 +1,9 @@
 #include "matcher_test/matcher_test.h"
-#include "regex_test.h"
 #include "regex/regex.h"
+#include "ttest/ttest.h"
+
+#include "bracket_test.h"
+#include "bracket_list_test.h"
 
 #include <regex>
 #include <string>
@@ -9,6 +12,55 @@
 
 using namespace lex;
 
+/*
+void size_display(ttest::error_log& log) {
+  B b;
+  B b2("Inherited Constructor");
+
+  std::cout << "Size Display\n";
+  std::cout << "size of regex_traits<char>: " << 
+    sizeof(std::regex_traits<char>{}) <<
+    '\n';
+  std::cout << "size of size_t: " << 
+    sizeof(size_t) <<
+    '\n';
+  std::cout << "size of void*: " << 
+    sizeof(void*) <<
+    '\n';
+  std::cout << "size of error_type: " << 
+    sizeof(regex_constants::error_type) <<
+    '\n';
+  std::cout << "size of matcher<char>: " << 
+    sizeof(matcher<char>) <<
+    '\n';
+  std::cout << "size of std::string: " << 
+    sizeof(std::basic_string<char>) <<
+    '\n';
+  std::cout << "size of std::vector: " << 
+    sizeof(std::vector<int>) <<
+    '\n';
+  std::cout << "size of token_table<char> " << 
+    sizeof(token_table<char>) <<
+    '\n';
+  std::cout << "size of character_source " << 
+    sizeof(character_source<char*, std::regex_traits<char>>) <<
+    '\n';
+  std::cout << "size of simple_buffer<char,2> " << 
+    sizeof(simple_buffer<char,2>) <<
+    '\n';
+  std::cout << "size of token_stream_impl " << 
+    sizeof(token_stream_impl<char*,std::regex_traits<char>>) <<
+    '\n';
+  std::cout << "size of std::cout " << 
+    sizeof(std::cout) <<
+    '\n';
+  std::cout << "size of context " << 
+    sizeof(expression_context) <<
+    '\n';
+
+  std::cout << '\n';
+}
+*/
 
 void regex_match_test(ttest::error_log& log) {
   regex<char> my_reg("abc");
@@ -49,47 +101,6 @@ void regex_match_test(ttest::error_log& log) {
     log.append("char class");
   }
 
-  std::cout << "size of regex_traits<char>: " << 
-    sizeof(std::regex_traits<char>{}) <<
-    '\n';
-  std::cout << "size of size_t: " << 
-    sizeof(size_t) <<
-    '\n';
-  std::cout << "size of void*: " << 
-    sizeof(void*) <<
-    '\n';
-  std::cout << "size of error_type: " << 
-    sizeof(regex_constants::error_type) <<
-    '\n';
-  std::cout << "size of matcher<char>: " << 
-    sizeof(matcher<char>) <<
-    '\n';
-  std::cout << "size of std::string: " << 
-    sizeof(std::basic_string<char>) <<
-    '\n';
-  std::cout << "size of std::vector: " << 
-    sizeof(std::vector<int>) <<
-    '\n';
-  std::cout << "size of token_table<char> " << 
-    sizeof(token_table<char>) <<
-    '\n';
-  std::cout << "size of regex_range " << 
-    sizeof(regex_range<char*>) <<
-    '\n';
-  std::cout << "size of simple_buffer<char,2> " << 
-    sizeof(simple_buffer<char,2>) <<
-    '\n';
-  std::cout << "size of token_stream_impl " << 
-    sizeof(token_stream_impl<char*,std::regex_traits<char>>) <<
-    '\n';
-  std::cout << "size of std::cout " << 
-    sizeof(std::cout) <<
-    '\n';
-  std::cout << "size of context " << 
-    sizeof(expression_context) <<
-    '\n';
-
-  std::cout << '\n';
 }
 
 void regex_test(ttest::error_log& log) {
@@ -109,3 +120,11 @@ void regex_test(ttest::error_log& log) {
   regex<char> reg4("qwerty", 2);
 }
 
+ttest::test_suite::pointer create_regex_test() {
+  using namespace ttest;
+  return create_test("regex module", {
+      //create_test("Size Display\n", size_display),
+      create_test("regex::match", regex_match_test),
+      create_test("regex", regex_test)
+  });
+}

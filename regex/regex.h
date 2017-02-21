@@ -8,7 +8,8 @@
 #ifndef _regex_h_
 #define _regex_h_
 
-#include "reader.h"
+#include "character_source.h"
+#include "compiler.h"
 
 #include <cstddef>
 #include <cstring>
@@ -131,10 +132,10 @@ template <typename CharT, typename Traits>
 template <typename ForwardIt>
 regex<CharT,Traits>::regex(ForwardIt first, ForwardIt last, flag_type f) 
   : f_ {construct_flag(f)} {
-  regex_range<ForwardIt> source(first, last);
-  reader<ForwardIt,Traits> reader(source, f, ec);
-  //reader<ForwardIt,Traits> reader(first, last, f, ec);
-  matcher_ = reader.read();
+  auto source = make_character_source(first, last, traits_i);
+  compiler<decltype(source)> compiler(source, ec, f);
+  auto matcher_p = compiler.compile();
+  if (matcher_p) matcher_ = *matcher_p;
 }
 
 template <typename CharT, typename Traits>

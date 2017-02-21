@@ -11,8 +11,10 @@ class error_tracker {
   error_tracker(error_type& e): ec {e} {}
 
   error_type error() const {return ec;}
- protected:
   void set_error(error_type e) {ec = e;}
+
+  bool no_error() const {return ec == error_type::error_none;}
+ protected:
   error_type& get_error() {return ec;}
  private:
   error_type& ec;

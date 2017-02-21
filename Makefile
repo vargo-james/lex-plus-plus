@@ -20,7 +20,7 @@ program_LIBRARIES :=
 # It might be preferable to read the specific compiler from the environment 
 # or from the command line.
 CXX = g++-4.9
-CXXFLAGS += -std=c++14 -g -Wall
+CXXFLAGS += -std=c++14 -g -Wall -pedantic
 CPPFLAGS += $(foreach include_dir, $(program_INCLUDES), -I$(include_dir))
 LDFLAGS += $(foreach library_dir, $(program_LIBRARY_DIRS), -L$(library_dir))
 LDFLAGS += $(foreach library, $(program_LIBRARY_DIRS), -l$(library))

@@ -31,7 +31,6 @@ class test_suite {
   void run_test() {do_test();}
 
   void report(ostream& os) const {errors_.report(os);}
-  
   size_t error_count() const {return errors_.size();}
 
   virtual ~test_suite() = default;
