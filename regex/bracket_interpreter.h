@@ -1,10 +1,10 @@
 #ifndef _bracket_interpreter_h_
 #define _bracket_interpreter_h_
 
-#include "optional.h"
+#include "data_structures/optional.h"
 #include "regex_token.h"
 #include "regex_types.h"
-#include "simple_buffer.h"
+#include "data_structures/simple_buffer.h"
 #include "table_interpreter.h"
 
 #include <cassert>

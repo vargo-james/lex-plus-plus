@@ -1,7 +1,7 @@
 #ifndef _markup_table_h_
 #define _markup_table_h_
 
-#include "optional.h"
+#include "data_structures/optional.h"
 
 #include <initializer_list>
 #include <functional>

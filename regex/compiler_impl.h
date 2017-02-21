@@ -14,9 +14,9 @@
 
 #include "bracket_reader.h"
 #include "error_tracker.h"
-#include "optional.h"
+#include "data_structures/optional.h"
 #include "regex_types.h"
-#include "simple_buffer.h"
+#include "data_structures/simple_buffer.h"
 #include "token_source.h"
 
 #include <cassert>

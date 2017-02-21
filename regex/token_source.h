@@ -3,7 +3,7 @@
 
 #include "bracket_interpreter.h"
 #include "expression_interpreter.h"
-#include "optional.h"
+#include "data_structures/optional.h"
 #include "regex_types.h"
 #include "regex_token.h"
 #include "table_interpreter.h"

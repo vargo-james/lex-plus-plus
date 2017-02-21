@@ -1,5 +1,5 @@
 #include "ttest/ttest.h"
-#include "regex/simple_queue.h"
+#include "data_structures/simple_queue.h"
 
 #include <string>
 

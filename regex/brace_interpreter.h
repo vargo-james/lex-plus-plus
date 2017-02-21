@@ -2,7 +2,7 @@
 #define _brace_interpreter_h_
 
 #include "error_tracker.h"
-#include "optional.h"
+#include "data_structures/optional.h"
 #include "table_interpreter.h"
 
 #include <cassert>

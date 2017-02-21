@@ -1,7 +1,7 @@
 #ifndef _character_source_h_
 #define _character_source_h_
 
-#include "optional.h"
+#include "data_structures/optional.h"
 
 #include <cstddef>
 #include <iterator>

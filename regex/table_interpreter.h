@@ -4,7 +4,7 @@
 #include "character_markup_tables.h"
 #include "error_tracker.h"
 #include "markup_table.h"
-#include "optional.h"
+#include "data_structures/optional.h"
 #include "regex_token.h"
 #include "regex_types.h"
 
