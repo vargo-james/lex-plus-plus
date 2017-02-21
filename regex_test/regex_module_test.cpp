@@ -13,7 +13,6 @@ ttest::test_suite::pointer create_token_source_test();
 ttest::test_suite::pointer create_compiler_impl_test();
 ttest::test_suite::pointer create_compiler_test();
 ttest::test_suite::pointer create_regex_test();
-ttest::test_suite::pointer create_flagged_test();
 
 ttest::test_suite::pointer create_bracket_list_test();
 ttest::test_suite::pointer create_bracket_test(); 
@@ -28,12 +27,11 @@ ttest::test_suite::pointer create_regex_module_test() {
       create_bracket_interpreter_test(),
       create_expression_interpreter_test(),
       create_character_source_test(),
-      create_flagged_test(),
       create_token_source_test(),
       create_compiler_impl_test(),
-      //create_compiler_test(),
-      //create_bracket_list_test(),
+      create_compiler_test(),
+      create_bracket_list_test(),
       //create_bracket_test(), 
-      //create_regex_test(),
+      create_regex_test(),
   });
 }
