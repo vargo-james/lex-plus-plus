@@ -1,5 +1,5 @@
-#ifndef _table_interpreter_h_
-#define _table_interpreter_h_
+#ifndef _character_interpreter_h_
+#define _character_interpreter_h_
 
 #include "character_markup_tables.h"
 #include "error_tracker.h"
@@ -13,13 +13,13 @@
 namespace lex {
 
 template <typename Source>
-class table_interpreter : public regex_constants {
+class character_interpreter : public regex_constants {
  public:
   using char_type = typename Source::value_type;
   using traits_type = typename Source::traits_type;
   using value_type = regex_token<char_type,traits_type>;
 
-  table_interpreter(Source& src, error_type& ec, syntax_option_type syntax, 
+  character_interpreter(Source& src, error_type& ec, syntax_option_type syntax, 
       context_type con);
 
   optional<value_type> get();
@@ -51,7 +51,7 @@ bool is_ASCII_letter(CharT ch) {
 }
 
 template <typename Source>
-table_interpreter<Source>::table_interpreter(Source& src, error_type& ec,
+character_interpreter<Source>::character_interpreter(Source& src, error_type& ec,
     syntax_option_type syntax, context_type con)
   : source_(src),
     specials(specials_table<char_type,traits_type>(con, syntax, 
@@ -72,8 +72,8 @@ table_interpreter<Source>::table_interpreter(Source& src, error_type& ec,
 }
 
 template <typename Source>
-optional<typename table_interpreter<Source>::pretoken_type> 
-table_interpreter<Source>::get_pretoken() {
+optional<typename character_interpreter<Source>::pretoken_type> 
+character_interpreter<Source>::get_pretoken() {
   if (tracker.error() || source_.empty()) {
     return {};
   }
@@ -100,8 +100,8 @@ table_interpreter<Source>::get_pretoken() {
 }    
 
 template <typename Source>
-optional<typename table_interpreter<Source>::value_type> 
-table_interpreter<Source>::get() {
+optional<typename character_interpreter<Source>::value_type> 
+character_interpreter<Source>::get() {
   auto pretoken = get_pretoken();
   if (!pretoken) return {};
 
@@ -158,8 +158,8 @@ table_interpreter<Source>::get() {
 }
 
 template <typename Source>
-optional<typename table_interpreter<Source>::value_type>
-table_interpreter<Source>::get_unicode() {
+optional<typename character_interpreter<Source>::value_type>
+character_interpreter<Source>::get_unicode() {
   const int digit_count {4};
   const int radix {16};
   const char_type character {'u'};
@@ -175,8 +175,8 @@ table_interpreter<Source>::get_unicode() {
 }
 
 template <typename Source>
-typename table_interpreter<Source>::value_type
-table_interpreter<Source>::control_character(char_type ch) const {
+typename character_interpreter<Source>::value_type
+character_interpreter<Source>::control_character(char_type ch) const {
   switch (ch) {
   case 'f':
     ch = '\f';
@@ -201,4 +201,4 @@ table_interpreter<Source>::control_character(char_type ch) const {
 }
 
 }//namespace lex
-#endif// _table_interpreter_h_
+#endif// _character_interpreter_h_

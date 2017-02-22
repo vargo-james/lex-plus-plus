@@ -5,7 +5,7 @@
 #include "regex_token.h"
 #include "regex_types.h"
 #include "data_structures/simple_buffer.h"
-#include "table_interpreter.h"
+#include "character_interpreter.h"
 #include "brace_interpreter.h"
 
 #include <cassert>
@@ -29,7 +29,7 @@ class expression_interpreter : public regex_constants {
   bool empty() const {return buffer.empty() && interpreter.empty();}
 
  private:
-  table_interpreter<Source> interpreter;
+  character_interpreter<Source> interpreter;
   brace_interpreter<Source> brace_reader;
   simple_buffer<value_type> buffer;
 

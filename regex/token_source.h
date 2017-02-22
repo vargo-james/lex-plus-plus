@@ -6,7 +6,7 @@
 #include "data_structures/optional.h"
 #include "regex_types.h"
 #include "regex_token.h"
-#include "table_interpreter.h"
+#include "character_interpreter.h"
 
 #include <cassert>
 
@@ -29,7 +29,7 @@ class token_source : public regex_constants {
  private:
   expression_interpreter<Source> exp_interpreter;
   bracket_interpreter<Source> brack_interpreter;
-  table_interpreter<Source> subexpr_interpreter;
+  character_interpreter<Source> subexpr_interpreter;
   context_type context_ {context_type::expression};
 
   void update_context(token_type type);

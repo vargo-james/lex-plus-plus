@@ -3,7 +3,7 @@
 
 #include "regex_types.h"
 #include "regex/character_source.h"
-#include "regex/table_interpreter.h"
+#include "regex/character_interpreter.h"
 #include "ttest/ttest.h"
 
 #include <regex>

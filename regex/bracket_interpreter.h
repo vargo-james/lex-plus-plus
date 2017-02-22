@@ -5,7 +5,7 @@
 #include "regex_token.h"
 #include "regex_types.h"
 #include "data_structures/simple_buffer.h"
-#include "table_interpreter.h"
+#include "character_interpreter.h"
 
 #include <cassert>
 
@@ -27,7 +27,7 @@ class bracket_interpreter : public regex_constants {
   optional<value_type> get();
 
  private:
-  table_interpreter<Source> interpreter;
+  character_interpreter<Source> interpreter;
   error_tracker tracker;
   enum bracket_context {
     first_char, after_negation, element, element_or_dash, after_dash

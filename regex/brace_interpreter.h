@@ -3,7 +3,7 @@
 
 #include "error_tracker.h"
 #include "data_structures/optional.h"
-#include "table_interpreter.h"
+#include "character_interpreter.h"
 
 #include <cassert>
 #include <cstddef>
@@ -24,7 +24,7 @@ class brace_interpreter : public regex_constants {
   optional<pair_type> get();
 
  private:
-  table_interpreter<Source> interpreter;
+  character_interpreter<Source> interpreter;
   error_tracker tracker;
 
   bool check_if_empty();
