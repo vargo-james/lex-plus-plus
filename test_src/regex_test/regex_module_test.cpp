@@ -3,8 +3,6 @@
 #include "bracket_test.h"
 
 ttest::test_suite::pointer create_character_source_test(); 
-ttest::test_suite::pointer create_simple_buffer_test();
-ttest::test_suite::pointer create_simple_queue_test();
 ttest::test_suite::pointer create_markup_table_test();
 ttest::test_suite::pointer create_brace_interpreter_test();
 ttest::test_suite::pointer create_expression_interpreter_test();
@@ -21,8 +19,6 @@ ttest::test_suite::pointer create_regex_module_test() {
   using namespace ttest;
   return create_test("regex module", {
       create_markup_table_test(),
-      create_simple_buffer_test(),
-      create_simple_queue_test(),
       create_brace_interpreter_test(),
       create_bracket_interpreter_test(),
       create_expression_interpreter_test(),

@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+ttest::test_suite::pointer create_data_structures_module_test();
 ttest::test_suite::pointer create_matcher_module_test();
 ttest::test_suite::pointer create_regex_module_test();
 
@@ -14,6 +15,7 @@ int main() {
   using namespace ttest;
 
   auto lib_test = create_test("lib", {
+      create_data_structures_module_test(),
       create_matcher_module_test(),
       //create_input_buffer_test(),
       create_regex_module_test()

@@ -1,5 +1,5 @@
 #include "regex/brace_interpreter.h"
-#include "regex_test/interpreter_declarations.h"
+#include "interpreter_declarations.h"
 #include "ttest/ttest.h"
 
 template <typename CharT>

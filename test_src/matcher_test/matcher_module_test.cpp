@@ -9,6 +9,7 @@ ttest::test_suite::pointer create_replication_test();
 ttest::test_suite::pointer create_concatenation_test();
 ttest::test_suite::pointer create_alternation_test();
 
+//ttest::test_suite::pointer create_matcher_alt_test();
 
 ttest::test_suite::pointer create_matcher_module_test() {
   using namespace ttest;
@@ -21,5 +22,6 @@ ttest::test_suite::pointer create_matcher_module_test() {
       create_replication_test(),
       create_concatenation_test(),
       create_alternation_test(),
+      //create_matcher_alt_test(),
   });
 }

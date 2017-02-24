@@ -2,7 +2,7 @@
  * In this file, we implement all the tests of the basic matcher class.
  */
 
-#include "matcher_test/matcher_test.h"
+#include "matcher_test.h"
 #include "ttest/ttest.h"
 
 #include <cassert>

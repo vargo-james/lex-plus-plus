@@ -11,7 +11,8 @@
 # set separately for a given project. 
 program_NAME := test
 
-program_SOURCES := $(wildcard **/*.cpp) $(wildcard *.cpp)
+source_DIRECTORY := .
+program_SOURCES := $(shell find $(source_DIRECTORY) -type f -name '*.cpp')
 program_OBJECTS := ${program_SOURCES:.cpp=.o}
 program_INCLUDES := .
 program_LIBRARY_DIRS := 
