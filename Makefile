@@ -11,7 +11,7 @@
 # set separately for a given project. 
 program_NAME := test
 
-source_DIRECTORY := .
+source_DIRECTORY := ./test_src
 program_SOURCES := $(shell find $(source_DIRECTORY) -type f -name '*.cpp')
 program_OBJECTS := ${program_SOURCES:.cpp=.o}
 program_INCLUDES := .
@@ -32,6 +32,8 @@ LDFLAGS += $(foreach library, $(program_LIBRARY_DIRS), -l$(library))
 DEPDIR = .d
 $(shell mkdir -p $(dir $(addprefix $(DEPDIR)/, $(program_SOURCES))) >/dev/null)
 
+# This is a function that produces the pathname for the dependency file
+# with suffix $(2) given object $(1).
 DEPFILE = $(DEPDIR)/$(basename $(1)).$(2)
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(call DEPFILE,$@,Td)
@@ -42,12 +44,14 @@ POSTCOMPILE = mv -f $(call DEPFILE,$@,Td) $(call DEPFILE,$@,d)
 
 all: $(program_NAME)
 
+# This is the recipe to link the objects into an executable.
 $(program_NAME): $(program_OBJECTS)
 	$(LINK.cc) $^ -o $@
 
-# The first line overrides the default behavior of make by attaching an
+# This recipe overrides the default behavior of make by attaching an
 # empty recipe to the dependence of %.o on %.cpp.
 %.o : %.cpp
+
 # This line uses the created dependency file to control compilation.
 # The creation of the dependency file takes place in the same step as
 # compilation of the object file. We rename dependency files in a separate
@@ -63,6 +67,7 @@ $(program_OBJECTS) : $$(patsubst %.o,%.cpp,$$@) $$(call DEPFILE,$$@,d)
 # Thus if a dependency file does not exist, make will not quit with an 
 # error. Instead it will execute the corresponding %.o rule. 
 $(DEPDIR)/%.d: ;
+
 # This prevents make from deleting dependency files, as it would normally
 # delete intermediate files.
 .PRECIOUS: $(DEPDIR)/%.d
