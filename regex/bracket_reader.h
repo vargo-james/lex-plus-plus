@@ -11,7 +11,7 @@ template <typename Source>
 class bracket_reader : public regex_constants {
  public:
   using char_type = typename Source::value_type;
-  using matcher_type = matcher<char_type>;
+  using matcher_type = matcher<char_type, typename Source::traits_type>;
 
   bracket_reader(token_source<Source>& src, syntax_option_type syntax)
     : source {src},

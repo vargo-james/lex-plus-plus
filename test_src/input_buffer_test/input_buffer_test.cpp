@@ -1,5 +1,5 @@
-#include "input_buffer_test.h"
 #include "input_buffer/input_buffer.h"
+#include "ttest/ttest.h"
 
 #include <ios>
 #include <iostream>
@@ -27,6 +27,13 @@ void input_buffer_test(ttest::error_log& log) {
   while (begin != end) {
     if (*begin++ == '\n') {
       cout << "Thank you\n";
+      return;
     }
   }
+}
+
+ttest::test_suite::pointer create_input_buffer_test() {
+  using ttest::create_test;
+
+  return create_test("input buffer", input_buffer_test); 
 }

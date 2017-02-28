@@ -18,7 +18,7 @@ class character_source {
   using string_type = typename Traits::string_type;
   using traits_type = Traits;
 
-  character_source(BidirIt b, BidirIt e, Traits& t) 
+  character_source(BidirIt b, BidirIt e, const Traits& t) 
     : current {b}, 
       end {e}, 
       traits {t} {}
@@ -42,11 +42,11 @@ class character_source {
   // the delimiter string is discarded from the source.
   string_type get_until(const string_type& delimiter);
 
-  Traits& get_traits() {return traits;}
+  const Traits& get_traits() const {return traits;}
  private:
   BidirIt current;
   BidirIt end;
-  Traits& traits;
+  const Traits& traits;
 
   bool matches(const string_type& str) const;
 

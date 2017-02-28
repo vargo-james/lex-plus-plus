@@ -9,6 +9,7 @@
 #include <vector>
 
 using namespace lex;
+using namespace std::literals::string_literals;
 
 using std::basic_string;
 using std::string;
@@ -76,7 +77,7 @@ void compiler_alternation_test(ttest::error_log& log) {
   Reader compiler(ran, ec, regex_constants::basic);
   auto matcher = compiler.compile();
 
-  auto comp = matcher_discrepancies(*matcher, "abc", {
+  auto comp = matcher_discrepancies(*matcher, "abc"s, {
       match_state::UNDECIDED, match_state::FINAL_MATCH,
       match_state::MISMATCH
       });
@@ -84,7 +85,7 @@ void compiler_alternation_test(ttest::error_log& log) {
     log.append("first");
   }
   matcher->initialize();
-  comp = matcher_discrepancies(*matcher, "ca", {
+  comp = matcher_discrepancies(*matcher, "ca"s, {
       match_state::MATCH, match_state::MISMATCH
       });
   if (!comp) {
@@ -97,14 +98,14 @@ void compiler_alternation_test(ttest::error_log& log) {
   Reader compiler2(ran2, ec2, regex_constants::grep);
   matcher = compiler2.compile();
 
-  comp = matcher_discrepancies(*matcher, "ax", {
+  comp = matcher_discrepancies(*matcher, "ax"s, {
       match_state::MATCH, match_state::MISMATCH
       });
   if (!comp) {
     log.append("grep first");
   }
   matcher->initialize();
-  comp = matcher_discrepancies(*matcher, "ab", {
+  comp = matcher_discrepancies(*matcher, "ab"s, {
       match_state::MATCH, match_state::FINAL_MATCH
       });
   if (!comp) {
@@ -114,7 +115,7 @@ void compiler_alternation_test(ttest::error_log& log) {
 
 
 ttest::test_suite::pointer create_compiler_test() {
-  using namespace ttest;
+  using ttest::create_test;
   return create_test("compiler", {
       //create_test("literals", compiler_literals_test),
       //create_test("alternation", compiler_alternation_test),

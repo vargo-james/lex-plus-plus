@@ -29,7 +29,7 @@ void markup_table_test(ttest::error_log& log) {
 }
 
 ttest::test_suite::pointer create_markup_table_test() {
-  using namespace ttest;
+  using ttest::create_test;
 
   return create_test("markup_table", markup_table_test);
 }

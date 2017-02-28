@@ -1,7 +1,7 @@
 #ifndef _matcher_h_
 #define _matcher_h_
 
-#include "matcher/matcher_transition.h"
+#include "matcher/matcher_impl.h"
 #include "regex_types.h"
 
 #include <memory>
@@ -27,22 +27,23 @@ char rep(match_state s) {
 }
 */
 
-template <typename CharT>
+template <typename CharT, typename Traits>
 class matcher {
  public:
   using value_type = CharT;
-  using transition_pointer = 
-    typename matcher_transition<value_type>::pointer;
+  using traits_type = Traits;
+  using impl_pointer = 
+    typename matcher_impl<CharT, Traits>::pointer;
 
   // The default matcher matches an empty string.
   matcher() 
-    : transition_ {matcher_transition<value_type>{}.clone()},
-      state_ {transition_->initialize()} {}
+    : impl_ {matcher_impl<CharT, Traits>{}.clone()},
+      state_ {impl_->initialize()} {}
 
-  // Most matcher objects are constructed from a transition_pointer object.
-  explicit matcher(transition_pointer&& f) 
-    : transition_ {std::move(f)},
-      state_ {transition_->initialize()} {}
+  // Most matcher objects are constructed from a impl_pointer object.
+  explicit matcher(impl_pointer&& f) 
+    : impl_ {std::move(f)},
+      state_ {impl_->initialize()} {}
 
   matcher(const matcher& r);
   matcher(matcher&& r);
@@ -57,41 +58,41 @@ class matcher {
   // This method returns the matcher to its original state.
   // If the matcher was copy or move constructed from another matcher, then 
   // the state is converted to the original state of the original matcher 
-  // which was constructed from a transition_pointer object.
-  void initialize() {state_ = transition_->initialize();}
+  // which was constructed from a impl_pointer object.
+  void initialize() {state_ = impl_->initialize();}
  private:
-  transition_pointer transition_;
+  impl_pointer impl_;
   match_state state_;
 };
 
 // Copy constructor.
-template <typename CharT>
-matcher<CharT>::matcher(const matcher& r)
-  : transition_ {r.transition_->clone()},
+template <typename CharT, typename Traits>
+matcher<CharT, Traits>::matcher(const matcher& r)
+  : impl_ {r.impl_->clone()},
     state_ {r.state_} {}
 // Move constructor.
-template <typename CharT>
-matcher<CharT>::matcher(matcher&& r)
-  : transition_ {std::move(r.transition_)},
+template <typename CharT, typename Traits>
+matcher<CharT, Traits>::matcher(matcher&& r)
+  : impl_ {std::move(r.impl_)},
     state_ {r.state_} {}
 // Copy assignment.
-template <typename CharT>
-matcher<CharT>& matcher<CharT>::operator=(const matcher& r) {
-  transition_ = r.transition_->clone();
+template <typename CharT, typename Traits>
+matcher<CharT, Traits>& matcher<CharT, Traits>::operator=(const matcher& r) {
+  impl_ = r.impl_->clone();
   state_ = r.state_;
   return *this;
 }
 // Move assignment.
-template <typename CharT>
-matcher<CharT>& matcher<CharT>::operator=(matcher&& r) {
-  transition_ = std::move(r.transition_);
+template <typename CharT, typename Traits>
+matcher<CharT, Traits>& matcher<CharT, Traits>::operator=(matcher&& r) {
+  impl_ = std::move(r.impl_);
   state_ = r.state_;
   return *this;
 }
-// The update method checks the state and defers to the transition_pointer
+// The update method checks the state and defers to the impl_pointer
 // object if any work is necessary.
-template <typename CharT>
-void matcher<CharT>::update(const value_type& ch) {
+template <typename CharT, typename Traits>
+void matcher<CharT, Traits>::update(const value_type& ch) {
   if (state_ == match_state::MISMATCH) {
     return; 
   }
@@ -100,25 +101,26 @@ void matcher<CharT>::update(const value_type& ch) {
     return;
   }
   else {  // state == match_state::UNDECIDED or match_state::MATCH
-    state_ = transition_->update(ch);
+    state_ = impl_->update(ch);
     return;
   }
 }
 
-// All nontrivial matcher objects are created from a transition_pointer object.
+// All nontrivial matcher objects are created from a impl_pointer object.
 // So we use this factory class to facilitate the creation of a matcher object
-// directly from the constructor arguments of the transition_pointer object.
-template <typename Transition>
+// directly from the constructor arguments of the impl_pointer object.
+template <typename MatcherImpl>
 struct matcher_factory {
-  using value_type = typename Transition::value_type;
-  using matcher_type = matcher<value_type>;
+  using value_type = typename MatcherImpl::value_type;
+  using traits_type = typename MatcherImpl::traits_type;
+  using matcher_type = matcher<value_type, traits_type>;
 
   template <typename ...Args>
   matcher_type create(Args&& ...args) const {
     using std::make_unique;
     using std::forward;
     return 
-      matcher_type(make_unique<Transition>(forward<Args>(args)...));
+      matcher_type(make_unique<MatcherImpl>(forward<Args>(args)...));
   }
 };
 

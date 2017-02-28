@@ -25,6 +25,7 @@ class character_interpreter : public regex_constants {
   optional<value_type> get();
   bool empty() const {return source_.empty();}
     
+  const traits_type& get_traits() const {return source_.get_traits();}
  private:
   using table_type = markup_table<char_type, token_type>;
   using pretoken_type = marked_value<char_type, token_type>;

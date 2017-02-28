@@ -28,19 +28,19 @@ class markup_table {
 
   markup_table() {}
 
-  markup_table(const std::initializer_list<entry_type>& init,
-      const predicate_type& pred, mapped_type if_pred, mapped_type def_val)
+  markup_table(std::initializer_list<entry_type> init,
+      predicate_type pred, mapped_type if_pred, mapped_type def_val)
     : table_(init)
     , predicate {pred}
     , if_predicate {if_pred}
     , default_val {def_val} {}
 
-  markup_table(const std::initializer_list<entry_type>& init,
+  markup_table(std::initializer_list<entry_type> init,
       mapped_type def_val)
     : table_(init)
     , default_val {def_val} {}
 
-  markup_table(const std::initializer_list<entry_type>& init)
+  markup_table(std::initializer_list<entry_type> init)
     : table_(init) {}
 
   markup_table(const markup_table& other) = default;

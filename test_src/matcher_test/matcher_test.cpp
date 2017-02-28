@@ -8,9 +8,14 @@
 #include <cassert>
 #include <string>
 
+static std::regex_traits<char> traits;
+using Traits = std::regex_traits<char>;
+using namespace std::literals::string_literals;
+
 using namespace lex;
 
-int matcher_discrepancies(matcher<char>& matcher, const std::string& updates, 
+/*
+int matcher_discrepancies(matcher<char, Traits>& matcher, const std::string& updates, 
     const std::vector<match_state>& states, match_state initial) {
   // First we check that our test is well formed.
   assert(updates.size() == states.size());
@@ -26,10 +31,10 @@ int matcher_discrepancies(matcher<char>& matcher, const std::string& updates,
   }
   // Return 0 if the updates were consistent with the predictions.
   return 0;
-}
+}*/
 
-int default_matcher_test(matcher<char>& mat) {
-  return matcher_discrepancies(mat, "a", {match_state::MISMATCH}, 
+int default_matcher_test(matcher<char,Traits>& mat) {
+  return matcher_discrepancies(mat, "a"s, {match_state::MISMATCH}, 
       match_state::FINAL_MATCH);
 }
 
@@ -40,13 +45,13 @@ int matcher_constructor_test() {
   int error_count {0};
 
   // Default construction is tested here.
-  matcher<char> mat;
+  matcher<char,Traits> mat;
   error_count += default_matcher_test(mat);
   // Copy construction is tested here.
-  matcher<char> mat1;
+  matcher<char,Traits> mat1;
   auto mat2 = mat1;
   // Copy Assignment is tested here.
-  matcher<char> mat3;
+  matcher<char,Traits> mat3;
   mat3 = mat2;
 
   return error_count;
@@ -57,7 +62,7 @@ int matcher_constructor_test() {
 int matcher_initialize_test() {
   int error_count {0};
 
-  matcher<char> mat;
+  matcher<char,Traits> mat;
   mat.update('a');
   auto mat2 = mat;
 

@@ -17,9 +17,10 @@ namespace detail {
 // Each entry in the list represents a parallel progression through
 // the concatenation.
 template <typename Matcher>
-class concatenate_transition 
-  : public matcher_transition_cloner<
-             concatenate_transition<Matcher>, typename Matcher::value_type
+class concatenate_impl 
+  : public matcher_impl_cloner<
+             concatenate_impl<Matcher>, typename Matcher::value_type,
+             typename Matcher::traits_type
            > {
  public:
   using matcher_type = Matcher;
@@ -27,12 +28,12 @@ class concatenate_transition
   using index_type = std::size_t;
   using current_progress = std::pair<matcher_type, index_type>;
 
-  concatenate_transition(const std::vector<matcher_type>& container)
+  concatenate_impl(const std::vector<matcher_type>& container)
     : initial_state(container) {}
-  concatenate_transition(std::vector<matcher_type>&& container)
+  concatenate_impl(std::vector<matcher_type>&& container)
     : initial_state(std::move(container)) {}
 
-  match_state update(const value_type& ch) override;
+  match_state update(value_type ch) override;
   match_state initialize() override;
  private:
   std::vector<matcher_type> initial_state;
@@ -65,7 +66,7 @@ class concatenate_transition
 //                                    state = MISMATCH
 template <typename Matcher>
 match_state 
-concatenate_transition<Matcher>::update(const value_type& ch) {
+concatenate_impl<Matcher>::update(value_type ch) {
   bool undecided {false};
   bool final_match {false};
   bool match {false};
@@ -121,7 +122,7 @@ concatenate_transition<Matcher>::update(const value_type& ch) {
 }
 
 template <typename Matcher>
-void concatenate_transition<Matcher>::insert_next(
+void concatenate_impl<Matcher>::insert_next(
     typename std::list<current_progress>::const_iterator it) {
   using std::make_pair;
   auto matcher_index = it->second;
@@ -134,7 +135,7 @@ void concatenate_transition<Matcher>::insert_next(
 // Thus the current state must start out with both "A?" and "B?" in its
 // list. Also, the initial state variable must be set to MATCH.
 template <typename Matcher>
-match_state concatenate_transition<Matcher>::initialize() {
+match_state concatenate_impl<Matcher>::initialize() {
   current.clear();
 
   if (initial_state.empty()) {
@@ -171,7 +172,7 @@ concatenate(MatcherContainer&& container) {
   using matcher_type = typename MatcherContainer::value_type;
   using std::forward;
 
-  matcher_factory<detail::concatenate_transition<matcher_type>> fac;
+  matcher_factory<detail::concatenate_impl<matcher_type>> fac;
   return fac.create(forward<MatcherContainer>(container));
 }
 

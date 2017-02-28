@@ -8,7 +8,7 @@ void close_dash_test(ttest::error_log& log);
 void range_test(ttest::error_log& log);
 
 inline ttest::test_suite::pointer create_bracket_test() {
-  using namespace ttest;
+  using ttest::create_test;
 
   return create_test("bracket", {
       create_test("singleton", singleton_bracket_test),

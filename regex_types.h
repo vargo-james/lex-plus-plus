@@ -77,7 +77,7 @@ using value_type_t =
   typename std::iterator_traits<CharIterator>::value_type;
 
 template <typename Char>
-using predicate_type_t = std::function<bool(const Char&)>;
+using predicate_type_t = std::function<bool(Char)>;
 
 struct regex_error : public std::runtime_error {
   using std::runtime_error::runtime_error;

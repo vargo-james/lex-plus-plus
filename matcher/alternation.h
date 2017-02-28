@@ -43,20 +43,21 @@ match_state alternation_state(MatcherIterator begin,
 // This defines the transition function for the alternation of several
 // regexes.
 template <typename Matcher>
-class alternation_transition 
-  : public matcher_transition_cloner<
-             alternation_transition<Matcher>, typename Matcher::value_type
+class alternation_impl 
+  : public matcher_impl_cloner<
+             alternation_impl<Matcher>, typename Matcher::value_type, 
+             typename Matcher::traits_type
            > {
  public:
   using matcher_type = Matcher;
   using value_type = typename Matcher::value_type;
 
-  alternation_transition(const std::vector<matcher_type>& c)
+  alternation_impl(const std::vector<matcher_type>& c)
     : initial_state {c} {}
-  alternation_transition(std::vector<matcher_type>&& c)
+  alternation_impl(std::vector<matcher_type>&& c)
     : initial_state {std::move(c)} {}
 
-  match_state update(const value_type&) override;
+  match_state update(value_type) override;
   match_state initialize() override;
  private:
   std::vector<matcher_type> initial_state;
@@ -64,7 +65,7 @@ class alternation_transition
 };
 
 template <typename Matcher>
-match_state alternation_transition<Matcher>::update(const value_type& ch) {
+match_state alternation_impl<Matcher>::update(value_type ch) {
   // These flags track what we have seen after traversing the list.
   bool undecided {false};
   bool final_match {false};
@@ -115,7 +116,7 @@ match_state alternation_transition<Matcher>::update(const value_type& ch) {
 }
 
 template <typename Matcher>
-match_state alternation_transition<Matcher>::initialize() {
+match_state alternation_impl<Matcher>::initialize() {
   using std::for_each;
 
   matchers.clear();
@@ -134,7 +135,7 @@ match_state alternation_transition<Matcher>::initialize() {
 /*
 typename <CharT>
 matcher<CharT> alternation(std::vector<matcher<CharT>>&& matchers) {
-  matcher_factory<detail::alternation_transition<matcher<CharT>> fac;
+  matcher_factory<detail::alternation_impl<matcher<CharT>> fac;
   return fac.create(std::forward<std::vector<matcher<CharT>>>(matchers));
 }
 */
@@ -144,7 +145,7 @@ typename MatcherContainer::value_type
 alternation(MatcherContainer&& container) {
   using matchers = typename MatcherContainer::value_type;
 
-  matcher_factory<detail::alternation_transition<matchers>> fac;
+  matcher_factory<detail::alternation_impl<matchers>> fac;
   return fac.create(std::forward<MatcherContainer>(container));
 }
 

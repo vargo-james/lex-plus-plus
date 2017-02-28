@@ -16,7 +16,7 @@ ttest::test_suite::pointer create_bracket_list_test();
 ttest::test_suite::pointer create_bracket_test(); 
 
 ttest::test_suite::pointer create_regex_module_test() {
-  using namespace ttest;
+  using ttest::create_test;
   return create_test("regex module", {
       create_markup_table_test(),
       create_brace_interpreter_test(),

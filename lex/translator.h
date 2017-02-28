@@ -32,13 +32,13 @@ class translator {
             typename = enable_iterator_t<Iterator,proto_value_type>>
   translator(Iterator begin, Iterator end);
   translator(
-      const std::initializer_list<proto_value_type>& l)
+      std::initializer_list<proto_value_type> l)
     : translator(l.begin(), l.end()) {}
   translator(const std::vector<proto_value_type>& v)
     : translator(v.begin(), v.end()) {}
   // The following constructors make a translator object from lists
   // using pre-constructed matcher<char_type> objects.
-  translator(const std::initializer_list<value_type>& l)
+  translator(std::initializer_list<value_type> l)
     : table(l) {}
   translator(const std::vector<value_type>& v)
     : table(v) {}

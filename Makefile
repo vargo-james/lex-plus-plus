@@ -20,7 +20,7 @@ program_LIBRARIES :=
 
 # It might be preferable to read the specific compiler from the environment 
 # or from the command line.
-CXX = g++-4.9
+CXX = g++
 CXXFLAGS += -std=c++14 -g -Wall -pedantic
 CPPFLAGS += $(foreach include_dir, $(program_INCLUDES), -I$(include_dir))
 LDFLAGS += $(foreach library_dir, $(program_LIBRARY_DIRS), -L$(library_dir))
@@ -49,14 +49,16 @@ $(program_NAME): $(program_OBJECTS)
 	$(LINK.cc) $^ -o $@
 
 # This recipe overrides the default behavior of make by attaching an
-# empty recipe to the dependence of %.o on %.cpp.
+# empty recipe to the dependence of %.o on %.cpp. I am not sure whether
+# this step is really necessary.
 %.o : %.cpp
 
 # This line uses the created dependency file to control compilation.
 # The creation of the dependency file takes place in the same step as
 # compilation of the object file. We rename dependency files in a separate
 # step in order to avoid leaving corrupted dependency files in case of a
-# failed compilation.
+# failed compilation. The SECONCDEXPANSION allows us to work with
+# the automatic variables such as $@ in the dependency list.
 .SECONDEXPANSION:
 $(program_OBJECTS) : $$(patsubst %.o,%.cpp,$$@) $$(call DEPFILE,$$@,d)
 	$(COMPILE.cc) $(OUTPUT_OPTION) $(patsubst %.o,%.cpp,$@)

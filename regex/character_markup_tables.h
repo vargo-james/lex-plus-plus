@@ -10,7 +10,7 @@
 namespace lex {
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> basic_specials(Traits& t) {
+markup_table<CharT, token_type> basic_specials(const Traits& t) {
   return  markup_table<CharT, token_type>({
     {CharT('.'), token_type::CHAR_CLASS},
     {CharT('['), token_type::L_BRACKET},
@@ -22,7 +22,7 @@ markup_table<CharT, token_type> basic_specials(Traits& t) {
 }
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> basic_escapes(Traits& t) {
+markup_table<CharT, token_type> basic_escapes(const Traits& t) {
   return markup_table<CharT, token_type>({
       {CharT('.'), token_type::LITERAL},
       {CharT('['), token_type::LITERAL},
@@ -41,7 +41,7 @@ markup_table<CharT, token_type> basic_escapes(Traits& t) {
 }
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> extended_specials(Traits& t) {
+markup_table<CharT, token_type> extended_specials(const Traits& t) {
   return  markup_table<CharT, token_type>({
     {CharT('.'), token_type::CHAR_CLASS},
     {CharT('['), token_type::L_BRACKET},
@@ -59,7 +59,7 @@ markup_table<CharT, token_type> extended_specials(Traits& t) {
 }
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> extended_escapes(Traits& t) {
+markup_table<CharT, token_type> extended_escapes(const Traits& t) {
   return  markup_table<CharT, token_type>({
     {CharT('.'), token_type::LITERAL},
     {CharT('['), token_type::LITERAL},
@@ -78,12 +78,12 @@ markup_table<CharT, token_type> extended_escapes(Traits& t) {
 }
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> ECMAScript_specials(Traits& t) {
+markup_table<CharT, token_type> ECMAScript_specials(const Traits& t) {
   return extended_specials<CharT,Traits>(t);
 }
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> ECMAScript_escapes(Traits& t) {
+markup_table<CharT, token_type> ECMAScript_escapes(const Traits& t) {
   return  markup_table<CharT, token_type>({
     {CharT('.'), token_type::LITERAL},
     {CharT('['), token_type::LITERAL},
@@ -123,7 +123,7 @@ markup_table<CharT, token_type> ECMAScript_escapes(Traits& t) {
 }
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> basic_rep_specials(Traits& t) {
+markup_table<CharT, token_type> basic_rep_specials(const Traits& t) {
   return markup_table<CharT,token_type>({
       {CharT(','), token_type::COMMA},
       }, [&t](auto val) {return std::isdigit(val, t.getloc());}, 
@@ -131,14 +131,14 @@ markup_table<CharT, token_type> basic_rep_specials(Traits& t) {
 }
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> basic_rep_escapes(Traits& t) {
+markup_table<CharT, token_type> basic_rep_escapes(const Traits& t) {
   return markup_table<CharT,token_type>({
       {CharT('}'), token_type::R_BRACE},
       }, token_type::BADBRACE);
 }
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> erep_specials(Traits& t) {
+markup_table<CharT, token_type> erep_specials(const Traits& t) {
   return markup_table<CharT,token_type>({
       {CharT(','), token_type::COMMA},
       {CharT('}'), token_type::R_BRACE}
@@ -147,20 +147,20 @@ markup_table<CharT, token_type> erep_specials(Traits& t) {
 }
 
 template <typename CharT, typename Traits>
-markup_table<CharT, token_type> erep_escapes(Traits& t) {
+markup_table<CharT, token_type> erep_escapes(const Traits& t) {
   return markup_table<CharT,token_type>({}, token_type::BADBRACE);
 }
 
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> subexpression_specials(
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   return {};
   //return markup_table<CharT,token_type>({}, token_type::LITERAL);
 }
 
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> subexpression_escapes(
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   return markup_table<CharT,token_type>({
       {CharT('='), token_type::ASSERTION},
       {CharT('!'), token_type::ASSERTION},
@@ -170,7 +170,7 @@ markup_table<CharT, token_type> subexpression_escapes(
 
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> bracket_specials(
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   return markup_table<CharT,token_type>({
       {CharT('^'), token_type::NEGATION},
       {CharT(']'), token_type::R_BRACKET},
@@ -180,7 +180,7 @@ markup_table<CharT, token_type> bracket_specials(
 
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> bracket_escapes(
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   return markup_table<CharT,token_type>({
       {CharT(':'), token_type::CLASS},
       {CharT('='), token_type::EQUIV},
@@ -190,7 +190,7 @@ markup_table<CharT, token_type> bracket_escapes(
 
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> brace_specials(
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   using flag_type = regex_constants::syntax_option_type;
   bool basic = (syntax & flag_type::basic) || (syntax & flag_type::grep);
 
@@ -200,7 +200,7 @@ markup_table<CharT, token_type> brace_specials(
 
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> brace_escapes(
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   using flag_type = regex_constants::syntax_option_type;
   bool basic = (syntax & flag_type::basic) || (syntax & flag_type::grep);
 
@@ -210,7 +210,7 @@ markup_table<CharT, token_type> brace_escapes(
 
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> expression_specials(
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   using flag_type = regex_constants::syntax_option_type;
   if (syntax & flag_type::basic) {
     return basic_specials<CharT,Traits>(t);
@@ -238,7 +238,7 @@ markup_table<CharT, token_type> expression_specials(
 
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> expression_escapes(
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   using flag_type = regex_constants::syntax_option_type;
   if (syntax & flag_type::basic) {
     return basic_escapes<CharT,Traits>(t);
@@ -263,7 +263,7 @@ markup_table<CharT, token_type> expression_escapes(
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> escapes_table(
     regex_constants::context_type con,
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   switch (con) {
   case regex_constants::expression:
     return expression_escapes<CharT,Traits>(syntax, t);
@@ -281,7 +281,7 @@ markup_table<CharT, token_type> escapes_table(
 template <typename CharT, typename Traits>
 markup_table<CharT, token_type> specials_table(
     regex_constants::context_type con, 
-    regex_constants::syntax_option_type syntax, Traits& t) {
+    regex_constants::syntax_option_type syntax, const Traits& t) {
   switch (con) {
   case regex_constants::expression:
     return expression_specials<CharT,Traits>(syntax, t);

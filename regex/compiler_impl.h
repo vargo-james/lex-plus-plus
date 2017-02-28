@@ -30,8 +30,8 @@ template <typename Source>
 class compiler_impl : public regex_constants {
  public:
   using value_type = typename Source::value_type;
-  using matcher_type = matcher<value_type>;
   using traits_type = typename Source::traits_type;
+  using matcher_type = matcher<value_type, traits_type>;
   using string_type = typename traits_type::string_type;
 
   compiler_impl(Source& src, error_type& er, syntax_option_type f)
@@ -46,6 +46,8 @@ class compiler_impl : public regex_constants {
   optional<matcher_type> get_bracket();
   optional<matcher_type> get_subexpression();
   optional<replication_data> get_replication();
+
+  const traits_type& get_traits() const {return source.get_traits();}
 
  private:
   buffered<token_source<Source>> source;
@@ -153,10 +155,11 @@ compiler_impl<Source>::get_element() {
     return {};
 
   case token_type::CHAR_CLASS:
-    return character_class_matcher<value_type,traits_type>(token->ch);
+    return character_class_matcher<value_type,traits_type>(token->ch,
+        get_traits());
 
   case token_type::STRING_LITERAL:
-    return string_matcher(std::move(token->str));
+    return string_matcher(std::move(token->str), get_traits());
   default:
 //  ALTERNATION 
     return {};

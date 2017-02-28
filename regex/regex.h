@@ -57,8 +57,7 @@ class regex {
   explicit regex(const std::basic_string<CharT,ST,SA>& str,
       flag_type f = default_flag) 
     : regex(std::begin(str), std::end(str), f) {}
-  regex(const std::initializer_list<CharT>& init, 
-      flag_type f = default_flag)
+  regex(std::initializer_list<CharT> init, flag_type f = default_flag)
     : regex(std::begin(init), std::end(init), f) {}
   template <typename ForwardIt>
   regex(ForwardIt first, ForwardIt last, 
@@ -71,7 +70,7 @@ class regex {
   regex& operator=(const regex& other) = default;
   regex& operator=(regex&& other) = default;
   regex& operator=(CharT* s) {return this->assign(s);}
-  regex& operator=(const std::initializer_list<CharT>& init) {
+  regex& operator=(std::initializer_list<CharT> init) {
     return this->assign(init);
   }
   template <typename ST, typename SA>
@@ -99,7 +98,7 @@ class regex {
       flag_type f = default_flag) {
     return *this = regex(std::basic_string<CharT>(first, last), f);
   }
-  regex& assign(const std::initializer_list<CharT>& init,
+  regex& assign(std::initializer_list<CharT> init,
       flag_type f = default_flag) {
     return *this = regex(init, f);
   }
@@ -115,7 +114,7 @@ class regex {
   template <typename ForwardIt>
   ForwardIt match(ForwardIt begin, ForwardIt end);
  private:
-  matcher<CharT> matcher_;
+  matcher<CharT, Traits> matcher_;
   traits_type traits_i;
   flag_type f_;
   error_type ec {error_type::error_none};

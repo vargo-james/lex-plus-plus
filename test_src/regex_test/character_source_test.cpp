@@ -142,7 +142,7 @@ void character_source_test(ttest::error_log& log) {
 }
 
 ttest::test_suite::pointer create_character_source_test() {
-  using namespace ttest;
+  using ttest::create_test;
   return create_test("character_source", {
       create_test("get, putback", character_source_test),
       create_test("integer getting", integer_getting_test),

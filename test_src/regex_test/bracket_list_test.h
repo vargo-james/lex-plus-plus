@@ -7,7 +7,7 @@ void matching_bracket_list_test(ttest::error_log& log);
 void non_matching_bracket_list_test(ttest::error_log& log);
 
 inline ttest::test_suite::pointer create_bracket_list_test() {
-  using namespace ttest;
+  using ttest::create_test;
   return create_test("bracket list", {
       create_test("matching", matching_bracket_list_test),
       create_test("non-matching", non_matching_bracket_list_test)

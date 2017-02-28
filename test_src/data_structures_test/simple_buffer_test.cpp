@@ -70,7 +70,7 @@ void buffer_test_sizen(ttest::error_log& log) {
 }
 
 ttest::test_suite::pointer create_simple_buffer_test() {
-  using namespace ttest;
+  using ttest::create_test;
   return create_test("simple_buffer", {
       create_test("size1", buffer_test_size1),
       create_test("sizen", buffer_test_sizen)

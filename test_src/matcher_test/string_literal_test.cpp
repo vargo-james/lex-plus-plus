@@ -7,11 +7,12 @@
 using namespace lex;
 using std::string;
 using std::vector;
+std::regex_traits<char> traits;
 
 void test_string_literal(ttest::error_log& log, const string& pattern,
     const string& comparison, const vector<match_state>& states) {
   
-  auto matcher = string_matcher(std::move(pattern));
+  auto matcher = string_matcher(std::move(pattern), traits);
 
   log.append_if(pattern, matcher_discrepancies(matcher, comparison, states));
 }
@@ -37,6 +38,6 @@ void string_literal_test(ttest::error_log& log) {
 }
 
 ttest::test_suite::pointer create_string_literal_test() {
-  using namespace ttest;
+  using ttest::create_test;
   return create_test("string literal", string_literal_test);
 }

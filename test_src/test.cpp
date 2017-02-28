@@ -1,7 +1,6 @@
 /*
  * In this file, we run all the tests.
  */
-#include "input_buffer_test/input_buffer_test.h"
 #include "ttest/ttest.h"
 
 #include <iostream>
@@ -9,15 +8,16 @@
 ttest::test_suite::pointer create_data_structures_module_test();
 ttest::test_suite::pointer create_matcher_module_test();
 ttest::test_suite::pointer create_regex_module_test();
+ttest::test_suite::pointer create_input_buffer_test();
 
 int main() {
   using std::cerr;
-  using namespace ttest;
+  using ttest::create_test;
 
   auto lib_test = create_test("lib", {
+      //create_input_buffer_test(),
       create_data_structures_module_test(),
       create_matcher_module_test(),
-      //create_input_buffer_test(),
       create_regex_module_test()
     });
 

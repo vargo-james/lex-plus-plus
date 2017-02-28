@@ -26,6 +26,8 @@ class token_source : public regex_constants {
 
   bool empty() const;
   optional<value_type> get();
+
+  const traits_type& get_traits() const {return exp_interpreter.get_traits();}
  private:
   expression_interpreter<Source> exp_interpreter;
   bracket_interpreter<Source> brack_interpreter;

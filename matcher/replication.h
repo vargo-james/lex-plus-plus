@@ -11,10 +11,10 @@ namespace lex {
 namespace detail {
 
 template <typename Matcher>
-class matcher_replicator_transition
-  : public matcher_transition_cloner<
-      matcher_replicator_transition<Matcher>,
-      typename Matcher::value_type
+class matcher_replicator_impl
+  : public matcher_impl_cloner<
+      matcher_replicator_impl<Matcher>,
+      typename Matcher::value_type, typename Matcher::traits_type
     > {
  public:
   using matcher_type = Matcher;
@@ -22,16 +22,16 @@ class matcher_replicator_transition
   using index_type = std::size_t;
   using current_progress = std::pair<matcher_type, index_type>;
 
-  matcher_replicator_transition(matcher_type&& reg, replication_data rep)
+  matcher_replicator_impl(matcher_type&& reg, replication_data rep)
     : lower {rep.lower},
       upper {rep.upper},
       matcher {std::move(reg)} {}
-  matcher_replicator_transition(const matcher_type& reg, replication_data rep)
+  matcher_replicator_impl(const matcher_type& reg, replication_data rep)
     : lower {rep.lower},
       upper {rep.upper},
       matcher {reg} {}
     
-  match_state update(const value_type& ch) override;
+  match_state update(value_type ch) override;
   match_state initialize() override;
  private:
   std::size_t lower;
@@ -41,7 +41,7 @@ class matcher_replicator_transition
 };
 
 template <typename Matcher>
-match_state matcher_replicator_transition<Matcher>::initialize() {
+match_state matcher_replicator_impl<Matcher>::initialize() {
   current.clear();
 
   auto r_state = matcher.state();
@@ -64,7 +64,7 @@ match_state matcher_replicator_transition<Matcher>::initialize() {
 
 template <typename Matcher>
 match_state 
-matcher_replicator_transition<Matcher>::update(const value_type& ch) {
+matcher_replicator_impl<Matcher>::update(value_type ch) {
   bool match {false};
   bool final_match {false};
   bool undecided {false};
@@ -129,7 +129,7 @@ matcher_replicator_transition<Matcher>::update(const value_type& ch) {
 template <typename Matcher>
 Matcher replicate(Matcher&& matcher, replication_data rep) {
   //if (rep.lower == rep.upper == 1) return matcher;
-  matcher_factory<detail::matcher_replicator_transition<Matcher>> fac;
+  matcher_factory<detail::matcher_replicator_impl<Matcher>> fac;
   return fac.create(std::forward<Matcher>(matcher), rep);
 }
 }//namespace lex

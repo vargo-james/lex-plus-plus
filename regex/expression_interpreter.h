@@ -28,6 +28,7 @@ class expression_interpreter : public regex_constants {
   optional<value_type> get();
   bool empty() const {return buffer.empty() && interpreter.empty();}
 
+  const traits_type& get_traits() const {return interpreter.get_traits();}
  private:
   character_interpreter<Source> interpreter;
   brace_interpreter<Source> brace_reader;

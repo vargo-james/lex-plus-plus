@@ -151,7 +151,7 @@ void char_interpreter_ECMAScript(ttest::error_log& log) {
 }
 
 ttest::test_suite::pointer create_expression_interpreter_test() {
-  using namespace ttest;
+  using ttest::create_test;
   return create_test("expression_interpreter", {
       create_test("literals", char_interpreter_literals),
       create_test("basic", char_interpreter_basic),

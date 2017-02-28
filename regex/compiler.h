@@ -33,8 +33,8 @@ template <typename Source>
 class compiler : public regex_constants {
  public:
   using value_type = typename Source::value_type;
-  using matcher_type = matcher<value_type>;
   using traits_type = typename Source::traits_type;
+  using matcher_type = matcher<value_type, traits_type>;
   using string_type = typename traits_type::string_type;
 
   compiler(Source& src, error_type& er, syntax_option_type f)
