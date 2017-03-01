@@ -1,26 +1,25 @@
-# This Makefile should be flexible enough to handle most simple projects.
+# vim: set tabstop=8:softtabstop=8:shiftwidth=8:noexpandtab
+
+# This Makefile should be flexible enough to handle almost all simple projects.
 # To adapt it, simply fill in the appropriate variables in the first 
-# section. It may also be necessary to change the compiler.
+# section. I don't know whether non-GNU compilers support the automatic
+# dependency generation.
 
-
-# My editor is set to substitute spaces for tabs. so I prefer changing 
-# the recipe prefix rather than adjusting my editor.
-.RECIPEPREFIX =   
-
-# With the exception of the program_OBJECTS variable, these must all be
-# set separately for a given project. 
+# PROJECT SPECIFIC VARIABLES
+COMPILER = g++	#Other compilers might not work?
 program_NAME := test
-
-source_DIRECTORY := ./test_src
-program_SOURCES := $(shell find $(source_DIRECTORY) -type f -name '*.cpp')
-program_OBJECTS := ${program_SOURCES:.cpp=.o}
+source_DIRECTORY := ./src
 program_INCLUDES := .
 program_LIBRARY_DIRS := 
 program_LIBRARIES := 
 
-# It might be preferable to read the specific compiler from the environment 
-# or from the command line.
-CXX = g++
+# These variables are automatically set.
+# Note that all source files in the source directory will be selected for
+# compilation and linking. If this is not desirable, an alternate script
+# must be given to produce all the source files.
+program_SOURCES := $(shell find $(source_DIRECTORY) -type f -name '*.cpp')
+program_OBJECTS := ${program_SOURCES:.cpp=.o}
+CXX = $(COMPILER)
 CXXFLAGS += -std=c++14 -g -Wall -pedantic
 CPPFLAGS += $(foreach include_dir, $(program_INCLUDES), -I$(include_dir))
 LDFLAGS += $(foreach library_dir, $(program_LIBRARY_DIRS), -L$(library_dir))
@@ -49,25 +48,43 @@ $(program_NAME): $(program_OBJECTS)
 	$(LINK.cc) $^ -o $@
 
 # This recipe overrides the default behavior of make by attaching an
-# empty recipe to the dependence of %.o on %.cpp. I am not sure whether
-# this step is really necessary.
-%.o : %.cpp
+# empty recipe to the dependence of %.o on %.cpp. I am honestly not sure 
+# whether this step is really necessary.
+#%.o : %.cpp
 
-# This line uses the created dependency file to control compilation.
-# The creation of the dependency file takes place in the same step as
-# compilation of the object file. We rename dependency files in a separate
-# step in order to avoid leaving corrupted dependency files in case of a
-# failed compilation. The SECONCDEXPANSION allows us to work with
-# the automatic variables such as $@ in the dependency list.
+# This line establishes the dependency relationship between an object
+# file and its corresponding source and dependency files.
+#
+# The usual %.o %.cpp pattern matching is not robust enough to handle
+# source files in all possible subdirectories.
+# Note the gnu make extension SECONDEXPANSION. Upon the first expansion, 
+# this rule is expanded to a list of rules for each source file. But in the 
+# dependencies, only one layer of $ calling has been done. Thus in the 
+# second expansion, the dependencies are fully resolved. This makes it 
+# possible to use the automatic varialbe $@ in the dependency list.
+# By the time of the second expansion,the first expansion has resolved
+# exactly what the target is. So in the second expansion, we get exactly
+# the source file and dependency file for that target. 
+#
+# The two steps in the # recipe do:
+# 	1. Compilation and writing a temporary dependency file.
+# 	2. Moving the temporary dependency to its "permanent" location.
+# The two stage process ensures that dependencies are not corrupted by 
+# failed compilation.
+#
+# Note that this does not set up the dependency upon header files. That
+# is accomplished with the -include at the end of the Makefile.
 .SECONDEXPANSION:
 $(program_OBJECTS) : $$(patsubst %.o,%.cpp,$$@) $$(call DEPFILE,$$@,d)
 	$(COMPILE.cc) $(OUTPUT_OPTION) $(patsubst %.o,%.cpp,$@)
 	$(POSTCOMPILE)
 
-# A no-op. If a target does not exist as a file, then it is counted as 
+# A no-op. If a dependency file does not exist, then it is counted as 
 # having been updated when this rule is encountered.
 # Thus if a dependency file does not exist, make will not quit with an 
-# error. Instead it will execute the corresponding %.o rule. 
+# error. Instead it will execute the rule above to create
+# the corresponding object file. In the process it will create the
+# dependency file for the next time make is invoked.
 $(DEPDIR)/%.d: ;
 
 # This prevents make from deleting dependency files, as it would normally
@@ -80,4 +97,6 @@ clean :
 	- $(RM) -r $(DEPDIR)
 
 # This directs make to read the following files as included makefiles.
+# These rules actually establish the dependency of source file on headers.
+# They are automatically created by the compiler (g++).
 -include $(patsubst %,$(DEPDIR)/%.d,$(basename $(program_SOURCES)))
