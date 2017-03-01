@@ -9,7 +9,7 @@
 COMPILER = g++	#Other compilers might not work?
 program_NAME := test
 source_DIRECTORY := ./src
-program_INCLUDES := .
+program_INCLUDES := ./include ./src/test_headers
 program_LIBRARY_DIRS := 
 program_LIBRARIES := 
 

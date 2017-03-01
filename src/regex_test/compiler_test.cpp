@@ -1,6 +1,6 @@
 #include "regex/character_source.h"
 #include "regex/compiler.h"
-#include "src/matcher_test/matcher_test.h"
+#include "matcher_test.h"
 #include "ttest/ttest.h"
 
 #include <regex>

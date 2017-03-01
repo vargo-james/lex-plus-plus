@@ -1,4 +1,4 @@
-#include "src/matcher_test/matcher_test.h"
+#include "matcher_test.h"
 #include "regex/regex.h"
 #include "ttest/ttest.h"
 
