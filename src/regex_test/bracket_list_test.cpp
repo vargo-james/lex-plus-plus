@@ -1,7 +1,7 @@
 #include "regex/bracket_list.h"
 #include "bracket_list_test.h"
 
-#include <cassert>
+#include "project_assert.h"
 #include <cctype>
 #include <functional>
 

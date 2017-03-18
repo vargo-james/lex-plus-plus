@@ -8,7 +8,7 @@
 #include "regex_token.h"
 #include "character_interpreter.h"
 
-#include <cassert>
+#include "project_assert.h"
 
 namespace lex {
 

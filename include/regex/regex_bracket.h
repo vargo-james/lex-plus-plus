@@ -10,7 +10,7 @@
 #include "regex_types.h"
 
 #include <algorithm>
-#include <cassert>
+#include "project_assert.h"
 #include <cctype>
 #include <regex>
 #include <string>

@@ -6,7 +6,7 @@
 
 #include "matcher/matcher.h"
 
-#include <cassert>
+#include "project_assert.h"
 #include <regex>
 #include <string>
 #include <vector>

@@ -31,7 +31,10 @@ class match_results {
   const String& full_results() {return str;}
   void clear() {str.clear(); submatches.clear();}
  private:
-  String str;
+  using input_iterator = forward_iterator<value_type, const value_type&>;
+  using buffer_type = input_buffer<input_iterator>;
+
+  buffer_type* buffer;
   std::vector<submatch> submatches;
 };
 }//namespace lex

@@ -5,7 +5,7 @@
 #include "data_structures/optional.h"
 #include "character_interpreter.h"
 
-#include <cassert>
+#include "project_assert.h"
 #include <cstddef>
 #include <utility>
 

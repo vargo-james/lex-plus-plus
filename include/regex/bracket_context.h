@@ -1,7 +1,7 @@
 #ifndef _bracket_context_h_
 #define _bracket_context_h_
 
-#include <cassert>
+#include "project_assert.h"
 
 namespace lex {
 

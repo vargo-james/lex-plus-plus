@@ -22,7 +22,7 @@
 
 #include "syntax_option.h"
 
-#include <cassert>
+#include "project_assert.h"
 #include <iterator>
 #include <utility>
 #include <vector>

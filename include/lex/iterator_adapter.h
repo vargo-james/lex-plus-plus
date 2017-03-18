@@ -168,7 +168,7 @@ template <typename InputIter, typename T>
 typename iterator_adapter<InputIter,T>::pointer 
 iterator_adapter<InputIter,T>::operator->() {
   update();
-  return &current;
+  return std::addressof(current);
 }
 
 

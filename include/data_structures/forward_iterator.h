@@ -53,7 +53,7 @@ class iterator_holder :
   }
 
   reference operator*() override {return *iter;}
-  pointer operator->() override {return &*iter;}
+  pointer operator->() override {return std::addressof(*iter);}
   void operator++() override {++iter;}
 
   bool operator==(const std::unique_ptr<base_type>& other) const override;

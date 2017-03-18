@@ -5,7 +5,7 @@
 #include "matcher_test.h"
 #include "ttest/ttest.h"
 
-#include <cassert>
+#include "project_assert.h"
 #include <string>
 
 static std::regex_traits<char> traits;

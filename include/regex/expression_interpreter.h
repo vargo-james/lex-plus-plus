@@ -8,7 +8,7 @@
 #include "character_interpreter.h"
 #include "brace_interpreter.h"
 
-#include <cassert>
+#include "project_assert.h"
 #include <cstddef>
 #include <limits>
 

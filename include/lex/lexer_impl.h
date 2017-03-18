@@ -5,7 +5,7 @@
 #include "matcher/matcher.h"
 #include "lex/translator.h"
 
-#include <cassert>
+#include "project_assert.h"
 #include <string>
 #include <utility>
 

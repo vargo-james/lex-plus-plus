@@ -6,3 +6,8 @@ testfile
 *.swp
 .d*
 extra*
+.assert
+build
+finder
+*lexer
+tags
