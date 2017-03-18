@@ -27,8 +27,8 @@
 ###############################################################################
 # PROGRAM NAME
 ###############################################################################
-release_program_name := a.out
-debug_program_name := dbg.a.out
+release_program_name := cpp-lexer
+debug_program_name := dbg-cpp-lexer
 
 # Binary Directory. This is where you want the executables to land.
 bin_dir := .

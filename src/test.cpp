@@ -1,7 +1,6 @@
 /*
  * In this file, we run all the tests.
  */
-#include "project_assert.h"
 #include "ttest/ttest.h"
 
 #include <iostream>
@@ -26,7 +25,6 @@ int main() {
 
   auto error_count = lib_test->error_count();
 
-  assert(error_count != 0);
   if (error_count > 0) {
     std::cerr << error_count << " errors detected.\n";
   }
