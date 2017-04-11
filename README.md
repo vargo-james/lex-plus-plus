@@ -1,5 +1,15 @@
 # Lex++
 
+This project, including this README, is a work in progress. It is not at all
+usable.
+
+## TODO
+
+A. Get a working version of the library.
+B. Improve the data structures.
+ 
+## Introduction
+
 The goal of this project is to provide a flexible, regex based, C++ lexical 
 scanner that takes no more that ten minutes for an
 average C++ programmer on your team to download, learn, and use. To that end, I
@@ -59,22 +69,65 @@ Implementing regular expressions is by far the largest and most complex task
 in this library. For the user's convenience, I have tried to duplicate the 
 interface of std::basic_regex as closely as possible to make my regex interface 
 as predictable as possible.
- 
-## Interface
-
-The interface to this library is through the following class in the 
-`lexpp` namespace.
-```c++
-template <typename CharT, typename Traits, typename TokenT>
-class lexer;
-
-```
 
 ## Installation
 
 This is a header only library. You need only download the lex++ directory and
 then make sure your compiler can see it. Either put it in your system include
 path or add "-I/your/path/to/lex++" to the flags for your compiler.
+ 
+## Interface
+
+### Summary
+
+Everything in this library belongs to the namespace `lexpp`. The interface
+is through the following class.
+```c++
+template <typename CharT, typename Traits, typename TokenT>
+class lexer;
+```
+`CharT` is the input character type.
+`Traits` is a regex traits class with default value `std::regex_traits<CharT>`.
+`TokenT` is the type of the generated tokens and has default value 
+`Traits::string_type` (`std::basic_string<CharT>` for the default traits).
+
+Constructors
+```c++
+(1) lexer::lexer(std::initializer_list<lexpp::basic_regex<CharT, Traits>>);
+(2) lexer::lexer(std::initializer_list<std::pair<
+        lexpp::basic_regex<CharT, Traits>, 
+        std::function<TokenT(const typename Traits::string_type&)>>>);
+(3) lexer::lexer(std::initializer_list<std::pair<
+        lexpp::basic_regex<CharT, Traits>, 
+        std::function<TokenT(const lexpp::match_results&)>>>);
+```
+Restrictions
+(1) requires `TokenT` to have a constructor that only depends on a string
+parameter of type `Traits::string_type`. This requirement is unchecked, so an
+invalid use of this constructor will result in a long error message.
+
+Lexing method
+```
+template <typename InputIt>
+unspecified lexer::lex(std::pair<InputIt,InputIt>);
+```
+The output of this method is a std::pair of `TokenT` valued input iterators.
+The exact type of the input iterator is an implementation detail.
+
+
+### Interface Details and Examples
+
+One could use this output, for example, as follows:
+```c++
+auto range = my_lexer.lex(char_begin, char_end);
+auto token_begin = range.first;
+auto token_end = range.second;
+for (; token_begin != token_end; ++token_begin) { 
+  auto current_token = *token_begin;
+  ... // process the tokens
+}
+```
+
 
 ## Interface
 
